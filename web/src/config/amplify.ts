@@ -13,8 +13,15 @@ const amplifyConfig = {
       identityPoolId: import.meta.env.VITE_IDENTITY_POOL_ID || 'us-east-1:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
       loginWith: {
         email: true,
+        oauth: {
+          domain: import.meta.env.VITE_COGNITO_DOMAIN || 'beatmatchme-dev.auth.us-east-1.amazoncognito.com',
+          scopes: ['email', 'openid', 'profile'],
+          redirectSignIn: [import.meta.env.VITE_OAUTH_REDIRECT_SIGNIN || 'http://localhost:5173'],
+          redirectSignOut: [import.meta.env.VITE_OAUTH_REDIRECT_SIGNOUT || 'http://localhost:5173'],
+          responseType: 'code' as const,
+        },
       },
-      signUpVerificationMethod: 'code',
+      signUpVerificationMethod: 'code' as const,
       userAttributes: {
         email: {
           required: true,

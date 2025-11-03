@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Amplify } from 'aws-amplify';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import {
   signIn,
   signUp,
@@ -11,9 +10,6 @@ import {
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
-import awsconfig from '../aws-exports';
-
-Amplify.configure(awsconfig);
 
 export type UserRole = 'PERFORMER' | 'AUDIENCE';
 export type UserTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';

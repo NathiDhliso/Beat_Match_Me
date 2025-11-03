@@ -94,6 +94,10 @@ Resources:
   # Web App Client
   WebAppClient:
     Type: AWS::Cognito::UserPoolClient
+    DependsOn:
+      - GoogleIdentityProvider
+      - FacebookIdentityProvider
+      - AppleIdentityProvider
     Properties:
       ClientName: !Sub 'beatmatchme-web-${Environment}'
       UserPoolId: !Ref BeatMatchMeUserPool
@@ -110,6 +114,24 @@ Resources:
         - ALLOW_REFRESH_TOKEN_AUTH
         - ALLOW_USER_PASSWORD_AUTH
       PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders:
+        - COGNITO
+        - Google
+        - Facebook
+        - SignInWithApple
+      CallbackURLs:
+        - http://localhost:5173
+        - https://beatmatchme.com
+      LogoutURLs:
+        - http://localhost:5173
+        - https://beatmatchme.com
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
       ReadAttributes:
         - email
         - name
@@ -121,6 +143,55 @@ Resources:
         - phone_number
         - custom:role
         - custom:tier
+
+  # Google Identity Provider
+  GoogleIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref BeatMatchMeUserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: REPLACE_WITH_GOOGLE_CLIENT_ID
+        client_secret: REPLACE_WITH_GOOGLE_CLIENT_SECRET
+        authorize_scopes: profile email openid
+      AttributeMapping:
+        email: email
+        name: name
+        picture: picture
+
+  # Facebook Identity Provider
+  FacebookIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref BeatMatchMeUserPool
+      ProviderName: Facebook
+      ProviderType: Facebook
+      ProviderDetails:
+        client_id: REPLACE_WITH_FACEBOOK_APP_ID
+        client_secret: REPLACE_WITH_FACEBOOK_APP_SECRET
+        authorize_scopes: public_profile,email
+      AttributeMapping:
+        email: email
+        name: name
+        picture: picture
+
+  # Apple Identity Provider
+  AppleIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref BeatMatchMeUserPool
+      ProviderName: SignInWithApple
+      ProviderType: SignInWithApple
+      ProviderDetails:
+        client_id: REPLACE_WITH_APPLE_SERVICE_ID
+        team_id: REPLACE_WITH_APPLE_TEAM_ID
+        key_id: REPLACE_WITH_APPLE_KEY_ID
+        private_key: REPLACE_WITH_APPLE_PRIVATE_KEY
+        authorize_scopes: name email
+      AttributeMapping:
+        email: email
+        name: name
 
   # Mobile App Client
   MobileAppClient:
