@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
-import { Shield, Check, Lock, Mail, User as UserIcon, Sparkles } from 'lucide-react';
+import { Shield, Check, Lock, Mail, Sparkles } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
 
@@ -161,6 +161,13 @@ export const Login: React.FC = () => {
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
             >
               {loading ? 'Logging in...' : 'Login'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              className="w-full text-blue-200 text-sm hover:text-white transition-colors"
+            >
+              Forgot Password?
             </button>
             <button
               type="button"
