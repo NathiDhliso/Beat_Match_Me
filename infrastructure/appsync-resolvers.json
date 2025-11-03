@@ -1,0 +1,175 @@
+{
+  "resolvers": [
+    {
+      "typeName": "Mutation",
+      "fieldName": "createRequest",
+      "dataSourceName": "CreateRequestLambda",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Invoke",
+        "payload": {
+          "arguments": "$util.toJson($context.arguments)",
+          "identity": "$util.toJson($context.identity)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "upvoteRequest",
+      "dataSourceName": "UpvoteRequestLambda",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "reorderQueue",
+      "dataSourceName": "ReorderQueueLambda",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "vetoRequest",
+      "dataSourceName": "ProcessRefundLambda",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "createGroupRequest",
+      "dataSourceName": "CreateGroupRequestLambda",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "contributeToGroupRequest",
+      "dataSourceName": "ContributeToGroupRequestLambda",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getQueue",
+      "dataSourceName": "DynamoDBQueues",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "GetItem",
+        "key": {
+          "eventId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.eventId)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getRequest",
+      "dataSourceName": "DynamoDBRequests",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "GetItem",
+        "key": {
+          "requestId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.requestId)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getUserRequests",
+      "dataSourceName": "DynamoDBRequests",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Query",
+        "index": "userId-submittedAt-index",
+        "query": {
+          "expression": "userId = :userId",
+          "expressionValues": {
+            ":userId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.userId)"
+          }
+        },
+        "limit": "$util.defaultIfNull($ctx.arguments.limit, 20)",
+        "scanIndexForward": false
+      },
+      "responseMappingTemplate": "$util.toJson($context.result.items)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getEventRequests",
+      "dataSourceName": "DynamoDBRequests",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Query",
+        "index": "eventId-submittedAt-index",
+        "query": {
+          "expression": "eventId = :eventId",
+          "expressionValues": {
+            ":eventId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.eventId)"
+          }
+        },
+        "filter": "#if($ctx.arguments.status) { \"expression\": \"#status = :status\", \"expressionNames\": { \"#status\": \"status\" }, \"expressionValues\": { \":status\": \"$util.dynamodb.toDynamoDBJson($ctx.arguments.status)\" } } #end",
+        "scanIndexForward": false
+      },
+      "responseMappingTemplate": "$util.toJson($context.result.items)"
+    }
+  ],
+  "dataSources": [
+    {
+      "name": "DynamoDBRequests",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-requests"
+      }
+    },
+    {
+      "name": "DynamoDBQueues",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-queues"
+      }
+    },
+    {
+      "name": "CreateRequestLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-createRequest"
+      }
+    },
+    {
+      "name": "UpvoteRequestLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-upvoteRequest"
+      }
+    },
+    {
+      "name": "ReorderQueueLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-reorderQueue"
+      }
+    },
+    {
+      "name": "ProcessRefundLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-processRefund"
+      }
+    },
+    {
+      "name": "CreateGroupRequestLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-createGroupRequest"
+      }
+    },
+    {
+      "name": "ContributeToGroupRequestLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-contributeToGroupRequest"
+      }
+    }
+  ]
+}

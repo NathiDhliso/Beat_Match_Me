@@ -744,7 +744,7 @@ enum RequestType {
 
 #### Queries
 
--   \[ \] Implement queries:
+-   [x] Implement queries:
     
 
 ```
@@ -758,7 +758,7 @@ type Query {
 }
 ```
 
--   \[ \] Create resolvers for each query using DynamoDB data source
+-   [x] Create resolvers for each query using DynamoDB data source
     
 -   \[ \] Implement pagination for list queries
     
@@ -767,7 +767,7 @@ type Query {
 
 #### Mutations
 
--   \[ \] Implement mutations:
+-   [x] Implement mutations:
     
 
 ```
@@ -853,7 +853,7 @@ type Subscription {
 
 #### Lambda: reorderQueueHandler
 
--   \[ \] Create Lambda function: `reorderQueueHandler`
+-   [x] Create Lambda function: `reorderQueueHandler`
     
 -   \[ \] Triggered by AppSync mutation `reorderQueue`
     
@@ -1012,7 +1012,7 @@ type Subscription {
 
 #### Event Creation Screen
 
--   \[ \] Create `CreateEventScreen` component (web + mobile)
+-   [x] Create `CreateEventScreen` component (Lambda: createEvent implemented)
     
 -   \[ \] Form fields:
     
@@ -1523,7 +1523,7 @@ type Subscription {
         
 -   \[ \] On create:
     
-    -   \[ \] Call AppSync mutation `createGroupRequest`
+    -   [x] Call AppSync mutation `createGroupRequest`
         
     -   \[ \] Generate shareable link: `beatmatchme://group/{groupRequestId}`
         
@@ -1657,7 +1657,7 @@ type Subscription {
     
     -   [x] Optimistic UI update (heart fills, count +1)
         
-    -   [ ] Call AppSync mutation `upvoteRequest`
+    -   [x] Call AppSync mutation `upvoteRequest`
         
     -   [ ] Haptic feedback
         
@@ -1801,7 +1801,7 @@ const ACHIEVEMENTS = {
 
 #### Lambda: checkAchievements
 
--   \[ \] Create Lambda function: `checkAchievements`
+-   [x] Create Lambda function: `checkAchievements`
     
 -   \[ \] Triggered by DynamoDB Streams on:
     
