@@ -70,6 +70,12 @@ variable "appsync_authentication_type" {
   default     = "AMAZON_COGNITO_USER_POOLS"
 }
 
+variable "alert_email" {
+  description = "Email address for CloudWatch alerts"
+  type        = string
+  default     = "alerts@beatmatchme.com"
+}
+
 # Tags
 variable "additional_tags" {
   description = "Additional tags to apply to resources"

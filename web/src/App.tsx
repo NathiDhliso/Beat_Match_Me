@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './components/DarkModeTheme';
 import { apolloClient } from './services/api';
 import { Login } from './pages/Login';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { DJPortal } from './pages/DJPortal';
 import { UserPortal } from './pages/UserPortal';
 
@@ -57,6 +58,7 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route
                 path="/dj-portal"

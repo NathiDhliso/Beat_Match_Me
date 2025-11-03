@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
+  const { user, logout } = useAuth();
   return (
     <LinearGradient
       colors={['#1f2937', '#111827']}
@@ -12,6 +14,9 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.header}>
           <Text style={styles.title}>🎵 BeatMatchMe</Text>
           <Text style={styles.subtitle}>Request Your Favorite Songs</Text>
+          {user && (
+            <Text style={styles.userName}>Welcome, {user.attributes?.name || 'User'}!</Text>
+          )}
         </View>
 
         <View style={styles.buttonContainer}>
@@ -45,6 +50,13 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.infoText}>4. Pay securely</Text>
           <Text style={styles.infoText}>5. Track your request in real-time!</Text>
         </View>
+
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={logout}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
@@ -122,5 +134,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9ca3af',
     marginBottom: 8,
+  },
+  userName: {
+    fontSize: 16,
+    color: '#8b5cf6',
+    marginTop: 8,
+  },
+  logoutButton: {
+    backgroundColor: '#374151',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  logoutText: {
+    color: '#ef4444',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
