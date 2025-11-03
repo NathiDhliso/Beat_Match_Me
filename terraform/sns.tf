@@ -1,0 +1,27 @@
+/**
+ * SNS Topics Configuration
+ */
+
+resource "aws_sns_topic" "notifications" {
+  name = "${local.table_prefix}-notifications"
+
+  tags = {
+    Name = "${local.table_prefix}-notifications"
+  }
+}
+
+resource "aws_sns_topic_policy" "notifications" {
+  arn = aws_sns_topic.notifications.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+      Action   = "SNS:Publish"
+      Resource = aws_sns_topic.notifications.arn
+    }]
+  })
+}
