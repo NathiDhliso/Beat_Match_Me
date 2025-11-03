@@ -1,0 +1,240 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'BeatMatchMe - Cognito User Pool for Authentication'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - production
+    Description: Environment name
+
+Resources:
+  # Cognito User Pool
+  BeatMatchMeUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub 'beatmatchme-users-${Environment}'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      
+      # Password Policy
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
+      
+      # Email Configuration
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      
+      # User Attributes Schema
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: false
+        - Name: name
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+        - Name: phone_number
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+        - Name: role
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+        - Name: tier
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+      
+      # Account Recovery
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      
+      # User Pool Tags
+      UserPoolTags:
+        Project: BeatMatchMe
+        Environment: !Ref Environment
+
+  # Performer User Group
+  PerformersGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: performers
+      Description: DJ/Performer users who create events
+      UserPoolId: !Ref BeatMatchMeUserPool
+      Precedence: 1
+
+  # Audience User Group
+  AudienceGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: audience
+      Description: Audience members who make requests
+      UserPoolId: !Ref BeatMatchMeUserPool
+      Precedence: 2
+
+  # Web App Client
+  WebAppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub 'beatmatchme-web-${Environment}'
+      UserPoolId: !Ref BeatMatchMeUserPool
+      GenerateSecret: false
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits:
+        RefreshToken: days
+        AccessToken: minutes
+        IdToken: minutes
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      PreventUserExistenceErrors: ENABLED
+      ReadAttributes:
+        - email
+        - name
+        - phone_number
+        - custom:role
+        - custom:tier
+      WriteAttributes:
+        - name
+        - phone_number
+        - custom:role
+        - custom:tier
+
+  # Mobile App Client
+  MobileAppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub 'beatmatchme-mobile-${Environment}'
+      UserPoolId: !Ref BeatMatchMeUserPool
+      GenerateSecret: false
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits:
+        RefreshToken: days
+        AccessToken: minutes
+        IdToken: minutes
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      PreventUserExistenceErrors: ENABLED
+
+  # Identity Pool for AWS Resource Access
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Sub 'beatmatchme_identity_pool_${Environment}'
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref WebAppClient
+          ProviderName: !GetAtt BeatMatchMeUserPool.ProviderName
+        - ClientId: !Ref MobileAppClient
+          ProviderName: !GetAtt BeatMatchMeUserPool.ProviderName
+
+  # IAM Role for Authenticated Users
+  CognitoAuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'beatmatchme-cognito-authenticated-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: authenticated
+      Policies:
+        - PolicyName: CognitoAuthenticatedPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                Resource:
+                  - !Sub 'arn:aws:s3:::beatmatchme-${Environment}-assets/users/*'
+              - Effect: Allow
+                Action:
+                  - appsync:GraphQL
+                Resource:
+                  - !Sub 'arn:aws:appsync:${AWS::Region}:${AWS::AccountId}:apis/*/types/*/fields/*'
+
+  # Attach Role to Identity Pool
+  IdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref IdentityPool
+      Roles:
+        authenticated: !GetAtt CognitoAuthenticatedRole.Arn
+
+Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref BeatMatchMeUserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolId'
+
+  UserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt BeatMatchMeUserPool.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolArn'
+
+  WebAppClientId:
+    Description: Web App Client ID
+    Value: !Ref WebAppClient
+    Export:
+      Name: !Sub '${AWS::StackName}-WebAppClientId'
+
+  MobileAppClientId:
+    Description: Mobile App Client ID
+    Value: !Ref MobileAppClient
+    Export:
+      Name: !Sub '${AWS::StackName}-MobileAppClientId'
+
+  IdentityPoolId:
+    Description: Identity Pool ID
+    Value: !Ref IdentityPool
+    Export:
+      Name: !Sub '${AWS::StackName}-IdentityPoolId'
+
+  PerformersGroupName:
+    Description: Performers Group Name
+    Value: !Ref PerformersGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-PerformersGroup'
+
+  AudienceGroupName:
+    Description: Audience Group Name
+    Value: !Ref AudienceGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-AudienceGroup'
