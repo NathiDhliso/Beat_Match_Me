@@ -97,7 +97,7 @@ export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
     <>
       <ConfettiAnimation trigger={show} />
       <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-        <div className="animate-bounce-in bg-glass-dark backdrop-blur-xl rounded-3xl p-8 shadow-glass-lg border border-white/10">
+        <div className="animate-bounce-in bg-gray-900/70 backdrop-blur-xl rounded-3xl p-8 shadow-glass-lg border border-white/10">
           <div className="flex flex-col items-center gap-4">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center animate-scale-in">
               <svg

@@ -92,7 +92,7 @@ export const ConstellationNav: React.FC<ConstellationNavProps> = ({
           <button
             key={item.id}
             onClick={() => handleItemClick(item)}
-            className="absolute top-1/2 left-1/2 rounded-full bg-glass-dark backdrop-blur-xl border border-white/20 flex flex-col items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-white/10 animate-scale-in"
+            className="absolute top-1/2 left-1/2 rounded-full bg-gray-900/70 backdrop-blur-xl border border-white/20 flex flex-col items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-white/10 animate-scale-in"
             style={{
               width: `${size}px`,
               height: `${size}px`,

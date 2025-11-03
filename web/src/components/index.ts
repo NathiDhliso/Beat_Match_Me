@@ -93,6 +93,49 @@ export {
 } from './Gamification';
 export type { Achievement, AchievementTier, LeaderboardEntry } from './Gamification';
 
+// Advanced Features (Phase 16 - Final 25%)
+export {
+  ContextualThemeProvider,
+  EventTypeIndicator,
+  WeatherIntegration,
+  TipPoolSystem,
+  VibeSaverAction,
+  GestureGuardrails,
+  HoldToConfirm,
+  ProfileAuraRing,
+  RequestTrailEffect,
+  VIPRequestEntrance,
+} from './AdvancedFeatures';
+export type { EventType, WeatherCondition, UserTier } from './AdvancedFeatures';
+
+// Song Selection & Request Flow
+export { SongSelectionScreen } from './SongSelection';
+export { RequestConfirmation } from './RequestConfirmation';
+export type { RequestData } from './RequestConfirmation';
+
+// Group Requests
+export { GroupRequestScreen, GroupRequestLobby, JoinGroupRequestScreen } from './GroupRequest';
+
+// Request Tracking
+export { RequestTrackingView } from './RequestTracking';
+
+// Queue Views
+export { PerformerQueueView, AudienceQueueView } from './QueueViews';
+
+// Payment
+export { PaymentModal, PaymentSuccessModal } from './PaymentModal';
+export type { PaymentData } from './PaymentModal';
+
+// Educational Features (Phase 16 - Final 25%)
+export {
+  DidYouKnowCard,
+  GenreDeepDive,
+  DJTips,
+  EventStoryMode,
+  VenueConsistencyProfile,
+} from './EducationalFeatures';
+export type { EventContribution } from './EducationalFeatures';
+
 // Utilities
 export * from '../utils/gradients';
 export * from '../utils/haptics';

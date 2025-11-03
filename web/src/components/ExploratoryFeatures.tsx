@@ -12,13 +12,13 @@ interface FeelingLuckyProps {
 
 export const FeelingLucky: React.FC<FeelingLuckyProps> = ({
   onSongSelected,
-  availableSongs,
+  availableSongs = [],
   className = '',
 }) => {
   const [isSpinning, setIsSpinning] = useState(false);
 
   const handleFeelingLucky = () => {
-    if (availableSongs.length === 0) return;
+    if (!availableSongs || availableSongs.length === 0) return;
 
     setIsSpinning(true);
     HapticFeedback.buttonPress();
@@ -35,7 +35,7 @@ export const FeelingLucky: React.FC<FeelingLuckyProps> = ({
   return (
     <button
       onClick={handleFeelingLucky}
-      disabled={isSpinning || availableSongs.length === 0}
+      disabled={isSpinning || !availableSongs || availableSongs.length === 0}
       className={`
         relative px-6 py-4 rounded-2xl
         bg-gradient-to-r from-secondary-500 to-accent-500
@@ -66,7 +66,7 @@ interface GenreRouletteProps {
 }
 
 export const GenreRoulette: React.FC<GenreRouletteProps> = ({
-  genres,
+  genres = [],
   onGenreSelected,
   className = '',
 }) => {
@@ -75,7 +75,7 @@ export const GenreRoulette: React.FC<GenreRouletteProps> = ({
   const [rotation, setRotation] = useState(0);
 
   const handleSpin = () => {
-    if (isSpinning || genres.length === 0) return;
+    if (isSpinning || !genres || genres.length === 0) return;
 
     setIsSpinning(true);
     HapticFeedback.buttonPress();
@@ -157,7 +157,7 @@ export const GenreRoulette: React.FC<GenreRouletteProps> = ({
       {/* Spin Button */}
       <button
         onClick={handleSpin}
-        disabled={isSpinning || genres.length === 0}
+        disabled={isSpinning || !genres || genres.length === 0}
         className={`
           px-8 py-3 rounded-xl
           bg-gradient-to-r from-gold-400 to-gold-600
@@ -173,7 +173,7 @@ export const GenreRoulette: React.FC<GenreRouletteProps> = ({
 
       {/* Selected Genre Display */}
       {selectedGenre && !isSpinning && (
-        <div className="animate-bounce-in bg-glass-dark backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+        <div className="animate-bounce-in bg-gray-900/70 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
           <p className="text-white text-center">
             <span className="text-gold-500 font-bold text-xl">{selectedGenre}</span>
             <br />

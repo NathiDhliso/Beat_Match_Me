@@ -77,7 +77,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
   showLabel = true,
   className = '',
 }) => {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.pending; // Fallback to pending if status is invalid
   const sizes = sizeConfig[size];
 
   return (

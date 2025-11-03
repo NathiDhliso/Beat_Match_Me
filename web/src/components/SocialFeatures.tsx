@@ -111,7 +111,7 @@ interface FriendListProps {
 }
 
 export const FriendList: React.FC<FriendListProps> = ({
-  friends,
+  friends = [],
   onAddFriend,
   onRemoveFriend,
   onViewProfile,
@@ -119,7 +119,7 @@ export const FriendList: React.FC<FriendListProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredFriends = friends.filter(friend =>
+  const filteredFriends = (friends || []).filter(friend =>
     friend.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -452,7 +452,7 @@ interface ActivityFeedProps {
 }
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
-  activities,
+  activities = [],
   onLoadMore,
   hasMore = false,
   className = '',

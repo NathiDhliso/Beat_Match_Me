@@ -60,7 +60,7 @@ export const QueueCard: React.FC<QueueCardProps> = ({
   isPerformerView = false,
   className = '',
 }) => {
-  const typeConfig = requestTypeConfig[requestType];
+  const typeConfig = requestTypeConfig[requestType] || requestTypeConfig.standard;
 
   return (
     <div

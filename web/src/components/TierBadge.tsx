@@ -70,8 +70,16 @@ export const TierBadge: React.FC<TierBadgeProps> = ({
   showLabel = false,
   className = '',
 }) => {
-  const config = tierConfig[tier];
+  // Normalize tier to lowercase to handle both uppercase and lowercase values
+  const normalizedTier = tier.toLowerCase() as TierType;
+  const config = tierConfig[normalizedTier];
   const sizes = sizeConfig[size];
+  
+  // If config is still undefined, default to bronze
+  if (!config) {
+    console.warn(`Invalid tier value: ${tier}. Defaulting to bronze.`);
+    return <TierBadge tier="bronze" size={size} showLabel={showLabel} className={className} />;
+  }
 
   return (
     <div className={`inline-flex flex-col items-center gap-2 ${className}`}>

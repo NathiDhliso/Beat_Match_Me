@@ -1,0 +1,270 @@
+/**
+ * BEATMATCHME - CENTRALIZED THEME SYSTEM
+ * All colors in one place for easy updates
+ */
+
+:root {
+  /* ============================================
+     DARK MODE (DEFAULT) - Black & Platinum Grey
+     ============================================ */
+  
+  /* Backgrounds */
+  --bg-primary: #000000;           /* Pure black */
+  --bg-secondary: #0a0a0a;         /* Grey-950 */
+  --bg-tertiary: #111827;          /* Grey-900 */
+  --bg-surface: rgba(31, 41, 55, 0.5);  /* Grey-800/50 - cards */
+  --bg-elevated: rgba(0, 0, 0, 0.6);    /* Black/60 - header */
+  
+  /* Text */
+  --text-primary: #ffffff;         /* White - headings */
+  --text-secondary: #d1d5db;       /* Grey-300 - body */
+  --text-tertiary: #9ca3af;        /* Grey-400 - muted */
+  --text-accent: #6b7280;          /* Grey-500 - disabled */
+  
+  /* Borders */
+  --border-primary: #374151;       /* Grey-700 */
+  --border-secondary: #1f2937;     /* Grey-800 */
+  --border-subtle: rgba(55, 65, 81, 0.5);
+  
+  /* Icons */
+  --icon-primary: #9ca3af;         /* Grey-400 */
+  --icon-secondary: #6b7280;       /* Grey-500 */
+  
+  /* Platinum Accents */
+  --platinum-light: #d1d5db;       /* Grey-300 */
+  --platinum-medium: #9ca3af;      /* Grey-400 */
+  --platinum-dark: #6b7280;        /* Grey-500 */
+  
+  /* Interactive States */
+  --hover-overlay: rgba(55, 65, 81, 0.5);  /* Grey-700/50 */
+  --active-overlay: rgba(75, 85, 99, 0.5); /* Grey-600/50 */
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  
+  /* Gradients */
+  --gradient-bg: linear-gradient(to bottom right, #000000, #111827, #0a0a0a);
+  --gradient-card: linear-gradient(to bottom right, rgba(31, 41, 55, 0.5), rgba(17, 24, 39, 0.5));
+  --gradient-platinum: linear-gradient(to right, #9ca3af, #6b7280);
+}
+
+/* ============================================
+   LIGHT MODE - Egyptian Gold & Glossy White
+   ============================================ */
+
+html:not(.dark) {
+  /* Backgrounds */
+  --bg-primary: #ffffff;           /* Pure white */
+  --bg-secondary: #fffbeb;         /* Amber-50 */
+  --bg-tertiary: #fef3c7;          /* Amber-100 */
+  --bg-surface: rgba(254, 243, 199, 0.9);  /* Amber-100/90 - cards - more opaque */
+  --bg-elevated: rgba(255, 255, 255, 0.95); /* White/95 - header - more opaque */
+  
+  /* Text - IMPROVED CONTRAST */
+  --text-primary: #451a03;         /* Amber-950 - headings - DARKER */
+  --text-secondary: #78350f;       /* Amber-900 - body - DARKER */
+  --text-tertiary: #92400e;        /* Amber-800 - muted - DARKER */
+  --text-accent: #b45309;          /* Amber-700 - links */
+  
+  /* Borders */
+  --border-primary: #fcd34d;       /* Amber-300 */
+  --border-secondary: #fde68a;     /* Amber-200 */
+  --border-subtle: rgba(252, 211, 77, 0.5);
+  
+  /* Icons */
+  --icon-primary: #d97706;         /* Amber-600 */
+  --icon-secondary: #b45309;       /* Amber-700 */
+  
+  /* Egyptian Gold Accents - IMPROVED CONTRAST */
+  --gold-light: #fef3c7;           /* Amber-100 */
+  --gold-medium: #f59e0b;          /* Amber-500 - more vibrant */
+  --gold-dark: #b45309;            /* Amber-700 - darker */
+  --gold-rich: #78350f;            /* Amber-900 - richest */
+  
+  /* Interactive States */
+  --hover-overlay: rgba(254, 243, 199, 0.8);  /* Amber-100/80 */
+  --active-overlay: rgba(252, 211, 77, 0.8);  /* Amber-300/80 */
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(217, 119, 6, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(217, 119, 6, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(217, 119, 6, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(217, 119, 6, 0.3);
+  
+  /* Gradients */
+  --gradient-bg: linear-gradient(to bottom right, #ffffff, #fffbeb, #fef3c7);
+  --gradient-card: linear-gradient(to bottom right, #fef3c7, #fde68a);
+  --gradient-gold: linear-gradient(to right, #b45309, #92400e);
+  --gradient-title: linear-gradient(to right, #b45309, #78350f);
+}
+
+/* ============================================
+   SEMANTIC COLOR TOKENS
+   Use these in your components
+   ============================================ */
+
+:root {
+  /* Status Colors (same in both modes) */
+  --color-success: #10b981;        /* Green-500 */
+  --color-warning: #f59e0b;        /* Amber-500 */
+  --color-error: #ef4444;          /* Red-500 */
+  --color-info: #3b82f6;           /* Blue-500 */
+  
+  /* Brand Colors */
+  --color-primary: #00d9ff;        /* Cyan */
+  --color-secondary: #9d00ff;      /* Purple */
+  
+  /* Tier Colors */
+  --tier-bronze: #cd7f32;
+  --tier-silver: #c0c0c0;
+  --tier-gold: #ffd700;
+  --tier-platinum: #e5e4e2;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Backgrounds */
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-tertiary { background-color: var(--bg-tertiary); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-elevated { background-color: var(--bg-elevated); }
+
+/* Text */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-accent { color: var(--text-accent); }
+
+/* Borders */
+.border-primary { border-color: var(--border-primary); }
+.border-secondary { border-color: var(--border-secondary); }
+.border-subtle { border-color: var(--border-subtle); }
+
+/* Icons */
+.icon-primary { color: var(--icon-primary); }
+.icon-secondary { color: var(--icon-secondary); }
+
+/* Shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* Gradients */
+.gradient-bg { background: var(--gradient-bg); }
+.gradient-card { background: var(--gradient-card); }
+.gradient-platinum { background: var(--gradient-platinum); }
+.gradient-gold { background: var(--gradient-gold); }
+.gradient-title { background: var(--gradient-title); }
+
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
+
+/* Card */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: var(--hover-overlay);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Button */
+.btn {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--hover-overlay);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Header */
+.header {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-secondary);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Input */
+.input {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--icon-primary);
+  box-shadow: 0 0 0 3px var(--border-subtle);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Badge */
+.badge {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   TRANSITIONS
+   ============================================ */
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}

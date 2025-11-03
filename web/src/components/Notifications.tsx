@@ -151,7 +151,7 @@ interface NotificationCenterProps {
 }
 
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({
-  notifications,
+  notifications = [],
   onMarkAsRead,
   onMarkAllAsRead,
   onClearAll,
@@ -160,11 +160,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 }) => {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const filteredNotifications = notifications.filter(n =>
+  const filteredNotifications = (notifications || []).filter(n =>
     filter === 'all' || !n.read
   );
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   const getTimeAgo = (timestamp: number) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
