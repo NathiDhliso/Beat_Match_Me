@@ -379,7 +379,6 @@ BeatMatchMe is a live event music request platform connecting performers (DJs/ba
         
     -   \[ \] Platinum: Top 1% of users (venue-specific)
         
-<<<<<<< HEAD
 -   [x] Create tier badge UI components
     
     -   [x] Bronze: `#cd7f32` circular badge
@@ -393,21 +392,6 @@ BeatMatchMe is a live event music request platform connecting performers (DJs/ba
 -   \[ \] Set up DynamoDB Stream trigger to update tiers on request completion
     
 -   [x] Display tier badge on user profile and in queues
-=======
--   \[ \] Create tier badge UI components
-    
-    -   \[ \] Bronze: `#cd7f32` circular badge
-        
-    -   \[ \] Silver: `#c0c0c0` circular badge
-        
-    -   \[ \] Gold: `#ffd700` circular badge with subtle glow
-        
-    -   \[ \] Platinum: `#e5e4e2` animated shimmer effect
-        
--   \[ \] Set up DynamoDB Stream trigger to update tiers on request completion
-    
--   \[ \] Display tier badge on user profile and in queues
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 
 ## PHASE 2: SOUTH AFRICAN PAYMENT INTEGRATION
@@ -566,11 +550,7 @@ BeatMatchMe is a live event music request platform connecting performers (DJs/ba
         
 -   \[ \] Implement 3D Secure flow for card payments
     
-<<<<<<< HEAD
 -   [x] Show payment success animation (confetti effect)
-=======
--   \[ \] Show payment success animation (confetti effect)
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 -   \[ \] Handle payment errors with clear messaging
     
@@ -843,11 +823,7 @@ type Subscription {
         
     -   \[ \] Scrollable list: All queued requests (small cards)
         
-<<<<<<< HEAD
 -   [x] Card design:
-=======
--   \[ \] Card design:
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 
 ```
@@ -861,7 +837,6 @@ type Subscription {
   └─────────────────────────────────────┘
 ```
 
-<<<<<<< HEAD
 -   [x] Color coding:
     
     -   [x] Spotlight: Red border/background (`#ff1744`)
@@ -869,15 +844,6 @@ type Subscription {
     -   [x] Standard: Blue border (`#00d9ff`)
         
     -   [x] Group: Purple border (`#9d00ff`)
-=======
--   \[ \] Color coding:
-    
-    -   \[ \] Spotlight: Red border/background (`#ff1744`)
-        
-    -   \[ \] Standard: Blue border (`#00d9ff`)
-        
-    -   \[ \] Group: Purple border (`#9d00ff`)
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
         
 -   \[ \] Drag-to-reorder functionality (web: drag-and-drop, mobile: long-press)
     
@@ -898,11 +864,7 @@ type Subscription {
     
 -   \[ \] Show own requests prominently at top
     
-<<<<<<< HEAD
 -   [x] Display queue position with circular progress indicator:
-=======
--   \[ \] Display queue position with circular progress indicator:
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 
 ```
@@ -936,7 +898,6 @@ type Subscription {
                      ↘ Vetoed (refunded)
 ```
 
-<<<<<<< HEAD
 -   [x] Visual indicator for each status:
     
     -   [x] Pending: Yellow dot, "In Queue"
@@ -948,19 +909,6 @@ type Subscription {
     -   [x] Completed: Green checkmark
         
     -   [x] Vetoed: Red X, "Refunded"
-=======
--   \[ \] Visual indicator for each status:
-    
-    -   \[ \] Pending: Yellow dot, "In Queue"
-        
-    -   \[ \] Approved: Blue dot, "Coming Up"
-        
-    -   \[ \] Playing: Green pulsing dot, "Now Playing"
-        
-    -   \[ \] Completed: Green checkmark
-        
-    -   \[ \] Vetoed: Red X, "Refunded"
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
         
 -   \[ \] Push notification triggers:
     
@@ -1048,11 +996,7 @@ type Subscription {
         
         -   Real-time earnings counter with currency animation
             
-<<<<<<< HEAD
         -   [x] Milestone celebrations (confetti at R500, R1000, R2000)
-=======
-        -   Milestone celebrations (confetti at R500, R1000, R2000)
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
             
         -   Breakdown: Total charged, refunds, net earnings
             
@@ -1322,15 +1266,9 @@ type Subscription {
   └─────────────────────────────────┘
 ```
 
-<<<<<<< HEAD
 -   [x] "Feeling Lucky" button
     
     -   [x] random song selection
-=======
--   \[ \] "Feeling Lucky" button
-    
-    -   random song selection
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
         
 -   \[ \] Recently requested songs indicator (greyed out if in queue)
     
@@ -1432,7 +1370,6 @@ type Subscription {
 
 -   \[ \] Real-time position updates via subscription
     
-<<<<<<< HEAD
 -   [x] Status badges:
     
     -   [x] Pending: Yellow "⏳ In Queue"
@@ -1446,21 +1383,6 @@ type Subscription {
     -   [x] Completed: "✓ Played at \[time\]"
         
     -   [x] Vetoed: "❌ Refunded" + reason
-=======
--   \[ \] Status badges:
-    
-    -   \[ \] Pending: Yellow "⏳ In Queue"
-        
-    -   \[ \] Approved: Blue "✓ Confirmed"
-        
-    -   \[ \] Coming Up: Green "🔜 Coming Up Next!"
-        
-    -   \[ \] Playing: Animated "🎶 Now Playing!"
-        
-    -   \[ \] Completed: "✓ Played at \[time\]"
-        
-    -   \[ \] Vetoed: "❌ Refunded" + reason
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
         
 -   \[ \] Push notifications at key moments:
     
@@ -1622,16 +1544,11 @@ type Subscription {
         
     -   \[ \] Most hearted
         
-<<<<<<< HEAD
 -   [x] Share individual dedication to social media
-=======
--   \[ \] Share individual dedication to social media
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 
 #### Upvote System
 
-<<<<<<< HEAD
 -   [x] Add upvote button to each queue item (heart icon)
     
 -   [x] On tap:
@@ -1645,21 +1562,6 @@ type Subscription {
     -   [x] If already upvoted: Remove upvote
         
 -   [x] Display upvote count on request cards
-=======
--   \[ \] Add upvote button to each queue item (heart icon)
-    
--   \[ \] On tap:
-    
-    -   \[ \] Optimistic UI update (heart fills, count +1)
-        
-    -   \[ \] Call AppSync mutation `upvoteRequest`
-        
-    -   \[ \] Haptic feedback
-        
-    -   \[ \] If already upvoted: Remove upvote
-        
--   \[ \] Display upvote count on request cards
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 -   \[ \] "Feeling This" ripple effect:
     
@@ -1672,7 +1574,6 @@ type Subscription {
 
 #### Friend Activity
 
-<<<<<<< HEAD
 -   [x] Implement friend connections:
     
     -   [x] Search users by name/phone
@@ -1682,17 +1583,6 @@ type Subscription {
     -   [x] Accept/decline requests
         
     -   [x] Friends list in profile
-=======
--   \[ \] Implement friend connections:
-    
-    -   \[ \] Search users by name/phone
-        
-    -   \[ \] Send friend requests
-        
-    -   \[ \] Accept/decline requests
-        
-    -   \[ \] Friends list in profile
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
         
 -   \[ \] Show friends at same event:
     
@@ -2063,11 +1953,7 @@ const y = centerY + radius * Math.sin(angle);
 -   \[ \] Recalculate positions on app launch
     
 
-<<<<<<< HEAD
 ### Task 7.2: Audio-Reactive Visualizer [COMPLETED]
-=======
-### Task 7.2: Audio-Reactive Visualizer
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
 
 #### Web Implementation (Web Audio API)
 
@@ -2137,11 +2023,7 @@ const midColor = interpolateColor(mid, [0, 255], ['#00d9ff', '#ffbe0b']);
 
 #### Gradient Color System
 
-<<<<<<< HEAD
 -   [x] Define 5 emotional state gradients:
-=======
--   \[ \] Define 5 emotional state gradients:
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 
 ```
@@ -2154,7 +2036,6 @@ const GRADIENTS = {
 };
 ```
 
-<<<<<<< HEAD
 -   [x] Transition between gradients based on tempo and energy
     
 -   [x] Never repeat exact same gradient (add random offset to hue)
@@ -2163,16 +2044,6 @@ const GRADIENTS = {
     
 
 ### Task 7.3: Haptic Feedback System [COMPLETED]
-=======
--   \[ \] Transition between gradients based on tempo and energy
-    
--   \[ \] Never repeat exact same gradient (add random offset to hue)
-    
--   \[ \] 1-in-50 chance: Ultra-rare northern lights variant
-    
-
-### Task 7.3: Haptic Feedback System
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
 
 #### Haptic Patterns (iOS & Android)
 
@@ -2445,11 +2316,7 @@ const HAPTIC_PATTERNS = {
     
 -   \[ \] Milestone markers: R500, R1000, R2000, R5000
     
-<<<<<<< HEAD
 -   [x] Confetti animation when milestone reached
-=======
--   \[ \] Confetti animation when milestone reached
->>>>>>> 53006a51d9ee149a1bc96a7e148ed8cce43c61ac
     
 -   \[ \] Progress bar to next milestone
     
@@ -5311,3 +5178,4 @@ describe('processPayment', () => {
 - [ ] Simplified mode
 - [ ] Gesture customization
 - [x] Neurodivergent-friendly options (reduced motion support)
+
