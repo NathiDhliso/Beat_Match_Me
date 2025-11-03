@@ -1,0 +1,300 @@
+type User {
+  userId: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  profileImage: String
+  tier: UserTier!
+  phone: String
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+  stats: UserStats!
+  preferences: UserPreferences!
+}
+
+type UserStats {
+  totalRequests: Int!
+  successfulRequests: Int!
+  eventsAttended: Int!
+  genresExplored: [String!]!
+}
+
+type UserPreferences {
+  notificationsEnabled: Boolean!
+  hapticFeedback: Boolean!
+  reducedMotion: Boolean!
+}
+
+enum UserRole {
+  PERFORMER
+  AUDIENCE
+}
+
+enum UserTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+type Event {
+  eventId: ID!
+  performerId: ID!
+  performer: User
+  venueName: String!
+  venueLocation: VenueLocation!
+  startTime: AWSTimestamp!
+  endTime: AWSTimestamp!
+  status: EventStatus!
+  settings: EventSettings!
+  theme: String
+  qrCode: String
+  createdAt: AWSTimestamp!
+  totalRevenue: Float!
+  totalRequests: Int!
+}
+
+type VenueLocation {
+  address: String!
+  city: String!
+  province: String!
+  coordinates: Coordinates
+}
+
+type Coordinates {
+  lat: Float!
+  lng: Float!
+}
+
+type EventSettings {
+  basePrice: Float!
+  requestCapPerHour: Int!
+  spotlightSlotsPerBlock: Int!
+  allowDedications: Boolean!
+  allowGroupRequests: Boolean!
+}
+
+enum EventStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+type Request {
+  requestId: ID!
+  eventId: ID!
+  userId: ID!
+  user: User
+  songTitle: String!
+  artistName: String!
+  genre: String
+  status: RequestStatus!
+  requestType: RequestType!
+  price: Float!
+  queuePosition: Int
+  dedication: String
+  shoutout: String
+  submittedAt: AWSTimestamp!
+  playedAt: AWSTimestamp
+  vetoedAt: AWSTimestamp
+  transactionId: String!
+  groupRequestId: String
+  upvotes: Int!
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  PLAYING
+  COMPLETED
+  VETOED
+}
+
+enum RequestType {
+  STANDARD
+  SPOTLIGHT
+  GROUP
+}
+
+type Queue {
+  eventId: ID!
+  orderedRequests: [Request!]!
+  lastUpdated: AWSTimestamp!
+  currentlyPlaying: Request
+}
+
+type Transaction {
+  transactionId: ID!
+  userId: ID!
+  eventId: ID!
+  requestId: ID!
+  amount: Float!
+  type: TransactionType!
+  status: TransactionStatus!
+  paymentProvider: PaymentProvider!
+  providerTransactionId: String!
+  createdAt: AWSTimestamp!
+  completedAt: AWSTimestamp
+}
+
+enum TransactionType {
+  CHARGE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentProvider {
+  YOCO
+  PAYFAST
+  OZOW
+}
+
+type Achievement {
+  userId: ID!
+  badges: [Badge!]!
+  score: Int!
+  milestones: Milestones!
+}
+
+type Badge {
+  badgeId: ID!
+  name: String!
+  tier: UserTier!
+  unlockedAt: AWSTimestamp!
+}
+
+type Milestones {
+  firstRequest: AWSTimestamp
+  firstGroupRequest: AWSTimestamp
+  first10Requests: AWSTimestamp
+  first50Requests: AWSTimestamp
+}
+
+type GroupRequest {
+  groupRequestId: ID!
+  eventId: ID!
+  initiatorUserId: ID!
+  initiator: User
+  songTitle: String!
+  artistName: String!
+  targetAmount: Float!
+  currentAmount: Float!
+  contributors: [Contributor!]!
+  status: GroupRequestStatus!
+  expiresAt: AWSTimestamp!
+  createdAt: AWSTimestamp!
+  requestId: String
+}
+
+type Contributor {
+  userId: ID!
+  user: User
+  amount: Float!
+  contributedAt: AWSTimestamp!
+}
+
+enum GroupRequestStatus {
+  FUNDING
+  FUNDED
+  EXPIRED
+  COMPLETED
+}
+
+type EventConnection {
+  items: [Event!]!
+  nextToken: String
+}
+
+type Query {
+  getUser(userId: ID!): User
+  getEvent(eventId: ID!): Event
+  listActiveEvents(limit: Int, nextToken: String): EventConnection
+  getQueue(eventId: ID!): Queue
+  getRequest(requestId: ID!): Request
+  getUserRequests(userId: ID!, limit: Int): [Request!]!
+  getEventRequests(eventId: ID!, status: RequestStatus): [Request!]!
+  getTransaction(transactionId: ID!): Transaction
+  getUserTransactions(userId: ID!, limit: Int): [Transaction!]!
+  getAchievements(userId: ID!): Achievement
+  getGroupRequest(groupRequestId: ID!): GroupRequest
+  listActiveGroupRequests(eventId: ID!): [GroupRequest!]!
+}
+
+input CreateEventInput {
+  venueName: String!
+  venueAddress: String!
+  venueCity: String!
+  venueProvince: String!
+  startTime: AWSTimestamp!
+  endTime: AWSTimestamp!
+  basePrice: Float!
+  requestCapPerHour: Int!
+  spotlightSlotsPerBlock: Int!
+  allowDedications: Boolean!
+  allowGroupRequests: Boolean!
+  theme: String
+}
+
+input CreateRequestInput {
+  eventId: ID!
+  songTitle: String!
+  artistName: String!
+  genre: String
+  requestType: RequestType!
+  dedication: String
+  shoutout: String
+}
+
+input GroupRequestInput {
+  eventId: ID!
+  songTitle: String!
+  artistName: String!
+  targetAmount: Float!
+}
+
+type Mutation {
+  createUser(email: String!, name: String!, role: UserRole!): User
+  updateUser(userId: ID!, name: String, profileImage: String, phone: String): User
+  
+  createEvent(input: CreateEventInput!): Event
+  updateEventStatus(eventId: ID!, status: EventStatus!): Event
+  
+  createRequest(input: CreateRequestInput!): Request
+  updateRequestStatus(requestId: ID!, status: RequestStatus!): Request
+  vetoRequest(requestId: ID!, reason: String): Request
+  
+  reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
+  upvoteRequest(requestId: ID!): Request
+  
+  createGroupRequest(input: GroupRequestInput!): GroupRequest
+  contributeToGroupRequest(groupRequestId: ID!, amount: Float!): GroupRequest
+}
+
+type Subscription {
+  onQueueUpdate(eventId: ID!): Queue
+    @aws_subscribe(mutations: ["reorderQueue", "createRequest"])
+  
+  onRequestStatusChange(requestId: ID!): Request
+    @aws_subscribe(mutations: ["updateRequestStatus", "vetoRequest"])
+  
+  onNewRequest(eventId: ID!): Request
+    @aws_subscribe(mutations: ["createRequest"])
+  
+  onEventUpdate(eventId: ID!): Event
+    @aws_subscribe(mutations: ["updateEventStatus"])
+  
+  onGroupRequestUpdate(groupRequestId: ID!): GroupRequest
+    @aws_subscribe(mutations: ["contributeToGroupRequest"])
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
