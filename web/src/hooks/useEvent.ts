@@ -8,7 +8,7 @@ import { fetchEvent } from '../services/graphql';
 
 export interface Event {
   eventId: string;
-  performerId: string;
+  createdBy: string; // User ID who created the event
   venueName: string;
   venueLocation?: {
     address: string;
@@ -18,14 +18,6 @@ export interface Event {
   startTime: number;
   endTime: number;
   status: string;
-  settings?: {
-    basePrice: number;
-    requestCapPerHour: number;
-    spotlightSlotsPerBlock: number;
-    allowDedications: boolean;
-    allowGroupRequests: boolean;
-  };
-  qrCode?: string;
   totalRevenue?: number;
   totalRequests?: number;
 }
@@ -37,7 +29,9 @@ export function useEvent(eventId: string | null) {
 
   useEffect(() => {
     if (!eventId) {
+      setEvent(null);
       setLoading(false);
+      setError(null);
       return;
     }
 
@@ -47,16 +41,20 @@ export function useEvent(eventId: string | null) {
         console.log('🌐 Fetching event from backend:', eventId);
         
         const data = await fetchEvent(eventId);
+        
+        // Check if event exists
+        if (!data || !data.eventId) {
+          console.warn('⚠️ Event not found:', eventId);
+          setEvent(null);
+          setError('Event not found');
+          return;
+        }
+        
         console.log('✅ Event fetched successfully:', data);
         setEvent(data);
         setError(null);
       } catch (err: any) {
         console.error('❌ Failed to fetch event:', err);
-        console.error('Error details:', {
-          message: err.message,
-          errors: err.errors,
-          data: err.data
-        });
         
         // Log GraphQL errors
         if (err.errors && err.errors.length > 0) {

@@ -72,12 +72,12 @@ export const FloatingActionBubble: React.FC<FloatingBubbleProps> = ({ onMenuTogg
       >
         <button
           onClick={onMenuToggle}
-          className="relative w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 shadow-2xl backdrop-blur-lg border-2 border-white/20 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+          className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 shadow-2xl backdrop-blur-lg border-2 border-white/20 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
           style={{
             boxShadow: '0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(168, 85, 247, 0.3)',
           }}
         >
-          <Music className="w-8 h-8 text-white animate-pulse" />
+          <Music className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white animate-pulse" />
           
           {/* Pulse rings */}
           <div className="absolute inset-0 rounded-full bg-purple-500/30 animate-ping" />
@@ -130,13 +130,13 @@ const RadialMenuItem: React.FC<RadialMenuItemProps> = ({ icon, label, angle, dis
     >
       <button
         onClick={onClick}
-        className={`w-14 h-14 rounded-full bg-gradient-to-br ${color} shadow-xl backdrop-blur-lg border-2 border-white/30 hover:scale-110 transition-all duration-300 flex items-center justify-center group relative`}
+        className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br ${color} shadow-xl backdrop-blur-lg border-2 border-white/30 hover:scale-110 transition-all duration-300 flex items-center justify-center group relative`}
         style={{
           boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
         }}
       >
         {icon}
-        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-white font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm text-white font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
           {label}
         </span>
       </button>
@@ -167,25 +167,24 @@ export const StatusArc: React.FC<StatusArcProps> = ({ mode, revenue, requestCoun
         <div className={`h-full bg-gradient-to-r ${colors[mode]} animate-pulse-glow`} />
       </div>
 
-      {/* Revenue Counter - Top Right */}
-      <div className="fixed top-4 right-4 z-40">
-        <div className="bg-black/50 backdrop-blur-lg rounded-full px-6 py-3 border border-yellow-500/50">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-yellow-400 animate-pulse" />
-            <span className="text-2xl font-bold text-yellow-400 tabular-nums">
-              R{revenue.toFixed(2)}
+      {/* Counters - Top Left Side by Side */}
+      <div className="fixed top-2 sm:top-4 md:top-6 left-2 sm:left-4 md:left-6 z-40 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
+        {/* Request Counter */}
+        <div className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border border-blue-500/50">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Music className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-blue-400 animate-pulse" />
+            <span className="text-base sm:text-xl md:text-2xl font-bold text-blue-400 tabular-nums">
+              {requestCount}
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Request Counter - Top Left */}
-      <div className="fixed top-4 left-4 z-40">
-        <div className="bg-black/50 backdrop-blur-lg rounded-full px-6 py-3 border border-blue-500/50">
-          <div className="flex items-center gap-2">
-            <Music className="w-5 h-5 text-blue-400 animate-pulse" />
-            <span className="text-2xl font-bold text-blue-400 tabular-nums">
-              {requestCount}
+        {/* Revenue Counter */}
+        <div className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border border-yellow-500/50">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-400 animate-pulse" />
+            <span className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400 tabular-nums">
+              R{revenue.toFixed(2)}
             </span>
           </div>
         </div>
@@ -218,11 +217,11 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ reques
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-30">
-      <div className="relative w-96 h-96 pointer-events-auto">
+      <div className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] pointer-events-auto">
         {/* Center Circle */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl">
-            <Music className="w-16 h-16 text-white" />
+          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl">
+            <Music className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white" />
           </div>
         </div>
 
@@ -258,7 +257,7 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ reques
               }}
             >
               <div
-                className={`w-20 h-20 rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group`}
+                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group`}
                 onMouseDown={(e) => {
                   // Swipe down to veto
                   const startY = e.clientY;
@@ -274,12 +273,12 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ reques
                   }, { once: true });
                 }}
               >
-                <span className="text-white text-xs font-bold">#{request.position}</span>
-                <Music className="w-6 h-6 text-white mt-1" />
+                <span className="text-white text-xs sm:text-sm font-bold">#{request.position}</span>
+                <Music className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white mt-1" />
                 
                 {/* Tooltip */}
-                <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-lg rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                  <p className="text-white text-xs font-semibold">{request.songTitle}</p>
+                <div className="absolute -bottom-12 sm:-bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-lg rounded-lg px-2 py-1 sm:px-3 sm:py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  <p className="text-white text-xs sm:text-sm font-semibold">{request.songTitle}</p>
                   <p className="text-gray-400 text-xs">{request.artistName}</p>
                   <p className="text-xs text-gray-500 mt-1">Swipe down to veto</p>
                 </div>

@@ -1,0 +1,24 @@
+## Query.getQueue Request Mapping Template
+## Fetches the queue for a specific DJ set
+
+{
+  "version": "2017-02-28",
+  "operation": "Query",
+  "index": "setId-submittedAt-index",
+  "query": {
+    "expression": "setId = :setId",
+    "expressionValues": {
+      ":setId": $util.dynamodb.toDynamoDBJson($ctx.args.setId)
+    }
+  },
+  "filter": {
+    "expression": "#status <> :vetoed",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":vetoed": $util.dynamodb.toDynamoDBJson("VETOED")
+    }
+  },
+  "scanIndexForward": true
+}

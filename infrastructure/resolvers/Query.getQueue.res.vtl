@@ -1,0 +1,31 @@
+## Query.getQueue Response Mapping Template
+## Returns the queue with ordered requests
+
+#set($orderedRequests = [])
+#set($position = 1)
+
+#foreach($item in $ctx.result.items)
+  #set($request = {
+    "requestId": $item.requestId,
+    "songTitle": $item.songTitle,
+    "artistName": $item.artistName,
+    "userName": $item.userName,
+    "userTier": $item.userTier,
+    "requestType": $item.requestType,
+    "queuePosition": $position,
+    "upvotes": $util.defaultIfNull($item.upvotes, 0),
+    "dedication": $item.dedication,
+    "status": $item.status
+  })
+  $util.qr($orderedRequests.add($request))
+  #set($position = $position + 1)
+#end
+
+{
+  "setId": "$ctx.args.setId",
+  "eventId": "$ctx.result.items[0].eventId",
+  "performerId": "$ctx.result.items[0].performerId",
+  "orderedRequests": $util.toJson($orderedRequests),
+  "lastUpdated": $util.time.nowEpochMilliSeconds(),
+  "currentlyPlaying": null
+}

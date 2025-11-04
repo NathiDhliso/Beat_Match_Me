@@ -1,0 +1,308 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Achievement {
+  badges: [Badge!]!
+  milestones: Milestones!
+  score: Int!
+  userId: ID!
+}
+
+type Badge {
+  badgeId: ID!
+  name: String!
+  tier: UserTier!
+  unlockedAt: AWSTimestamp!
+}
+
+type Contributor {
+  amount: Float!
+  contributedAt: AWSTimestamp!
+  user: User
+  userId: ID!
+}
+
+type Coordinates {
+  lat: Float!
+  lng: Float!
+}
+
+type Event {
+  createdAt: AWSTimestamp!
+  endTime: AWSTimestamp!
+  eventId: ID!
+  performer: User
+  performerId: ID!
+  qrCode: String
+  settings: EventSettings!
+  startTime: AWSTimestamp!
+  status: EventStatus!
+  theme: String
+  totalRequests: Int!
+  totalRevenue: Float!
+  venueLocation: VenueLocation!
+  venueName: String!
+}
+
+type EventConnection {
+  items: [Event!]!
+  nextToken: String
+}
+
+type EventSettings {
+  allowDedications: Boolean!
+  allowGroupRequests: Boolean!
+  basePrice: Float!
+  requestCapPerHour: Int!
+  spotlightSlotsPerBlock: Int!
+}
+
+type GroupRequest {
+  artistName: String!
+  contributors: [Contributor!]!
+  createdAt: AWSTimestamp!
+  currentAmount: Float!
+  eventId: ID!
+  expiresAt: AWSTimestamp!
+  groupRequestId: ID!
+  initiator: User
+  initiatorUserId: ID!
+  requestId: String
+  songTitle: String!
+  status: GroupRequestStatus!
+  targetAmount: Float!
+}
+
+type Milestones {
+  first10Requests: AWSTimestamp
+  first50Requests: AWSTimestamp
+  firstGroupRequest: AWSTimestamp
+  firstRequest: AWSTimestamp
+}
+
+type Mutation {
+  contributeToGroupRequest(amount: Float!, groupRequestId: ID!): GroupRequest
+  createEvent(input: CreateEventInput!): Event
+  createGroupRequest(input: GroupRequestInput!): GroupRequest
+  createRequest(input: CreateRequestInput!): Request
+  createUser(email: String!, name: String!, role: UserRole!): User
+  reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
+  updateEventStatus(eventId: ID!, status: EventStatus!): Event
+  updateRequestStatus(requestId: ID!, status: RequestStatus!): Request
+  updateUser(name: String, phone: String, profileImage: String, userId: ID!): User
+  upvoteRequest(requestId: ID!): Request
+  vetoRequest(reason: String, requestId: ID!): Request
+}
+
+type Query {
+  getAchievements(userId: ID!): Achievement
+  getEvent(eventId: ID!): Event
+  getEventRequests(eventId: ID!, status: RequestStatus): [Request!]!
+  getEventTracklist(eventId: ID!): [Track!]!
+  getGroupRequest(groupRequestId: ID!): GroupRequest
+  getQueue(eventId: ID!): Queue
+  getRequest(requestId: ID!): Request
+  getTransaction(transactionId: ID!): Transaction
+  getUser(userId: ID!): User
+  getUserRequests(limit: Int, userId: ID!): [Request!]!
+  getUserTransactions(limit: Int, userId: ID!): [Transaction!]!
+  listActiveEvents(limit: Int, nextToken: String): EventConnection
+  listActiveGroupRequests(eventId: ID!): [GroupRequest!]!
+}
+
+type Queue {
+  currentlyPlaying: Request
+  eventId: ID!
+  lastUpdated: AWSTimestamp!
+  orderedRequests: [Request!]!
+}
+
+type Request {
+  artistName: String!
+  dedication: String
+  eventId: ID!
+  genre: String
+  groupRequestId: String
+  playedAt: AWSTimestamp
+  price: Float!
+  queuePosition: Int
+  requestId: ID!
+  requestType: RequestType!
+  shoutout: String
+  songTitle: String!
+  status: RequestStatus!
+  submittedAt: AWSTimestamp!
+  transactionId: String!
+  upvotes: Int!
+  user: User
+  userId: ID!
+  vetoedAt: AWSTimestamp
+}
+
+type Subscription {
+  onEventUpdate(eventId: ID!): Event @aws_subscribe(mutations : ["updateEventStatus"])
+  onGroupRequestUpdate(groupRequestId: ID!): GroupRequest @aws_subscribe(mutations : ["contributeToGroupRequest"])
+  onNewRequest(eventId: ID!): Request @aws_subscribe(mutations : ["createRequest"])
+  onQueueUpdate(eventId: ID!): Queue @aws_subscribe(mutations : ["reorderQueue"])
+  onRequestStatusChange(requestId: ID!): Request @aws_subscribe(mutations : ["updateRequestStatus", "vetoRequest"])
+}
+
+type Track {
+  albumArt: String
+  artist: String!
+  basePrice: Float!
+  createdAt: AWSTimestamp!
+  duration: Int
+  eventId: ID!
+  genre: String
+  isEnabled: Boolean!
+  performerId: ID!
+  title: String!
+  trackId: ID!
+  updatedAt: AWSTimestamp!
+}
+
+type Transaction {
+  amount: Float!
+  completedAt: AWSTimestamp
+  createdAt: AWSTimestamp!
+  eventId: ID!
+  paymentProvider: PaymentProvider!
+  providerTransactionId: String!
+  requestId: ID!
+  status: TransactionStatus!
+  transactionId: ID!
+  type: TransactionType!
+  userId: ID!
+}
+
+type User {
+  createdAt: AWSTimestamp!
+  email: String!
+  name: String!
+  phone: String
+  preferences: UserPreferences!
+  profileImage: String
+  role: UserRole!
+  stats: UserStats!
+  tier: UserTier!
+  updatedAt: AWSTimestamp!
+  userId: ID!
+}
+
+type UserPreferences {
+  hapticFeedback: Boolean!
+  notificationsEnabled: Boolean!
+  reducedMotion: Boolean!
+}
+
+type UserStats {
+  eventsAttended: Int!
+  genresExplored: [String!]!
+  successfulRequests: Int!
+  totalRequests: Int!
+}
+
+type VenueLocation {
+  address: String!
+  city: String!
+  coordinates: Coordinates
+  province: String!
+}
+
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  SCHEDULED
+}
+
+enum GroupRequestStatus {
+  COMPLETED
+  EXPIRED
+  FUNDED
+  FUNDING
+}
+
+enum PaymentProvider {
+  OZOW
+  PAYFAST
+  YOCO
+}
+
+enum RequestStatus {
+  APPROVED
+  COMPLETED
+  PENDING
+  PLAYING
+  VETOED
+}
+
+enum RequestType {
+  GROUP
+  SPOTLIGHT
+  STANDARD
+}
+
+enum TransactionStatus {
+  COMPLETED
+  FAILED
+  PENDING
+}
+
+enum TransactionType {
+  CHARGE
+  REFUND
+}
+
+enum UserRole {
+  AUDIENCE
+  PERFORMER
+}
+
+enum UserTier {
+  BRONZE
+  GOLD
+  PLATINUM
+  SILVER
+}
+
+input CreateEventInput {
+  allowDedications: Boolean
+  allowGroupRequests: Boolean
+  basePrice: Float
+  endTime: AWSTimestamp!
+  requestCapPerHour: Int
+  spotlightSlotsPerBlock: Int
+  startTime: AWSTimestamp!
+  status: EventStatus
+  theme: String
+  venueLocation: VenueLocationInput
+  venueName: String!
+}
+
+input CreateRequestInput {
+  artistName: String!
+  dedication: String
+  eventId: ID!
+  genre: String
+  requestType: RequestType!
+  shoutout: String
+  songTitle: String!
+}
+
+input GroupRequestInput {
+  artistName: String!
+  eventId: ID!
+  songTitle: String!
+  targetAmount: Float!
+}
+
+input VenueLocationInput {
+  address: String
+  city: String
+  province: String
+}

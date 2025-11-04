@@ -51,23 +51,23 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-3xl font-bold text-white">My Library</h2>
-          <div className="flex gap-3">
+      <div className="p-4 sm:p-6 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">My Library</h2>
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowSongSearch(true)}
-              className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full text-white font-semibold hover:scale-105 transition-all shadow-lg flex items-center gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2"
             >
-              <Globe className="w-5 h-5" />
-              Search Online
+              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <span className="whitespace-nowrap">Search Online</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white font-semibold hover:scale-105 transition-all shadow-lg flex items-center gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2"
             >
-              <Upload className="w-5 h-5" />
-              Add Manually
+              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <span className="whitespace-nowrap">Add Manual</span>
             </button>
           </div>
         </div>

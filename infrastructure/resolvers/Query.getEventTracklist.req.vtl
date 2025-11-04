@@ -1,0 +1,14 @@
+## Query.getEventTracklist Request Mapping Template
+## Fetches all songs available for a specific event
+
+{
+  "version": "2017-02-28",
+  "operation": "Query",
+  "index": "PerformerIndex",
+  "query": {
+    "expression": "performerId = :performerId",
+    "expressionValues": {
+      ":performerId": $util.dynamodb.toDynamoDBJson($ctx.source.performerId)
+    }
+  }
+}

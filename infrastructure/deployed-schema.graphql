@@ -1,0 +1,59 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Event {
+  createdAt: AWSTimestamp!
+  endTime: AWSTimestamp!
+  eventId: ID!
+  performerId: ID!
+  qrCode: String
+  startTime: AWSTimestamp!
+  status: String!
+  venueName: String!
+}
+
+type Mutation {
+  createEvent(input: CreateEventInput!): Event
+  uploadTracklist(performerId: ID!, songs: [SongInput!]!): UploadResponse
+}
+
+type Query {
+  getEvent(eventId: ID!): Event
+  listActiveEvents: [Event!]!
+}
+
+type Song {
+  artist: String!
+  basePrice: Float!
+  genre: String!
+  isEnabled: Boolean!
+  performerId: ID!
+  songId: ID!
+  title: String!
+}
+
+type Subscription {
+  onEventCreated: Event @aws_subscribe(mutations : ["createEvent"])
+}
+
+type UploadResponse {
+  message: String
+  success: Boolean!
+}
+
+input CreateEventInput {
+  endTime: AWSTimestamp!
+  startTime: AWSTimestamp!
+  status: String!
+  venueName: String!
+}
+
+input SongInput {
+  artist: String!
+  basePrice: Float!
+  genre: String!
+  title: String!
+}

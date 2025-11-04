@@ -1,0 +1,10 @@
+## Mutation.reorderQueue Response Mapping Template
+## Returns the updated queue
+
+#set($result = {
+  "setId": "$ctx.args.setId",
+  "orderedRequests": [],
+  "lastUpdated": $util.time.nowEpochMilliSeconds()
+})
+
+$util.toJson($result)

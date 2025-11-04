@@ -1,0 +1,30 @@
+## Mutation.createRequest Request Mapping Template
+## Creates a new song request for a DJ set
+
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "requestId": $util.dynamodb.toDynamoDBJson($util.autoId())
+  },
+  "attributeValues": {
+    "eventId": $util.dynamodb.toDynamoDBJson($ctx.args.input.eventId),
+    "setId": $util.dynamodb.toDynamoDBJson($ctx.args.input.setId),
+    "performerId": $util.dynamodb.toDynamoDBJson($ctx.args.input.performerId),
+    "userId": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    "userName": $util.dynamodb.toDynamoDBJson($ctx.identity.claims.name),
+    "userTier": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.identity.claims.tier, "BRONZE")),
+    "songTitle": $util.dynamodb.toDynamoDBJson($ctx.args.input.songTitle),
+    "artistName": $util.dynamodb.toDynamoDBJson($ctx.args.input.artistName),
+    "genre": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.genre, "")),
+    "status": $util.dynamodb.toDynamoDBJson("PENDING"),
+    "requestType": $util.dynamodb.toDynamoDBJson($ctx.args.input.requestType),
+    "price": $util.dynamodb.toDynamoDBJson(50.0),
+    "queuePosition": $util.dynamodb.toDynamoDBJson(0),
+    "dedication": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.dedication, "")),
+    "shoutout": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.shoutout, "")),
+    "submittedAt": $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()),
+    "transactionId": $util.dynamodb.toDynamoDBJson("TXN-" + $util.autoId()),
+    "upvotes": $util.dynamodb.toDynamoDBJson(0)
+  }
+}

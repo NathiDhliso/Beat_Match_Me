@@ -39,19 +39,33 @@ enum UserTier {
 
 type Event {
   eventId: ID!
-  performerId: ID!
-  performer: User
   venueName: String!
-  venueLocation: VenueLocation!
+  venueLocation: VenueLocation
   startTime: AWSTimestamp!
   endTime: AWSTimestamp!
   status: EventStatus!
-  settings: EventSettings!
   theme: String
-  qrCode: String
+  createdBy: ID!
   createdAt: AWSTimestamp!
   totalRevenue: Float!
   totalRequests: Int!
+  djSets: [DJSet!]!
+}
+
+type DJSet {
+  setId: ID!
+  eventId: ID!
+  performerId: ID!
+  performer: User
+  setStartTime: AWSTimestamp!
+  setEndTime: AWSTimestamp!
+  status: SetStatus!
+  settings: EventSettings!
+  isAcceptingRequests: Boolean!
+  qrCode: String
+  revenue: Float!
+  requestCount: Int!
+  createdAt: AWSTimestamp!
 }
 
 type VenueLocation {
@@ -81,11 +95,22 @@ enum EventStatus {
   CANCELLED
 }
 
+enum SetStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 type Request {
   requestId: ID!
   eventId: ID!
+  setId: ID!
+  performerId: ID!
   userId: ID!
   user: User
+  userName: String
+  userTier: UserTier
   songTitle: String!
   artistName: String!
   genre: String
@@ -118,7 +143,9 @@ enum RequestType {
 }
 
 type Queue {
+  setId: ID!
   eventId: ID!
+  performerId: ID!
   orderedRequests: [Request!]!
   lastUpdated: AWSTimestamp!
   currentlyPlaying: Request
@@ -211,14 +238,34 @@ type EventConnection {
   nextToken: String
 }
 
+type Track {
+  trackId: ID!
+  eventId: ID!
+  performerId: ID!
+  title: String!
+  artist: String!
+  genre: String
+  albumArt: String
+  duration: Int
+  basePrice: Float!
+  isEnabled: Boolean!
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+}
+
 type Query {
   getUser(userId: ID!): User
   getEvent(eventId: ID!): Event
   listActiveEvents(limit: Int, nextToken: String): EventConnection
-  getQueue(eventId: ID!): Queue
+  getDJSet(setId: ID!): DJSet
+  listEventDJSets(eventId: ID!): [DJSet!]!
+  listPerformerSets(performerId: ID!, limit: Int): [DJSet!]!
+  getQueue(setId: ID!): Queue
+  getEventTracklist(eventId: ID!): [Track!]!
   getRequest(requestId: ID!): Request
   getUserRequests(userId: ID!, limit: Int): [Request!]!
   getEventRequests(eventId: ID!, status: RequestStatus): [Request!]!
+  getSetRequests(setId: ID!, status: RequestStatus): [Request!]!
   getTransaction(transactionId: ID!): Transaction
   getUserTransactions(userId: ID!, limit: Int): [Transaction!]!
   getAchievements(userId: ID!): Achievement
@@ -238,16 +285,23 @@ input CreateEventInput {
   startTime: AWSTimestamp!
   endTime: AWSTimestamp!
   status: EventStatus
+  theme: String
+}
+
+input CreateDJSetInput {
+  eventId: ID!
+  setStartTime: AWSTimestamp!
+  setEndTime: AWSTimestamp!
   basePrice: Float
   requestCapPerHour: Int
   spotlightSlotsPerBlock: Int
   allowDedications: Boolean
   allowGroupRequests: Boolean
-  theme: String
 }
 
 input CreateRequestInput {
   eventId: ID!
+  setId: ID!
   songTitle: String!
   artistName: String!
   genre: String
@@ -270,11 +324,15 @@ type Mutation {
   createEvent(input: CreateEventInput!): Event
   updateEventStatus(eventId: ID!, status: EventStatus!): Event
   
+  createDJSet(input: CreateDJSetInput!): DJSet
+  updateDJSetStatus(setId: ID!, status: SetStatus!): DJSet
+  toggleSetAvailability(setId: ID!, isAcceptingRequests: Boolean!): DJSet
+  
   createRequest(input: CreateRequestInput!): Request
   updateRequestStatus(requestId: ID!, status: RequestStatus!): Request
   vetoRequest(requestId: ID!, reason: String): Request
   
-  reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
+  reorderQueue(setId: ID!, orderedRequestIds: [ID!]!): Queue
   upvoteRequest(requestId: ID!): Request
   
   createGroupRequest(input: GroupRequestInput!): GroupRequest
@@ -283,7 +341,7 @@ type Mutation {
 
 type Subscription {
   onQueueUpdate(eventId: ID!): Queue
-    @aws_subscribe(mutations: ["reorderQueue", "createRequest"])
+    @aws_subscribe(mutations: ["reorderQueue"])
   
   onRequestStatusChange(requestId: ID!): Request
     @aws_subscribe(mutations: ["updateRequestStatus", "vetoRequest"])

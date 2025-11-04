@@ -25,6 +25,7 @@ export const DJPortalOrbital: React.FC = () => {
   const { user, logout } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   
   // Settings state
@@ -33,13 +34,111 @@ export const DJPortalOrbital: React.FC = () => {
   const [spotlightSlots, setSpotlightSlots] = useState(1);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
   
-  // Event management state
+  // DJ Set management state
   const [showEventCreator, setShowEventCreator] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [mySets, setMySets] = useState<any[]>([]);
+  const [showSetSelector, setShowSetSelector] = useState(false);
+
+  // Load performer's DJ sets on mount
+  useEffect(() => {
+    const loadPerformerSets = async () => {
+      if (!user?.userId) {
+        console.log('❌ No userId available yet');
+        return;
+      }
+
+      console.log('🔍 Loading DJ sets for performer:', user.userId);
+
+      try {
+        const { generateClient } = await import('aws-amplify/api');
+        const client = generateClient();
+        
+        console.log('📡 Querying listPerformerSets...');
+        
+        const response: any = await client.graphql({
+          query: `
+            query ListPerformerSets($performerId: ID!) {
+              listPerformerSets(performerId: $performerId) {
+                setId
+                eventId
+                performerId
+                setStartTime
+                setEndTime
+                status
+                isAcceptingRequests
+              }
+            }
+          `,
+          variables: { performerId: user.userId }
+        });
+
+        console.log('✅ Raw response:', response);
+        const performerSets = response.data.listPerformerSets || [];
+        console.log(`📊 Found ${performerSets.length} sets:`, performerSets);
+        
+        // Fetch event details for each set to get venue name
+        const setsWithEvents = await Promise.all(
+          performerSets.map(async (set: any) => {
+            try {
+              const eventResponse: any = await client.graphql({
+                query: `
+                  query GetEvent($eventId: ID!) {
+                    getEvent(eventId: $eventId) {
+                      eventId
+                      venueName
+                      venueLocation {
+                        address
+                        city
+                      }
+                    }
+                  }
+                `,
+                variables: { eventId: set.eventId }
+              });
+              return {
+                ...set,
+                event: eventResponse.data.getEvent
+              };
+            } catch (error) {
+              console.error(`❌ Failed to fetch event ${set.eventId}:`, error);
+              return set;
+            }
+          })
+        );
+        
+        console.log('📋 Sets with event details:', setsWithEvents);
+        setMySets(setsWithEvents);
+        
+        // Auto-select most recent ACTIVE set if no set selected
+        if (!currentSetId && performerSets.length > 0) {
+          const activeSets = performerSets
+            .filter((s: any) => s.status === 'ACTIVE' || s.status === 'SCHEDULED')
+            .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime());
+          
+          if (activeSets.length > 0) {
+            console.log('🎵 Auto-loading most recent set:', activeSets[0].setId);
+            setCurrentSetId(activeSets[0].setId);
+            setCurrentEventId(activeSets[0].eventId);
+          } else {
+            console.log('⚠️ No active/scheduled sets found');
+            // Don't set any IDs if no active sets
+            setCurrentSetId(null);
+            setCurrentEventId(null);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to load performer sets:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+      }
+    };
+
+    loadPerformerSets();
+  }, [user?.userId]); // Removed currentSetId dependency to allow reloading
 
   // Fetch real data
   const { event: currentEvent } = useEvent(currentEventId);
-  const { queue: queueData } = useQueue(currentEventId || '');
+  const { queue: queueData } = useQueue(currentSetId);
   const { tracklist } = useTracklist(currentEventId);
 
   // Transform data
@@ -62,14 +161,7 @@ export const DJPortalOrbital: React.FC = () => {
     }))
   );
 
-  const totalRevenue = queueRequests.reduce((sum: number, req: any) => sum + 20, 0);
-
-  useEffect(() => {
-    const savedEventId = localStorage.getItem('djCurrentEventId');
-    if (savedEventId) {
-      setCurrentEventId(savedEventId);
-    }
-  }, []);
+  const totalRevenue = queueRequests.reduce((sum: number) => sum + 20, 0);
 
   // Update tracks when tracklist changes
   useEffect(() => {
@@ -116,14 +208,62 @@ export const DJPortalOrbital: React.FC = () => {
     // TODO: Implement veto with GraphQL mutation
   };
 
-  const handleEventCreated = (eventId: string) => {
+  const handleEventCreated = async (eventId: string, setId?: string) => {
+    console.log('✅ Event created callback:', { eventId, setId });
     setCurrentEventId(eventId);
-    localStorage.setItem('djCurrentEventId', eventId);
+    if (setId) {
+      setCurrentSetId(setId);
+      
+      // Manually add the new set to the list (optimistic update)
+      const newSet = {
+        setId,
+        eventId,
+        performerId: user?.userId,
+        setStartTime: Date.now(),
+        setEndTime: Date.now() + (2 * 60 * 60 * 1000), // +2 hours
+        status: 'SCHEDULED',
+        isAcceptingRequests: true,
+        event: null // Will be fetched on next load
+      };
+      
+      setMySets(prev => [...prev, newSet]);
+      
+      // Fetch the event details for the new set
+      try {
+        const { generateClient } = await import('aws-amplify/api');
+        const client = generateClient();
+        
+        const eventResponse: any = await client.graphql({
+          query: `
+            query GetEvent($eventId: ID!) {
+              getEvent(eventId: $eventId) {
+                eventId
+                venueName
+                venueLocation {
+                  address
+                  city
+                }
+              }
+            }
+          `,
+          variables: { eventId }
+        });
+        
+        // Update the set with event details
+        setMySets(prev => prev.map(s => 
+          s.setId === setId 
+            ? { ...s, event: eventResponse.data.getEvent }
+            : s
+        ));
+      } catch (error) {
+        console.error('Failed to fetch event details:', error);
+      }
+    }
   };
 
-  const handleEndEvent = () => {
-    if (confirm('Are you sure you want to end this event?')) {
-      localStorage.removeItem('djCurrentEventId');
+  const handleEndSet = () => {
+    if (confirm('Are you sure you want to end this DJ set?')) {
+      setCurrentSetId(null);
       setCurrentEventId(null);
     }
   };
@@ -200,31 +340,116 @@ export const DJPortalOrbital: React.FC = () => {
         {/* Logout Button - Top Right Corner */}
         <button
           onClick={logout}
-          className="fixed top-4 right-20 z-40 p-3 bg-black/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all group"
+          className="fixed top-2 right-2 sm:top-4 sm:right-4 z-40 p-2 sm:p-3 bg-black/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all group"
           title="Logout"
         >
-          <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-300" />
+          <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 group-hover:text-red-300" />
         </button>
+
+        {/* DJ Set Selector - Bottom Left Corner */}
+        <div className="fixed bottom-20 sm:bottom-6 left-2 sm:left-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none">
+          <button
+            onClick={() => setShowSetSelector(!showSetSelector)}
+            className="px-2.5 py-2 sm:px-4 sm:py-3 bg-black/50 backdrop-blur-lg rounded-full border border-purple-500/50 hover:bg-purple-500/20 transition-all flex items-center gap-1 sm:gap-2 text-white shadow-lg"
+          >
+            <Music className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium truncate max-w-[120px] sm:max-w-none">
+              {mySets.length > 0 
+                ? (mySets.find(s => s.setId === currentSetId)?.event?.venueName || 'Select Set')
+                : 'My Sets'}
+            </span>
+            <span className="text-xs text-gray-400 flex-shrink-0">({mySets.length})</span>
+          </button>
+
+          {/* DJ Set Dropdown */}
+          {showSetSelector && (
+            <div className="absolute bottom-full mb-2 left-0 w-[calc(100vw-1rem)] sm:w-80 max-h-[60vh] sm:max-h-[70vh] bg-black/90 backdrop-blur-lg rounded-2xl border border-purple-500/30 shadow-2xl overflow-hidden">
+              <div className="p-3 sm:p-4 border-b border-purple-500/30">
+                <h3 className="text-white font-semibold text-sm sm:text-base">Your DJ Sets</h3>
+                <p className="text-xs text-gray-400">
+                  {mySets.length > 0 ? 'Switch between sets' : 'Create your first event'}
+                </p>
+              </div>
+              
+              {mySets.length > 0 ? (
+                <div className="overflow-y-auto max-h-[calc(60vh-8rem)] sm:max-h-[calc(70vh-8rem)]">
+                  {mySets
+                    .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime())
+                    .map((set: any) => {
+                      const startTime = new Date(set.setStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      const endTime = new Date(set.setEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      
+                      return (
+                        <button
+                          key={set.setId}
+                          onClick={() => {
+                            setCurrentSetId(set.setId);
+                            setCurrentEventId(set.eventId);
+                            setShowSetSelector(false);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left hover:bg-purple-500/20 active:bg-purple-500/30 transition-all border-b border-gray-800/50 ${
+                            currentSetId === set.setId ? 'bg-purple-500/30' : ''
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-white font-medium text-xs sm:text-sm truncate">
+                                {set.event?.venueName || 'Unknown Venue'}
+                              </h4>
+                              <p className="text-xs text-gray-400 truncate">
+                                {startTime} - {endTime} • {set.status}
+                              </p>
+                            </div>
+                            {currentSetId === set.setId && (
+                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <Music className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <p className="text-gray-400 text-sm mb-4">No events yet</p>
+                  <p className="text-gray-500 text-xs">Create your first event to start accepting requests</p>
+                </div>
+              )}
+              
+              <button
+                onClick={() => {
+                  setShowEventCreator(true);
+                  setShowSetSelector(false);
+                }}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-xs sm:text-sm transition-all"
+              >
+                + Create New Event
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Main Content Area */}
         <div className="h-screen w-full">
           {/* Queue View - Circular Visualizer */}
           {currentView === 'queue' && (
             <div className="h-full flex flex-col items-center justify-center">
-              {!currentEventId ? (
-                // No Event - Show Create Button
+              {!currentSetId ? (
+                // No Set - Show Create Button
                 <div className="text-center max-w-md">
                   <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center animate-pulse-glow">
                     <span className="text-6xl">🎵</span>
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-4">Ready to Start?</h2>
-                  <p className="text-gray-400 mb-8">Create an event to begin accepting requests</p>
+                  <p className="text-gray-400 mb-8">Create an event and DJ set to begin accepting requests</p>
                   
                   <button
                     onClick={() => setShowEventCreator(true)}
                     className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-semibold text-lg transition-all shadow-lg"
                   >
-                    Create Event
+                    Create Event + Set
                   </button>
                   <p className="text-sm text-gray-500 mt-6">Swipe down to manage your library first</p>
                 </div>
@@ -244,10 +469,10 @@ export const DJPortalOrbital: React.FC = () => {
                   <p className="text-gray-400 mb-4">Requests will appear here as they come in</p>
                   
                   {/* Event Info */}
-                  {currentEvent && (
+                  {currentEvent && currentSetId && (
                     <div className="bg-white/5 rounded-xl p-4 mb-6">
                       <p className="text-white font-semibold text-lg">{currentEvent.venueName}</p>
-                      <p className="text-gray-400 text-sm">Event ID: {currentEventId.slice(0, 8)}...</p>
+                      <p className="text-gray-400 text-sm">Set ID: {currentSetId.slice(0, 8)}...</p>
                     </div>
                   )}
                   
@@ -261,10 +486,10 @@ export const DJPortalOrbital: React.FC = () => {
                       Show QR Code
                     </button>
                     <button
-                      onClick={handleEndEvent}
+                      onClick={handleEndSet}
                       className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white transition-all"
                     >
-                      End Event
+                      End Set
                     </button>
                   </div>
                   
@@ -276,7 +501,7 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Library View */}
           {currentView === 'library' && (
-            <div className="h-full pt-20 pb-32 px-4">
+            <div className="h-full pt-20 pb-20 px-4 overflow-hidden">
               <div className="max-w-6xl mx-auto h-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
                 <DJLibrary
                   tracks={tracks}
@@ -286,7 +511,6 @@ export const DJPortalOrbital: React.FC = () => {
                   onToggleTrack={handleToggleTrack}
                 />
               </div>
-              <p className="text-center text-gray-400 text-sm mt-4">Swipe up to view queue</p>
             </div>
           )}
 

@@ -1,0 +1,34 @@
+## Mutation.createEvent Request Mapping Template
+## Creates a new event (venue/night) - not tied to specific performer
+
+## Generate unique event ID
+#set($eventId = $util.autoId())
+
+## Get authenticated user ID (event creator)
+#set($createdBy = $ctx.identity.sub)
+
+## Get current timestamp
+#set($now = $util.time.nowEpochMilliSeconds())
+
+## Prepare the item to put into DynamoDB
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "eventId": $util.dynamodb.toDynamoDBJson($eventId)
+  },
+  "attributeValues": {
+    "createdBy": $util.dynamodb.toDynamoDBJson($createdBy),
+    "venueName": $util.dynamodb.toDynamoDBJson($ctx.arguments.input.venueName),
+    #if($ctx.arguments.input.venueLocation)
+    "venueLocation": $util.dynamodb.toDynamoDBJson($ctx.arguments.input.venueLocation),
+    #end
+    "startTime": $util.dynamodb.toDynamoDBJson($ctx.arguments.input.startTime),
+    "endTime": $util.dynamodb.toDynamoDBJson($ctx.arguments.input.endTime),
+    "status": $util.dynamodb.toDynamoDBJson($ctx.arguments.input.status),
+    "totalRevenue": $util.dynamodb.toDynamoDBJson(0),
+    "totalRequests": $util.dynamodb.toDynamoDBJson(0),
+    "createdAt": $util.dynamodb.toDynamoDBJson($now),
+    "updatedAt": $util.dynamodb.toDynamoDBJson($now)
+  }
+}

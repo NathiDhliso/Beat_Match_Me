@@ -1,0 +1,21 @@
+## Mutation.createDJSet Response Mapping Template
+## Returns the created DJ set
+
+#if($ctx.error)
+  $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+## Return the created DJ set
+{
+  "setId": "$ctx.result.setId",
+  "eventId": "$ctx.result.eventId",
+  "performerId": "$ctx.result.performerId",
+  "setStartTime": $ctx.result.setStartTime,
+  "setEndTime": $ctx.result.setEndTime,
+  "status": "$ctx.result.status",
+  "settings": $util.toJson($ctx.result.settings),
+  "isAcceptingRequests": $ctx.result.isAcceptingRequests,
+  "revenue": $ctx.result.revenue,
+  "requestCount": $ctx.result.requestCount,
+  "createdAt": $ctx.result.createdAt
+}

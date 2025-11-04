@@ -27,12 +27,14 @@ interface Song {
   albumArt?: string;
 }
 
-type ViewState = 'discovery' | 'browsing' | 'requesting' | 'waiting' | 'playing';
+type ViewState = 'discovery' | 'lineup' | 'browsing' | 'requesting' | 'waiting' | 'playing';
 
 export const UserPortalInnovative: React.FC = () => {
   const { user, logout } = useAuth();
   const [viewState, setViewState] = useState<ViewState>('discovery');
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
+  const [currentSetId, setCurrentSetId] = useState<string | null>(null);
+  const [djSets, setDjSets] = useState<any[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showLockedIn, setShowLockedIn] = useState(false);
   const [myRequestPosition, setMyRequestPosition] = useState<number | null>(null);
@@ -40,7 +42,7 @@ export const UserPortalInnovative: React.FC = () => {
 
   // Fetch real data
   const { event: currentEvent } = useEvent(currentEventId);
-  const { queue } = useQueue(currentEventId || '');
+  const { queue } = useQueue(currentSetId);
   const { tracklist, loading: tracklistLoading } = useTracklist(currentEventId);
 
   // Fetch active events from backend
@@ -62,11 +64,20 @@ export const UserPortalInnovative: React.FC = () => {
           query: `
             query ListActiveEvents {
               listActiveEvents {
-                eventId
-                venueName
-                startTime
-                status
-                performerId
+                items {
+                  eventId
+                  venueName
+                  startTime
+                  endTime
+                  status
+                  performerId
+                  venueLocation {
+                    address
+                    city
+                    province
+                  }
+                }
+                nextToken
               }
             }
           `
@@ -74,10 +85,28 @@ export const UserPortalInnovative: React.FC = () => {
         
         console.log('✅ Events fetched:', response.data.listActiveEvents);
         
-        // Handle array response (deployed schema returns [Event!]! not EventConnection)
-        const events = response.data.listActiveEvents || [];
+        // Handle EventConnection response (deployed schema returns EventConnection)
+        const rawEvents = response.data.listActiveEvents?.items || [];
         
-        setEvents(events);
+        // Transform events to match EventDiscovery component expectations
+        const transformedEvents = rawEvents.map((event: any) => ({
+          id: event.eventId,
+          eventId: event.eventId,
+          venueName: event.venueName,
+          performerId: event.performerId,
+          djName: 'DJ', // TODO: Fetch performer name from performerId
+          startTime: event.startTime,
+          endTime: event.endTime,
+          status: event.status,
+          genre: 'All Genres', // TODO: Get from event settings
+          attendees: 0, // TODO: Get real count
+          distance: '0.0 km', // TODO: Calculate from geolocation
+          image: null, // TODO: Get venue/DJ image
+        }));
+        
+        console.log('📋 Transformed events:', transformedEvents);
+        
+        setEvents(transformedEvents);
       } catch (error: any) {
         console.error('❌ Failed to fetch events:', error);
         console.error('Error details:', {
@@ -128,19 +157,68 @@ export const UserPortalInnovative: React.FC = () => {
     fetchActiveEvents();
   }, []);
 
+  // Fetch DJ sets when event is selected
   useEffect(() => {
-    const savedEventId = localStorage.getItem('currentEventId');
-    if (savedEventId) {
-      setCurrentEventId(savedEventId);
-      setViewState('browsing');
-    }
-  }, []);
+    const fetchDJSets = async () => {
+      if (!currentEventId) {
+        setDjSets([]);
+        return;
+      }
+
+      try {
+        console.log('🎵 Fetching DJ sets for event:', currentEventId);
+        
+        const { generateClient } = await import('aws-amplify/api');
+        const client = generateClient();
+        
+        const response: any = await client.graphql({
+          query: `
+            query ListEventDJSets($eventId: ID!) {
+              listEventDJSets(eventId: $eventId) {
+                items {
+                  setId
+                  eventId
+                  performerId
+                  setStartTime
+                  setEndTime
+                  status
+                  isAcceptingRequests
+                  settings {
+                    basePrice
+                    requestCapPerHour
+                  }
+                }
+              }
+            }
+          `,
+          variables: { eventId: currentEventId }
+        });
+        
+        const sets = response.data.listEventDJSets?.items || [];
+        console.log('✅ DJ sets fetched:', sets);
+        setDjSets(sets);
+        
+        // If there's only one set, auto-select it
+        if (sets.length === 1) {
+          setCurrentSetId(sets[0].setId);
+          setViewState('browsing');
+        } else if (sets.length > 1) {
+          setViewState('lineup');
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch DJ sets:', error);
+        setDjSets([]);
+      }
+    };
+
+    fetchDJSets();
+  }, [currentEventId]);
 
   // Reset to discovery if event fails to load
   useEffect(() => {
     if (currentEventId && !currentEvent && !tracklistLoading) {
-      // Event doesn't exist, clear saved ID and go back to discovery
-      localStorage.removeItem('currentEventId');
+      console.log('⚠️ Event not found, returning to discovery');
+      // Event doesn't exist, go back to discovery
       setCurrentEventId(null);
       setViewState('discovery');
     }
@@ -156,7 +234,11 @@ export const UserPortalInnovative: React.FC = () => {
 
   const handleSelectEvent = (eventId: string) => {
     setCurrentEventId(eventId);
-    localStorage.setItem('currentEventId', eventId);
+    // viewState will be set by useEffect based on number of DJ sets
+  };
+
+  const handleSelectDJSet = (setId: string) => {
+    setCurrentSetId(setId);
     setViewState('browsing');
   };
 
@@ -266,6 +348,118 @@ export const UserPortalInnovative: React.FC = () => {
           </>
         )}
 
+        {/* DJ Lineup Selection */}
+        {viewState === 'lineup' && (
+          <div className="h-full p-4">
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <button
+                  onClick={() => {
+                    setCurrentEventId(null);
+                    setCurrentSetId(null);
+                    setViewState('discovery');
+                  }}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-400" />
+                </button>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    {currentEvent?.venueName || 'Event Lineup'}
+                  </h2>
+                  <p className="text-purple-300">Select a DJ to browse their library</p>
+                </div>
+              </div>
+
+              {/* DJ Sets Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {djSets
+                  .sort((a, b) => new Date(a.setStartTime).getTime() - new Date(b.setStartTime).getTime())
+                  .map((set) => {
+                    const startTime = new Date(set.setStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const endTime = new Date(set.setEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const isActive = set.status === 'ACTIVE';
+                    const isAccepting = set.isAcceptingRequests;
+
+                    return (
+                      <button
+                        key={set.setId}
+                        onClick={() => handleSelectDJSet(set.setId)}
+                        disabled={!isAccepting}
+                        className={`relative overflow-hidden rounded-2xl p-6 text-left transition-all transform hover:scale-105 ${
+                          isAccepting
+                            ? 'bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-2 border-purple-500/50 hover:border-purple-400 cursor-pointer'
+                            : 'bg-gray-800/30 border-2 border-gray-700/50 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        {/* Status Badge */}
+                        {isActive && (
+                          <div className="absolute top-4 right-4">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 rounded-full border border-green-500/50">
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <span className="text-green-400 text-xs font-semibold">LIVE NOW</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Set Times */}
+                        <div className="mb-4">
+                          <div className="text-purple-300 text-sm mb-1">Set Time</div>
+                          <div className="text-white text-2xl font-bold">
+                            {startTime} - {endTime}
+                          </div>
+                        </div>
+
+                        {/* DJ Info */}
+                        <div className="mb-4">
+                          <div className="text-gray-400 text-sm mb-1">DJ</div>
+                          <div className="text-white text-lg font-semibold">
+                            {set.performerId.substring(0, 8)}... {/* TODO: Fetch performer name */}
+                          </div>
+                        </div>
+
+                        {/* Pricing */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-gray-400 text-xs">Base Price</div>
+                            <div className="text-yellow-400 text-lg font-bold">
+                              R{set.settings?.basePrice || 50}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400 text-xs">Requests/Hour</div>
+                            <div className="text-blue-400 text-lg font-bold">
+                              {set.settings?.requestCapPerHour || 10}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status Message */}
+                        {!isAccepting && (
+                          <div className="mt-4 pt-4 border-t border-gray-700">
+                            <p className="text-gray-400 text-sm">
+                              {set.status === 'COMPLETED' ? '✓ Set completed' : '⏸ Not accepting requests'}
+                            </p>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+              </div>
+
+              {/* No Sets Message */}
+              {djSets.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🎵</div>
+                  <p className="text-gray-400 text-xl mb-2">No DJ sets scheduled</p>
+                  <p className="text-gray-500">Check back later for the lineup</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Browsing Library */}
         {viewState === 'browsing' && (
           <div className="h-full pb-32">
@@ -274,9 +468,14 @@ export const UserPortalInnovative: React.FC = () => {
                 <div className="flex items-center gap-3 mb-2">
                   <button
                     onClick={() => {
-                      localStorage.removeItem('currentEventId');
-                      setCurrentEventId(null);
-                      setViewState('discovery');
+                      if (djSets.length > 1) {
+                        setCurrentSetId(null);
+                        setViewState('lineup');
+                      } else {
+                        setCurrentEventId(null);
+                        setCurrentSetId(null);
+                        setViewState('discovery');
+                      }
                     }}
                     className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   >

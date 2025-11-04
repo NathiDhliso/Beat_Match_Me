@@ -1,32 +1,40 @@
 /**
  * useQueue Hook
- * Manages queue state with real-time updates
+ * Manages queue state with real-time updates for a DJ set
  */
 
 import { useState, useEffect } from 'react';
 import { fetchQueue } from '../services/graphql';
 import { subscribeToQueueUpdates } from '../services/subscriptions';
 
-export function useQueue(eventId: string) {
+export function useQueue(setId: string | null) {
   const [queue, setQueue] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!setId) {
+      setQueue(null);
+      setLoading(false);
+      return;
+    }
 
     // Fetch initial queue
     const loadQueue = async () => {
       try {
         setLoading(true);
-        const data = await fetchQueue(eventId);
+        const data = await fetchQueue(setId);
         setQueue(data);
         setError(null);
       } catch (err) {
-        console.warn('⚠️ Queue query not configured, using empty queue:', err);
+        console.warn('⚠️ Queue query error:', err);
+        // Log detailed errors if available
+        if (err && typeof err === 'object' && 'errors' in err) {
+          console.error('GraphQL Errors:', (err as any).errors);
+        }
         // Fallback to empty queue until getQueue resolver is configured
         setQueue({
-          eventId,
+          setId,
           orderedRequests: [],
           lastUpdated: Date.now(),
           currentlyPlaying: null
@@ -40,14 +48,14 @@ export function useQueue(eventId: string) {
     loadQueue();
 
     // Subscribe to real-time updates
-    const subscription = subscribeToQueueUpdates(eventId, (updatedQueue) => {
+    const subscription = subscribeToQueueUpdates(setId, (updatedQueue) => {
       setQueue(updatedQueue);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [eventId]);
+  }, [setId]);
 
-  return { queue, loading, error, refetch: () => fetchQueue(eventId).then(setQueue) };
+  return { queue, loading, error, refetch: () => setId ? fetchQueue(setId).then(setQueue) : Promise.resolve() };
 }

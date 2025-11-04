@@ -1,0 +1,23 @@
+## Mutation.createEvent Response Mapping Template
+## Returns the created event
+
+#if($ctx.error)
+  $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+## Return the created event
+{
+  "eventId": "$ctx.result.eventId",
+  "createdBy": "$ctx.result.createdBy",
+  "venueName": "$ctx.result.venueName",
+  #if($ctx.result.venueLocation)
+  "venueLocation": $util.toJson($ctx.result.venueLocation),
+  #end
+  "startTime": $ctx.result.startTime,
+  "endTime": $ctx.result.endTime,
+  "status": "$ctx.result.status",
+  "totalRevenue": $ctx.result.totalRevenue,
+  "totalRequests": $ctx.result.totalRequests,
+  "createdAt": $ctx.result.createdAt,
+  "updatedAt": $ctx.result.updatedAt
+}

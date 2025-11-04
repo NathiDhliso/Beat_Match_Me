@@ -1,0 +1,29 @@
+#set($setId = $util.autoId())
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "setId": $util.dynamodb.toDynamoDBJson($setId)
+  },
+  "attributeValues": {
+    "eventId": $util.dynamodb.toDynamoDBJson($ctx.args.input.eventId),
+    "performerId": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    "setStartTime": $util.dynamodb.toDynamoDBJson($ctx.args.input.setStartTime),
+    "setEndTime": $util.dynamodb.toDynamoDBJson($ctx.args.input.setEndTime),
+    "status": $util.dynamodb.toDynamoDBJson("SCHEDULED"),
+    "settings": $util.dynamodb.toDynamoDBJson({
+      "basePrice": $util.defaultIfNull($ctx.args.input.basePrice, 50.0),
+      "requestCapPerHour": $util.defaultIfNull($ctx.args.input.requestCapPerHour, 10),
+      "spotlightSlotsPerBlock": $util.defaultIfNull($ctx.args.input.spotlightSlotsPerBlock, 2),
+      "allowDedications": $util.defaultIfNull($ctx.args.input.allowDedications, true),
+      "allowGroupRequests": $util.defaultIfNull($ctx.args.input.allowGroupRequests, true)
+    }),
+    "isAcceptingRequests": $util.dynamodb.toDynamoDBJson(true),
+    "revenue": $util.dynamodb.toDynamoDBJson(0.0),
+    "requestCount": $util.dynamodb.toDynamoDBJson(0),
+    "createdAt": $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds())
+  },
+  "condition": {
+    "expression": "attribute_not_exists(setId)"
+  }
+}

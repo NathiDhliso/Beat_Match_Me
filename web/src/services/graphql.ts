@@ -12,21 +12,87 @@ export const getEvent = /* GraphQL */ `
   query GetEvent($eventId: ID!) {
     getEvent(eventId: $eventId) {
       eventId
-      performerId
+      createdBy
       venueName
+      venueLocation {
+        address
+        city
+        province
+      }
       startTime
       endTime
       status
-      qrCode
+      totalRevenue
+      totalRequests
+      createdAt
+    }
+  }
+`;
+
+export const getDJSet = /* GraphQL */ `
+  query GetDJSet($setId: ID!) {
+    getDJSet(setId: $setId) {
+      setId
+      eventId
+      performerId
+      setStartTime
+      setEndTime
+      status
+      isAcceptingRequests
+      revenue
+      requestCount
+      settings {
+        basePrice
+        requestCapPerHour
+        spotlightSlotsPerBlock
+        allowDedications
+        allowGroupRequests
+      }
+      createdAt
+    }
+  }
+`;
+
+export const listEventDJSets = /* GraphQL */ `
+  query ListEventDJSets($eventId: ID!) {
+    listEventDJSets(eventId: $eventId) {
+      setId
+      eventId
+      performerId
+      setStartTime
+      setEndTime
+      status
+      isAcceptingRequests
+      revenue
+      requestCount
+      createdAt
+    }
+  }
+`;
+
+export const listPerformerSets = /* GraphQL */ `
+  query ListPerformerSets($performerId: ID!, $limit: Int) {
+    listPerformerSets(performerId: $performerId, limit: $limit) {
+      setId
+      eventId
+      performerId
+      setStartTime
+      setEndTime
+      status
+      isAcceptingRequests
+      revenue
+      requestCount
       createdAt
     }
   }
 `;
 
 export const getQueue = /* GraphQL */ `
-  query GetQueue($eventId: ID!) {
-    getQueue(eventId: $eventId) {
+  query GetQueue($setId: ID!) {
+    getQueue(setId: $setId) {
+      setId
       eventId
+      performerId
       orderedRequests {
         requestId
         songTitle
@@ -116,6 +182,23 @@ export const getGroupRequest = /* GraphQL */ `
 `;
 
 // Mutations
+export const createDJSet = /* GraphQL */ `
+  mutation CreateDJSet($input: CreateDJSetInput!) {
+    createDJSet(input: $input) {
+      setId
+      eventId
+      performerId
+      setStartTime
+      setEndTime
+      status
+      isAcceptingRequests
+      revenue
+      requestCount
+      createdAt
+    }
+  }
+`;
+
 export const createRequest = /* GraphQL */ `
   mutation CreateRequest($input: CreateRequestInput!) {
     createRequest(input: $input) {
@@ -139,9 +222,11 @@ export const upvoteRequest = /* GraphQL */ `
 `;
 
 export const reorderQueue = /* GraphQL */ `
-  mutation ReorderQueue($eventId: ID!, $orderedRequestIds: [ID!]!) {
-    reorderQueue(eventId: $eventId, orderedRequestIds: $orderedRequestIds) {
+  mutation ReorderQueue($setId: ID!, $orderedRequestIds: [ID!]!) {
+    reorderQueue(setId: $setId, orderedRequestIds: $orderedRequestIds) {
+      setId
       eventId
+      performerId
       orderedRequests {
         requestId
         queuePosition
@@ -187,12 +272,11 @@ export const createEvent = /* GraphQL */ `
   mutation CreateEvent($input: CreateEventInput!) {
     createEvent(input: $input) {
       eventId
-      performerId
+      createdBy
       venueName
       startTime
       endTime
       status
-      qrCode
       createdAt
     }
   }
@@ -300,9 +384,29 @@ export async function fetchEvent(eventId: string) {
   return response.data.getEvent;
 }
 
-export async function fetchQueue(eventId: string) {
-  const response: any = await client.graphql({ query: getQueue, variables: { eventId } });
+export async function fetchQueue(setId: string) {
+  const response: any = await client.graphql({ query: getQueue, variables: { setId } });
   return response.data.getQueue;
+}
+
+export async function fetchDJSet(setId: string) {
+  const response: any = await client.graphql({ query: getDJSet, variables: { setId } });
+  return response.data.getDJSet;
+}
+
+export async function fetchEventDJSets(eventId: string) {
+  const response: any = await client.graphql({ query: listEventDJSets, variables: { eventId } });
+  return response.data.listEventDJSets;
+}
+
+export async function fetchPerformerSets(performerId: string, limit?: number) {
+  const response: any = await client.graphql({ query: listPerformerSets, variables: { performerId, limit } });
+  return response.data.listPerformerSets;
+}
+
+export async function submitDJSet(input: any) {
+  const response: any = await client.graphql({ query: createDJSet, variables: { input } });
+  return response.data.createDJSet;
 }
 
 export async function submitRequest(input: any) {
@@ -315,10 +419,10 @@ export async function submitUpvote(requestId: string) {
   return response.data.upvoteRequest;
 }
 
-export async function submitQueueReorder(eventId: string, orderedRequestIds: string[]) {
+export async function submitQueueReorder(setId: string, orderedRequestIds: string[]) {
   const response: any = await client.graphql({
     query: reorderQueue,
-    variables: { eventId, orderedRequestIds }
+    variables: { setId, orderedRequestIds }
   });
   return response.data.reorderQueue;
 }

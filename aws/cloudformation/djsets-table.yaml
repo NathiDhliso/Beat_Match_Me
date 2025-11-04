@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB table for DJ Sets in BeatMatchMe
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - production
+    Description: Environment name
+
+Resources:
+  DJSetsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub beatmatchme-djsets-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: setId
+          AttributeType: S
+        - AttributeName: eventId
+          AttributeType: S
+        - AttributeName: performerId
+          AttributeType: S
+        - AttributeName: setStartTime
+          AttributeType: N
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: setId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: eventId-setStartTime-index
+          KeySchema:
+            - AttributeName: eventId
+              KeyType: HASH
+            - AttributeName: setStartTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: performerId-createdAt-index
+          KeySchema:
+            - AttributeName: performerId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Application
+          Value: BeatMatchMe
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+Outputs:
+  DJSetsTableName:
+    Description: Name of the DJ Sets DynamoDB table
+    Value: !Ref DJSetsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-DJSetsTableName
+
+  DJSetsTableArn:
+    Description: ARN of the DJ Sets DynamoDB table
+    Value: !GetAtt DJSetsTable.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-DJSetsTableArn

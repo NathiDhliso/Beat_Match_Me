@@ -1,0 +1,16 @@
+{
+  "version": "2017-02-28",
+  "operation": "Scan",
+  "filter": {
+    "expression": "#status = :active OR #status = :scheduled",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":active": $util.dynamodb.toDynamoDBJson("ACTIVE"),
+      ":scheduled": $util.dynamodb.toDynamoDBJson("SCHEDULED")
+    }
+  },
+  "limit": $util.defaultIfNull($ctx.args.limit, 20),
+  "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}

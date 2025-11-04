@@ -114,13 +114,13 @@
     {
       "typeName": "Query",
       "fieldName": "getQueue",
-      "dataSourceName": "DynamoDBQueues",
+      "dataSourceName": "RequestsDataSource",
       "kind": "UNIT",
       "requestMappingTemplate": {
         "version": "2018-05-29",
         "operation": "GetItem",
         "key": {
-          "eventId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.eventId)"
+          "setId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.setId)"
         }
       },
       "responseMappingTemplate": "$util.toJson($context.result)"
@@ -178,9 +178,48 @@
         "scanIndexForward": false
       },
       "responseMappingTemplate": "$util.toJson($context.result.items)"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "createDJSet",
+      "dataSourceName": "DJSetsDataSource",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getDJSet",
+      "dataSourceName": "DJSetsDataSource",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "GetItem",
+        "key": {
+          "setId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.setId)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listEventDJSets",
+      "dataSourceName": "DJSetsDataSource",
+      "kind": "UNIT"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listPerformerSets",
+      "dataSourceName": "DJSetsDataSource",
+      "kind": "UNIT"
     }
   ],
   "dataSources": [
+    {
+      "name": "DJSetsDataSource",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-djsets-dev"
+      }
+    },
     {
       "name": "DynamoDBEvents",
       "type": "AMAZON_DYNAMODB",

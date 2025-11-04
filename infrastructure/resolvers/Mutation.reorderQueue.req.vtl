@@ -1,0 +1,30 @@
+## Mutation.reorderQueue Request Mapping Template
+## Reorders requests in a DJ set's queue
+
+#set($batchItems = [])
+
+#foreach($requestId in $ctx.args.orderedRequestIds)
+  #set($position = $foreach.index + 1)
+  #set($item = {
+    "requestId": { "S": "$requestId" },
+    "queuePosition": { "N": "$position" }
+  })
+  $util.qr($batchItems.add({
+    "Update": {
+      "TableName": "beatmatchme-requests-dev",
+      "Key": {
+        "requestId": { "S": "$requestId" }
+      },
+      "UpdateExpression": "SET queuePosition = :pos",
+      "ExpressionAttributeValues": {
+        ":pos": { "N": "$position" }
+      }
+    }
+  }))
+#end
+
+{
+  "version": "2018-05-29",
+  "operation": "TransactWriteItems",
+  "transactItems": $util.toJson($batchItems)
+}

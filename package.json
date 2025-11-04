@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "spotify-web-api-node": "^5.0.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.1692.0"
   }
 }
