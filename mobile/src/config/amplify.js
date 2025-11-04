@@ -1,5 +1,5 @@
 /**
- * AWS Amplify Configuration for Mobile
+ * AWS Amplify Configuration for Mobile (Expo)
  */
 
 import { Amplify } from 'aws-amplify';
