@@ -46,11 +46,13 @@ export const UserPortalInnovative: React.FC = () => {
   // Fetch active events from backend
   const [events, setEvents] = useState<any[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchActiveEvents = async () => {
       try {
         setEventsLoading(true);
+        setEventsError(null);
         console.log('🔍 Fetching active events from backend...');
         
         const { generateClient } = await import('aws-amplify/api');
@@ -72,10 +74,8 @@ export const UserPortalInnovative: React.FC = () => {
         
         console.log('✅ Events fetched:', response.data.listActiveEvents);
         
-        // Handle both array response (current) and EventConnection response (after schema updates)
-        const events = Array.isArray(response.data.listActiveEvents) 
-          ? response.data.listActiveEvents 
-          : (response.data.listActiveEvents?.items || []);
+        // Handle array response (deployed schema returns [Event!]! not EventConnection)
+        const events = response.data.listActiveEvents || [];
         
         setEvents(events);
       } catch (error: any) {
@@ -100,11 +100,25 @@ export const UserPortalInnovative: React.FC = () => {
           });
         }
         
-        // Check if it's an auth error
-        if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-          console.warn('🔐 Authentication error detected. Please sign out and sign back in.');
+        // Set user-friendly error message
+        let errorMessage = 'Failed to load events. ';
+        
+        if (error.errors && error.errors.length > 0) {
+          const firstError = error.errors[0];
+          if (firstError.message?.includes('Not Authorized') || firstError.errorType === 'Unauthorized') {
+            errorMessage = 'Authentication error. Please sign out and sign back in.';
+          } else if (firstError.message?.includes('Cannot return null')) {
+            errorMessage = 'Backend API not configured. The listActiveEvents resolver is missing.';
+          } else {
+            errorMessage = `GraphQL Error: ${firstError.message}`;
+          }
+        } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+          errorMessage = 'Authentication error. Please sign out and sign back in.';
+        } else if (error.message) {
+          errorMessage = `Error: ${error.message}`;
         }
         
+        setEventsError(errorMessage);
         setEvents([]);
       } finally {
         setEventsLoading(false);
@@ -212,10 +226,44 @@ export const UserPortalInnovative: React.FC = () => {
       <div className="pt-16 h-screen">
         {/* Event Discovery */}
         {viewState === 'discovery' && (
-          <EventDiscovery
-            events={events}
-            onSelectEvent={handleSelectEvent}
-          />
+          <>
+            {eventsLoading ? (
+              <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                  <p className="text-gray-400">Loading events...</p>
+                </div>
+              </div>
+            ) : eventsError ? (
+              <div className="flex items-center justify-center h-screen p-4">
+                <div className="max-w-md w-full bg-red-500/10 border border-red-500/50 rounded-2xl p-6 text-center">
+                  <div className="text-red-400 text-5xl mb-4">⚠️</div>
+                  <h3 className="text-xl font-bold text-red-400 mb-3">Unable to Load Events</h3>
+                  <p className="text-gray-300 mb-4">{eventsError}</p>
+                  <div className="bg-black/30 rounded-lg p-4 text-left text-sm text-gray-400">
+                    <p className="font-semibold mb-2">Technical Details:</p>
+                    <p>The backend AppSync API needs configuration:</p>
+                    <ul className="list-disc ml-4 mt-2 space-y-1">
+                      <li>Query: listActiveEvents</li>
+                      <li>Resolver: Query.listActiveEvents.vtl</li>
+                      <li>Data source: DynamoDB Events table</li>
+                    </ul>
+                  </div>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <EventDiscovery
+                events={events}
+                onSelectEvent={handleSelectEvent}
+              />
+            )}
+          </>
         )}
 
         {/* Browsing Library */}
