@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
+<<<<<<< HEAD
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
+=======
+>>>>>>> 21787b65a0eb98fde584a0091aac68b04b1d8e56
 import { Shield, Check, Lock, Mail, Sparkles } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
