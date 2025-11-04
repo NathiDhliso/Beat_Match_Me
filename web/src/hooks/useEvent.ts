@@ -47,10 +47,25 @@ export function useEvent(eventId: string | null) {
         console.log('🌐 Fetching event from backend:', eventId);
         
         const data = await fetchEvent(eventId);
+        console.log('✅ Event fetched successfully:', data);
         setEvent(data);
         setError(null);
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Failed to fetch event:', err);
+        console.error('Error details:', {
+          message: err.message,
+          errors: err.errors,
+          data: err.data
+        });
+        
+        // Log GraphQL errors
+        if (err.errors && err.errors.length > 0) {
+          console.error('GraphQL Errors:');
+          err.errors.forEach((error: any, index: number) => {
+            console.error(`  Error ${index + 1}:`, error.message);
+          });
+        }
+        
         setEvent(null);
         setError(err instanceof Error ? err.message : 'Failed to load event');
       } finally {

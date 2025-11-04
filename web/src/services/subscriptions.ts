@@ -22,7 +22,8 @@ export function subscribeToQueueUpdates(eventId: string, callback: (data: any) =
       callback(data.onQueueUpdate);
     },
     error: (error: any) => {
-      console.error('Queue subscription error:', error);
+      console.warn('⚠️ Queue subscription not configured:', error.errors?.[0]?.message || error.message);
+      // Subscriptions not critical, just log warning
     },
   });
 

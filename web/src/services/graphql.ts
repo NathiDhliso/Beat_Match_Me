@@ -14,24 +14,11 @@ export const getEvent = /* GraphQL */ `
       eventId
       performerId
       venueName
-      venueLocation {
-        address
-        city
-        province
-      }
       startTime
       endTime
       status
-      settings {
-        basePrice
-        requestCapPerHour
-        spotlightSlotsPerBlock
-        allowDedications
-        allowGroupRequests
-      }
       qrCode
-      totalRevenue
-      totalRequests
+      createdAt
     }
   }
 `;
