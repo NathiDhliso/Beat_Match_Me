@@ -64,24 +64,32 @@ exports.handler = async (event) => {
     // Create event
     const eventId = uuidv4();
     
+    // Handle venueLocation - support both old and new format
+    const venueLocation = input.venueLocation || {
+      address: input.venueAddress || '',
+      city: input.venueCity || '',
+      province: input.venueProvince || '',
+    };
+    
+    // Ensure venueLocation has all required fields
+    if (!venueLocation.address) venueLocation.address = '';
+    if (!venueLocation.city) venueLocation.city = '';
+    if (!venueLocation.province) venueLocation.province = '';
+    
     const newEvent = {
       eventId,
       performerId,
       venueName: input.venueName,
-      venueLocation: {
-        address: input.venueAddress,
-        city: input.venueCity,
-        province: input.venueProvince,
-      },
+      venueLocation,
       startTime: input.startTime,
       endTime: input.endTime,
-      status: 'SCHEDULED',
+      status: input.status || 'SCHEDULED',
       settings: {
-        basePrice: input.basePrice,
-        requestCapPerHour: input.requestCapPerHour,
-        spotlightSlotsPerBlock: input.spotlightSlotsPerBlock,
-        allowDedications: input.allowDedications,
-        allowGroupRequests: input.allowGroupRequests,
+        basePrice: input.basePrice || 20,
+        requestCapPerHour: input.requestCapPerHour || 20,
+        spotlightSlotsPerBlock: input.spotlightSlotsPerBlock || 1,
+        allowDedications: input.allowDedications !== undefined ? input.allowDedications : true,
+        allowGroupRequests: input.allowGroupRequests !== undefined ? input.allowGroupRequests : true,
       },
       theme: input.theme || 'default',
       createdAt: Date.now(),

@@ -93,14 +93,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
       };
 
-      await signIn(signInInput);
+      try {
+        await signIn(signInInput);
+      } catch (signInError: any) {
+        // If user is already authenticated, sign out and try again
+        if (signInError.name === 'UserAlreadyAuthenticatedException') {
+          await signOut();
+          await signIn(signInInput);
+        } else {
+          throw signInError;
+        }
+      }
+      
       await checkAuthStatus();
     } catch (err: any) {
       // User-friendly error messages
       let errorMessage = 'Failed to login';
       
-      if (err.message?.includes('SECRET_HASH')) {
-        errorMessage = 'Configuration Error: Please check the setup guide (FIX_COGNITO_SECRET.md)';
+      if (err.name === 'UserAlreadyAuthenticatedException' || err.message?.includes('already a signed in user')) {
+        errorMessage = 'You were already signed in. Signing out and logging in again...';
+      } else if (err.message?.includes('SECRET_HASH')) {
+        errorMessage = '⚠️ Configuration Error: Your Cognito app client has a secret enabled. Web apps cannot use client secrets. Please see FIX_COGNITO_SECRET.md in the project root for step-by-step instructions to create a new app client without a secret.';
+      } else if (err.message?.includes('unauthorized attribute')) {
+        errorMessage = 'Configuration Error: Custom user attributes not set up in Cognito. Signup will work but role/tier will need to be set later.';
       } else if (err.message?.includes('User does not exist')) {
         errorMessage = 'No account found with this email. Please sign up first.';
       } else if (err.message?.includes('Incorrect username or password')) {
@@ -130,8 +145,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           userAttributes: {
             email,
             name,
-            'custom:role': role,
-            'custom:tier': 'BRONZE',
+            // Note: custom:role and custom:tier removed - add these attributes in Cognito first
+            // or store in your database after signup
           },
         },
       };

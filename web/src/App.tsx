@@ -6,8 +6,8 @@ import { ThemeProvider } from './components/DarkModeTheme';
 import { apolloClient } from './services/api';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
-import { DJPortal } from './pages/DJPortal';
-import { UserPortal } from './pages/UserPortal';
+import { DJPortalOrbital as DJPortal } from './pages/DJPortalOrbital';
+import { UserPortalInnovative as UserPortal } from './pages/UserPortalInnovative';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFORMER' | 'AUDIENCE' }> = ({
@@ -29,8 +29,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFO
   }
 
   if (allowedRole && user.role !== allowedRole) {
+    console.log(`Access denied: User role is ${user.role}, but ${allowedRole} required`);
     return <Navigate to="/dashboard" replace />;
   }
+
+  console.log(`Access granted: User role ${user.role} matches required ${allowedRole || 'any'}`);
 
   return <>{children}</>;
 };
@@ -43,10 +46,16 @@ const Dashboard: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // Debug logging
+  console.log('Dashboard - User role:', user.role);
+  console.log('Dashboard - Full user:', user);
+
   if (user.role === 'PERFORMER') {
+    console.log('Redirecting to DJ Portal');
     return <Navigate to="/dj-portal" replace />;
   }
 
+  console.log('Redirecting to User Portal');
   return <Navigate to="/user-portal" replace />;
 };
 
@@ -77,6 +86,7 @@ function App() {
                 }
               />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </Router>
         </AuthProvider>

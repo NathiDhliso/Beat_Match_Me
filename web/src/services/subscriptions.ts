@@ -3,8 +3,7 @@
  * Handles real-time subscriptions
  */
 
-import { API, graphqlOperation } from 'aws-amplify';
-import { Observable } from 'zen-observable-ts';
+import { generateClient } from 'aws-amplify/api';
 import {
   onQueueUpdate,
   onRequestStatusChange,
@@ -12,62 +11,68 @@ import {
   onGroupRequestUpdate,
 } from './graphql';
 
-export function subscribeToQueueUpdates(eventId: string, callback: (data: any) => void) {
-  const subscription = API.graphql(
-    graphqlOperation(onQueueUpdate, { eventId })
-  ) as Observable<any>;
+const client = generateClient();
 
-  return subscription.subscribe({
-    next: ({ value }) => {
-      callback(value.data.onQueueUpdate);
+export function subscribeToQueueUpdates(eventId: string, callback: (data: any) => void) {
+  const subscription = (client.graphql({
+    query: onQueueUpdate,
+    variables: { eventId }
+  }) as any).subscribe({
+    next: ({ data }: any) => {
+      callback(data.onQueueUpdate);
     },
-    error: (error) => {
+    error: (error: any) => {
       console.error('Queue subscription error:', error);
     },
   });
+
+  return subscription;
 }
 
 export function subscribeToRequestStatus(requestId: string, callback: (data: any) => void) {
-  const subscription = API.graphql(
-    graphqlOperation(onRequestStatusChange, { requestId })
-  ) as Observable<any>;
-
-  return subscription.subscribe({
-    next: ({ value }) => {
-      callback(value.data.onRequestStatusChange);
+  const subscription = (client.graphql({
+    query: onRequestStatusChange,
+    variables: { requestId }
+  }) as any).subscribe({
+    next: ({ data }: any) => {
+      callback(data.onRequestStatusChange);
     },
-    error: (error) => {
+    error: (error: any) => {
       console.error('Request status subscription error:', error);
     },
   });
+
+  return subscription;
 }
 
 export function subscribeToNewRequests(eventId: string, callback: (data: any) => void) {
-  const subscription = API.graphql(
-    graphqlOperation(onNewRequest, { eventId })
-  ) as Observable<any>;
-
-  return subscription.subscribe({
-    next: ({ value }) => {
-      callback(value.data.onNewRequest);
+  const subscription = (client.graphql({
+    query: onNewRequest,
+    variables: { eventId }
+  }) as any).subscribe({
+    next: ({ data }: any) => {
+      callback(data.onNewRequest);
     },
-    error: (error) => {
+    error: (error: any) => {
       console.error('New request subscription error:', error);
     },
   });
+
+  return subscription;
 }
 
 export function subscribeToGroupRequest(groupRequestId: string, callback: (data: any) => void) {
-  const subscription = API.graphql(
-    graphqlOperation(onGroupRequestUpdate, { groupRequestId })
-  ) as Observable<any>;
-
-  return subscription.subscribe({
-    next: ({ value }) => {
-      callback(value.data.onGroupRequestUpdate);
+  const subscription = (client.graphql({
+    query: onGroupRequestUpdate,
+    variables: { groupRequestId }
+  }) as any).subscribe({
+    next: ({ data }: any) => {
+      callback(data.onGroupRequestUpdate);
     },
-    error: (error) => {
+    error: (error: any) => {
       console.error('Group request subscription error:', error);
     },
   });
+
+  return subscription;
 }

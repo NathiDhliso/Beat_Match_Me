@@ -3,7 +3,9 @@
  * Handles all GraphQL queries and mutations
  */
 
-import { API, graphqlOperation } from 'aws-amplify';
+import { generateClient } from 'aws-amplify/api';
+
+const client = generateClient();
 
 // Queries
 export const getEvent = /* GraphQL */ `
@@ -71,6 +73,38 @@ export const getUserRequests = /* GraphQL */ `
       price
       submittedAt
       upvotes
+    }
+  }
+`;
+
+export const getEventTracklist = /* GraphQL */ `
+  query GetEventTracklist($eventId: ID!) {
+    getEventTracklist(eventId: $eventId) {
+      songs {
+        id
+        title
+        artist
+        genre
+        duration
+        albumArt
+      }
+      lastUpdated
+    }
+  }
+`;
+
+export const getPerformerTracklist = /* GraphQL */ `
+  query GetPerformerTracklist($performerId: ID!) {
+    getPerformerTracklist(performerId: $performerId) {
+      songs {
+        id
+        title
+        artist
+        genre
+        duration
+        albumArt
+      }
+      lastUpdated
     }
   }
 `;
@@ -166,10 +200,13 @@ export const createEvent = /* GraphQL */ `
   mutation CreateEvent($input: CreateEventInput!) {
     createEvent(input: $input) {
       eventId
+      performerId
       venueName
       startTime
-      qrCode
+      endTime
       status
+      qrCode
+      createdAt
     }
   }
 `;
@@ -179,6 +216,43 @@ export const updateEventStatus = /* GraphQL */ `
     updateEventStatus(eventId: $eventId, status: $status) {
       eventId
       status
+    }
+  }
+`;
+
+export const uploadTracklist = /* GraphQL */ `
+  mutation UploadTracklist($performerId: ID!, $songs: [SongInput!]!) {
+    uploadTracklist(performerId: $performerId, songs: $songs) {
+      success
+      songsAdded
+      message
+    }
+  }
+`;
+
+export const setEventTracklist = /* GraphQL */ `
+  mutation SetEventTracklist($eventId: ID!, $songIds: [ID!]!) {
+    setEventTracklist(eventId: $eventId, songIds: $songIds) {
+      eventId
+      songsCount
+      message
+    }
+  }
+`;
+
+export const updateEventSettings = /* GraphQL */ `
+  mutation UpdateEventSettings($eventId: ID!, $settings: EventSettingsInput!) {
+    updateEventSettings(eventId: $eventId, settings: $settings) {
+      eventId
+      settings {
+        basePrice
+        requestCapPerHour
+        spotlightSlotsPerBlock
+        spotlightPriceMultiplier
+        allowDedications
+        allowGroupRequests
+        isSoldOut
+      }
     }
   }
 `;
@@ -235,55 +309,82 @@ export const onGroupRequestUpdate = /* GraphQL */ `
 
 // API Helper Functions
 export async function fetchEvent(eventId: string) {
-  const response = await API.graphql(graphqlOperation(getEvent, { eventId }));
-  return (response as any).data.getEvent;
+  const response: any = await client.graphql({ query: getEvent, variables: { eventId } });
+  return response.data.getEvent;
 }
 
 export async function fetchQueue(eventId: string) {
-  const response = await API.graphql(graphqlOperation(getQueue, { eventId }));
-  return (response as any).data.getQueue;
+  const response: any = await client.graphql({ query: getQueue, variables: { eventId } });
+  return response.data.getQueue;
 }
 
 export async function submitRequest(input: any) {
-  const response = await API.graphql(graphqlOperation(createRequest, { input }));
-  return (response as any).data.createRequest;
+  const response: any = await client.graphql({ query: createRequest, variables: { input } });
+  return response.data.createRequest;
 }
 
 export async function submitUpvote(requestId: string) {
-  const response = await API.graphql(graphqlOperation(upvoteRequest, { requestId }));
-  return (response as any).data.upvoteRequest;
+  const response: any = await client.graphql({ query: upvoteRequest, variables: { requestId } });
+  return response.data.upvoteRequest;
 }
 
 export async function submitQueueReorder(eventId: string, orderedRequestIds: string[]) {
-  const response = await API.graphql(
-    graphqlOperation(reorderQueue, { eventId, orderedRequestIds })
-  );
-  return (response as any).data.reorderQueue;
+  const response: any = await client.graphql({
+    query: reorderQueue,
+    variables: { eventId, orderedRequestIds }
+  });
+  return response.data.reorderQueue;
 }
 
 export async function submitVeto(requestId: string, reason?: string) {
-  const response = await API.graphql(graphqlOperation(vetoRequest, { requestId, reason }));
-  return (response as any).data.vetoRequest;
+  const response: any = await client.graphql({ query: vetoRequest, variables: { requestId, reason } });
+  return response.data.vetoRequest;
 }
 
 export async function submitGroupRequest(input: any) {
-  const response = await API.graphql(graphqlOperation(createGroupRequest, { input }));
-  return (response as any).data.createGroupRequest;
+  const response: any = await client.graphql({ query: createGroupRequest, variables: { input } });
+  return response.data.createGroupRequest;
 }
 
 export async function submitContribution(groupRequestId: string, amount: number) {
-  const response = await API.graphql(
-    graphqlOperation(contributeToGroupRequest, { groupRequestId, amount })
-  );
-  return (response as any).data.contributeToGroupRequest;
+  const response: any = await client.graphql({
+    query: contributeToGroupRequest,
+    variables: { groupRequestId, amount }
+  });
+  return response.data.contributeToGroupRequest;
 }
 
 export async function submitCreateEvent(input: any) {
-  const response = await API.graphql(graphqlOperation(createEvent, { input }));
-  return (response as any).data.createEvent;
+  const response: any = await client.graphql({ query: createEvent, variables: { input } });
+  return response.data.createEvent;
 }
 
 export async function submitUpdateEventStatus(eventId: string, status: string) {
-  const response = await API.graphql(graphqlOperation(updateEventStatus, { eventId, status }));
-  return (response as any).data.updateEventStatus;
+  const response: any = await client.graphql({ query: updateEventStatus, variables: { eventId, status } });
+  return response.data.updateEventStatus;
+}
+
+export async function fetchEventTracklist(eventId: string) {
+  const response: any = await client.graphql({ query: getEventTracklist, variables: { eventId } });
+  return response.data.getEventTracklist;
+}
+
+export async function fetchPerformerTracklist(performerId: string) {
+  const response: any = await client.graphql({ query: getPerformerTracklist, variables: { performerId } });
+  return response.data.getPerformerTracklist;
+}
+
+export async function submitUploadTracklist(performerId: string, songs: any[]) {
+  const response: any = await client.graphql({ query: uploadTracklist, variables: { performerId, songs } });
+  return response.data.uploadTracklist;
+}
+
+export async function submitSetEventTracklist(eventId: string, songIds: string[]) {
+  const response: any = await client.graphql({ query: setEventTracklist, variables: { eventId, songIds } });
+  return response.data.setEventTracklist;
+}
+
+export async function submitUpdateEventSettings(eventId: string, settings: any) {
+  const response: any = await client.graphql({ query: updateEventSettings, variables: { eventId, settings } });
+  return response.data.updateEventSettings;
 }

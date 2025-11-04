@@ -46,6 +46,72 @@
       "kind": "UNIT"
     },
     {
+      "typeName": "Mutation",
+      "fieldName": "createEvent",
+      "dataSourceName": "CreateEventLambda",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Invoke",
+        "payload": {
+          "arguments": "$util.toJson($context.arguments)",
+          "identity": "$util.toJson($context.identity)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "updateEventStatus",
+      "dataSourceName": "UpdateEventStatusLambda",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Invoke",
+        "payload": {
+          "arguments": "$util.toJson($context.arguments)",
+          "identity": "$util.toJson($context.identity)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getEvent",
+      "dataSourceName": "DynamoDBEvents",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "GetItem",
+        "key": {
+          "eventId": "$util.dynamodb.toDynamoDBJson($ctx.arguments.eventId)"
+        }
+      },
+      "responseMappingTemplate": "$util.toJson($context.result)"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listActiveEvents",
+      "dataSourceName": "DynamoDBEvents",
+      "kind": "UNIT",
+      "requestMappingTemplate": {
+        "version": "2018-05-29",
+        "operation": "Scan",
+        "filter": {
+          "expression": "#status = :active OR #status = :scheduled",
+          "expressionNames": {
+            "#status": "status"
+          },
+          "expressionValues": {
+            ":active": "$util.dynamodb.toDynamoDBJson('ACTIVE')",
+            ":scheduled": "$util.dynamodb.toDynamoDBJson('SCHEDULED')"
+          }
+        },
+        "limit": "$util.defaultIfNull($ctx.arguments.limit, 50)"
+      },
+      "responseMappingTemplate": "{ \"items\": $util.toJson($context.result.items), \"nextToken\": $util.toJson($context.result.nextToken) }"
+    },
+    {
       "typeName": "Query",
       "fieldName": "getQueue",
       "dataSourceName": "DynamoDBQueues",
@@ -116,6 +182,13 @@
   ],
   "dataSources": [
     {
+      "name": "DynamoDBEvents",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-events"
+      }
+    },
+    {
       "name": "DynamoDBRequests",
       "type": "AMAZON_DYNAMODB",
       "config": {
@@ -169,6 +242,20 @@
       "type": "AWS_LAMBDA",
       "config": {
         "functionName": "beatmatchme-contributeToGroupRequest"
+      }
+    },
+    {
+      "name": "CreateEventLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-createEvent"
+      }
+    },
+    {
+      "name": "UpdateEventStatusLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-updateEventStatus"
       }
     }
   ]

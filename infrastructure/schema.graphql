@@ -226,18 +226,23 @@ type Query {
   listActiveGroupRequests(eventId: ID!): [GroupRequest!]!
 }
 
+input VenueLocationInput {
+  address: String
+  city: String
+  province: String
+}
+
 input CreateEventInput {
   venueName: String!
-  venueAddress: String!
-  venueCity: String!
-  venueProvince: String!
+  venueLocation: VenueLocationInput
   startTime: AWSTimestamp!
   endTime: AWSTimestamp!
-  basePrice: Float!
-  requestCapPerHour: Int!
-  spotlightSlotsPerBlock: Int!
-  allowDedications: Boolean!
-  allowGroupRequests: Boolean!
+  status: EventStatus
+  basePrice: Float
+  requestCapPerHour: Int
+  spotlightSlotsPerBlock: Int
+  allowDedications: Boolean
+  allowGroupRequests: Boolean
   theme: String
 }
 

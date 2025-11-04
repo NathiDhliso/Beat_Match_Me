@@ -122,6 +122,16 @@ html:not(.dark) {
   --tier-silver: #c0c0c0;
   --tier-gold: #ffd700;
   --tier-platinum: #e5e4e2;
+  
+  /* Brand Colors (for social/external integrations) */
+  --brand-facebook: #1877F2;
+  --brand-facebook-hover: #166FE5;
+  --brand-google: #4285F4;
+  --brand-google-hover: #3367D6;
+  --brand-apple: #000000;
+  --brand-apple-hover: #1a1a1a;
+  --brand-spotify: #1DB954;
+  --brand-spotify-hover: #1ed760;
 }
 
 /* ============================================
@@ -244,14 +254,350 @@ html:not(.dark) {
   font-weight: 600;
 }
 
+/* Brand Buttons */
+.btn-facebook {
+  background-color: var(--brand-facebook);
+  color: #ffffff;
+}
+
+.btn-facebook:hover {
+  background-color: var(--brand-facebook-hover);
+}
+
+.btn-google {
+  background-color: var(--brand-google);
+  color: #ffffff;
+}
+
+.btn-google:hover {
+  background-color: var(--brand-google-hover);
+}
+
+.btn-spotify {
+  background-color: var(--brand-spotify);
+  color: #ffffff;
+}
+
+.btn-spotify:hover {
+  background-color: var(--brand-spotify-hover);
+}
+
+/* Tier Badge Buttons */
+.btn-tier {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-tier-bronze {
+  background: linear-gradient(to bottom right, #f59e0b, #d97706);
+  color: #ffffff;
+  border: 1px solid #f59e0b;
+}
+
+.btn-tier-bronze:hover {
+  background: linear-gradient(to bottom right, #d97706, #b45309);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-tier-silver {
+  background: linear-gradient(to bottom right, #9ca3af, #6b7280);
+  color: #ffffff;
+  border: 1px solid #9ca3af;
+}
+
+.btn-tier-silver:hover {
+  background: linear-gradient(to bottom right, #6b7280, #4b5563);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+}
+
+.btn-tier-gold {
+  background: linear-gradient(to bottom right, #fbbf24, #f59e0b);
+  color: #ffffff;
+  border: 1px solid #fbbf24;
+}
+
+.btn-tier-gold:hover {
+  background: linear-gradient(to bottom right, #f59e0b, #d97706);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.btn-tier-platinum {
+  background: linear-gradient(to bottom right, #cbd5e1, #94a3b8);
+  color: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-tier-platinum:hover {
+  background: linear-gradient(to bottom right, #94a3b8, #64748b);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(203, 213, 225, 0.3);
+}
+
+/* Logout Button */
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.btn-logout:hover {
+  background: var(--hover-overlay);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   ORBITAL INTERFACE ANIMATIONS
+   ============================================ */
+
+/* Vinyl Spin-In Animation */
+@keyframes vinyl-spin-in {
+  0% {
+    transform: rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: rotate(180deg) scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Pulse Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px currentColor;
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 40px currentColor;
+  }
+}
+
+/* Heartbeat Animation */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Orbit Animation */
+@keyframes orbit {
+  0% {
+    transform: translate(calc(-50% + var(--orbit-x, 0px)), calc(-50% + var(--orbit-y, 0px))) rotate(0deg);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--orbit-x, 0px)), calc(-50% + var(--orbit-y, 0px))) rotate(360deg);
+  }
+}
+
+/* Scale In Animation */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Slot Machine Tumble */
+@keyframes tumble {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Liquid Morph */
+@keyframes liquid-morph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  50% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+}
+
+/* Utility Classes */
+.animate-vinyl-spin {
+  animation: vinyl-spin-in 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.animate-orbit {
+  animation: orbit 10s linear infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-tumble {
+  animation: tumble 0.5s ease-out;
+}
+
+.animate-liquid {
+  animation: liquid-morph 8s ease-in-out infinite;
+}
+
+/* Bass Drop Bounce */
+.btn-bounce:active {
+  animation: bass-drop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bass-drop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+/* Vinyl Scratch Micro-Animation */
+@keyframes vinyl-scratch {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.vinyl-scratch {
+  animation: vinyl-scratch 0.2s ease-in-out;
+}
+
+/* Dissolve Effect */
+@keyframes dissolve {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+}
+
+.animate-dissolve {
+  animation: dissolve 0.5s ease-out forwards;
+}
+
+/* Confetti Burst */
+@keyframes confetti-burst {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti-burst 1s ease-out forwards;
+}
+
+/* Swipe Animations for Event Discovery */
+@keyframes swipe-left {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-right {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+.animate-swipe-left {
+  animation: swipe-left 0.3s ease-out forwards;
+}
+
+.animate-swipe-right {
+  animation: swipe-right 0.3s ease-out forwards;
+}
+
 /* ============================================
    TRANSITIONS
    ============================================ */
 
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-duration: 300ms;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
 
 /* ============================================

@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-amber-500/10 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/10 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
       </div>
-      <div className="bg-white/80 dark:bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl shadow-amber-500/20 dark:shadow-none p-8 w-full max-w-md border border-amber-200 dark:border-white/20 relative z-10 animate-scale-in">
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10 animate-scale-in">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full mb-4 shadow-glow-cyan">
             <Sparkles className="w-8 h-8 text-white" />
@@ -137,7 +137,7 @@ export const Login: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="your@email.com"
                 required
               />
@@ -151,7 +151,7 @@ export const Login: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="••••••••"
                 required
               />
@@ -218,12 +218,17 @@ export const Login: React.FC = () => {
             >
               Already have an account? Login
             </button>
+            
+            {/* Social Signup Options */}
+            <div className="mt-6">
+              <SocialLoginButtons />
+            </div>
           </div>
         )}
 
         {mode === 'signup' && (
           <form onSubmit={handleSignup} className="space-y-4">
-            <div className="bg-white/5 border border-white/20 rounded-lg p-3 mb-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 mb-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]">
               <p className="text-white text-sm">
                 Signing up as: <span className="font-bold">{selectedRole}</span>
               </p>
@@ -234,7 +239,7 @@ export const Login: React.FC = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="John Doe"
                 required
               />
@@ -245,7 +250,7 @@ export const Login: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="your@email.com"
                 required
               />
@@ -316,7 +321,7 @@ export const Login: React.FC = () => {
                 type="text"
                 value={confirmCode}
                 onChange={(e) => setConfirmCode(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="123456"
                 required
               />

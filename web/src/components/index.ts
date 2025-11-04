@@ -1,58 +1,44 @@
 /**
  * BeatMatchMe Component Library
- * Phase 15: Advanced UX & Psychological Engagement
+ * Core Components Only
  */
 
-// Tier System
-export { TierBadge, AnimatedTierBadge, TierProgress, calculateTier } from './TierBadge';
-export type { TierType } from './TierBadge';
+// Core Value Prop Features
+export { TracklistManager } from './TracklistManager';
+export { RequestCapManager, SoldOutBanner } from './RequestCapManager';
+export { SpotlightSlots, SpotlightSettings } from './SpotlightSlots';
+export { EventSelection } from './EventSelection';
+export { TierModal } from './TierModal';
+export { RoleToggle } from './RoleToggle';
+export { FloatingActionBubble, StatusArc, CircularQueueVisualizer, GestureHandler } from './OrbitalInterface';
+export { DJLibrary } from './DJLibrary';
+export type { Track } from './DJLibrary';
+export { EventDiscovery, AlbumArtGrid, MassiveRequestButton, LockedInAnimation, EnergyBeam, NowPlayingCelebration } from './AudienceInterface';
 
-// Audio Visualizer
-export { AudioVisualizer, EdgeGlow, ParticleBurst } from './AudioVisualizer';
+// DJ Discovery & Profile Management (Phase 1B Critical UX Fixes)
+export { DJCard, DJList, DJSearch, DJAvailabilityNotification } from './DJDiscovery';
+export type { DJProfile, SearchFilters } from './DJDiscovery';
+export { TierComparison, UserProfileScreen, DJProfileScreen, TIER_DATA } from './ProfileManagement';
+export type { TierInfo, UserProfileData, DJProfileData } from './ProfileManagement';
 
-// Animations
-export { ConfettiAnimation, SuccessAnimation, MilestoneCelebration } from './ConfettiAnimation';
+// Discovery Workflow (Phase 1A - P0 CRITICAL)
+export { QRCodeGenerator, GeolocationDiscovery, QRCodeScanner } from './DiscoveryWorkflow';
+export type { EventWithLocation } from './DiscoveryWorkflow';
 
-// Status Indicators
-export {
-  StatusIndicator,
-  QueuePosition,
-  CircularProgress,
-  AchievementBadge,
-  LoadingSpinner,
-} from './StatusIndicators';
-export type { RequestStatus } from './StatusIndicators';
+// Social Login / OAuth (Phase 1 - P1)
+export { SocialLoginButtons, SocialLoginButtonsCompact } from './SocialLoginButtons';
 
-// Queue Cards
-export { QueueCard, CurrentlyPlayingCard, CompactQueueCard } from './QueueCard';
-export type { RequestType } from './QueueCard';
+// Event Management (DJ-User Integration)
+export { EventCreator } from './EventCreator';
+export { QRCodeDisplay } from './QRCodeDisplay';
 
-// Exploratory Features (Phase 15.4)
-export {
-  FeelingLucky,
-  GenreRoulette,
-  ChallengeCard,
-  ChallengesList,
-} from './ExploratoryFeatures';
-export type { Challenge } from './ExploratoryFeatures';
+// Music Database Integration
+export { SongSearchModal } from './SongSearchModal';
 
-// Constellation Navigation (Phase 15.1)
-export {
-  ConstellationNav,
-  CrowdMomentum,
-  FriendProximity,
-} from './ConstellationNav';
-export type { NavItem } from './ConstellationNav';
-
-// Social Features (Phase 6)
-export {
-  UpvoteButton,
-  FriendList,
-  SocialShare,
-  FriendRequest,
-  ActivityFeed,
-} from './SocialFeatures';
-export type { Friend, SocialShare as SocialShareType, Activity } from './SocialFeatures';
+// REMOVED: Non-value-prop features
+// - Exploratory Features (Feeling Lucky, Genre Roulette) - Not in value prop
+// - Constellation Navigation - Not in value prop
+// - Social Features (Friends, Activity Feed) - Not in value prop
 
 // Notifications (Phase 7)
 export {
@@ -76,65 +62,16 @@ export {
 } from './Analytics';
 export type { AnalyticsData } from './Analytics';
 
-// Request History (Phase 9)
-export {
-  RequestHistory,
-  BackupList,
-  FavoriteSongs,
-} from './RequestHistory';
-export type { HistoricalRequest, BackupRequest, FavoriteSong } from './RequestHistory';
-
-// Gamification (Phase 11)
-export {
-  AchievementUnlockModal,
-  AchievementsGallery,
-  Leaderboard,
-  StreakTracker,
-} from './Gamification';
-export type { Achievement, AchievementTier, LeaderboardEntry } from './Gamification';
-
-// Advanced Features (Phase 16 - Final 25%)
-export {
-  ContextualThemeProvider,
-  EventTypeIndicator,
-  WeatherIntegration,
-  TipPoolSystem,
-  VibeSaverAction,
-  GestureGuardrails,
-  HoldToConfirm,
-  ProfileAuraRing,
-  RequestTrailEffect,
-  VIPRequestEntrance,
-} from './AdvancedFeatures';
-export type { EventType, WeatherCondition, UserTier } from './AdvancedFeatures';
-
-// Song Selection & Request Flow
-export { SongSelectionScreen } from './SongSelection';
-export { RequestConfirmation } from './RequestConfirmation';
-export type { RequestData } from './RequestConfirmation';
-
-// Group Requests
-export { GroupRequestScreen, GroupRequestLobby, JoinGroupRequestScreen } from './GroupRequest';
-
-// Request Tracking
-export { RequestTrackingView } from './RequestTracking';
-
-// Queue Views
-export { PerformerQueueView, AudienceQueueView } from './QueueViews';
+// REMOVED: Old components from cleanup
+// - RequestHistory, SongSelection, RequestConfirmation, GroupRequest, RequestTracking, QueueViews
+// These were part of the old UI that has been replaced
 
 // Payment
 export { PaymentModal, PaymentSuccessModal } from './PaymentModal';
 export type { PaymentData } from './PaymentModal';
 
-// Educational Features (Phase 16 - Final 25%)
-export {
-  DidYouKnowCard,
-  GenreDeepDive,
-  DJTips,
-  EventStoryMode,
-  VenueConsistencyProfile,
-} from './EducationalFeatures';
-export type { EventContribution } from './EducationalFeatures';
+// REMOVED: Educational features - Not in value prop
+// - Genre education, DJ tips, etc. - Not core to request system
 
 // Utilities
 export * from '../utils/gradients';

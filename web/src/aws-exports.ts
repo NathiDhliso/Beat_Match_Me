@@ -4,7 +4,7 @@
 const awsconfig = {
   Auth: {
     Cognito: {
-      userPoolId: 'us-east-1_2jzlHDvmY',
+      userPoolId: 'us-east-1_m1PhjZ4yD',
       userPoolClientId: '48ledus0f1muv2p36ko0815s7g',
       region: 'us-east-1',
       loginWith: {
@@ -32,7 +32,7 @@ const awsconfig = {
     GraphQL: {
       endpoint: 'https://v7emm7lqsjbkvoligy4udwru6i.appsync-api.us-east-1.amazonaws.com/graphql',
       region: 'us-east-1',
-      defaultAuthMode: 'userPool',
+      defaultAuthMode: 'userPool' as const,
     },
   },
   Storage: {

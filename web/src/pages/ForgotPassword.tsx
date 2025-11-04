@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, Check } from 'lucide-react';
-import { Auth } from 'aws-amplify';
+import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 
 type ForgotPasswordStep = 'request' | 'reset';
 
@@ -22,7 +22,7 @@ export const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      await Auth.forgotPassword(email);
+      await resetPassword({ username: email });
       setStep('reset');
     } catch (err: any) {
       setError(err.message || 'Failed to send reset code. Please try again.');
@@ -48,7 +48,7 @@ export const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      await Auth.forgotPasswordSubmit(email, code, newPassword);
+      await confirmResetPassword({ username: email, confirmationCode: code, newPassword });
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
@@ -74,7 +74,7 @@ export const ForgotPassword: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20">
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10 animate-scale-in">
         <button
           onClick={() => navigate('/login')}
           className="flex items-center gap-2 text-gray-300 hover:text-white mb-6 transition-colors"
@@ -109,7 +109,7 @@ export const ForgotPassword: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="your@email.com"
                 required
               />
@@ -133,7 +133,7 @@ export const ForgotPassword: React.FC = () => {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="123456"
                 required
               />
@@ -149,7 +149,7 @@ export const ForgotPassword: React.FC = () => {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="Min 8 characters"
                 required
                 minLength={8}
@@ -164,7 +164,7 @@ export const ForgotPassword: React.FC = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
                 placeholder="Re-enter password"
                 required
               />

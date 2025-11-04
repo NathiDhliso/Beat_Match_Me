@@ -1,0 +1,257 @@
+# BeatMatchMe GraphQL Schema
+# Complete schema for AppSync deployment
+
+# Scalars
+scalar AWSTimestamp
+scalar AWSJSON
+
+# Enums
+enum EventStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  PLAYING
+  PLAYED
+  VETOED
+}
+
+enum RequestType {
+  STANDARD
+  SPOTLIGHT
+  GROUP
+}
+
+enum UserRole {
+  AUDIENCE
+  PERFORMER
+}
+
+enum TierLevel {
+  FREE
+  PREMIUM
+  ELITE
+}
+
+# Types
+type Event {
+  eventId: ID!
+  performerId: ID!
+  venueName: String!
+  venueLocation: VenueLocation
+  startTime: AWSTimestamp!
+  endTime: AWSTimestamp!
+  status: EventStatus!
+  qrCode: String
+  settings: EventSettings
+  totalRevenue: Float
+  totalRequests: Int
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+}
+
+type VenueLocation {
+  address: String
+  city: String
+  province: String
+  latitude: Float
+  longitude: Float
+}
+
+type EventSettings {
+  basePrice: Float!
+  requestCapPerHour: Int!
+  spotlightSlotsPerBlock: Int!
+  spotlightPriceMultiplier: Float!
+  allowDedications: Boolean!
+  allowGroupRequests: Boolean!
+  isSoldOut: Boolean!
+}
+
+type Song {
+  songId: ID!
+  performerId: ID!
+  title: String!
+  artist: String!
+  genre: String!
+  basePrice: Float!
+  isEnabled: Boolean!
+  albumArt: String
+  duration: Int
+  spotifyId: String
+  itunesId: Int
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+}
+
+type Request {
+  requestId: ID!
+  eventId: ID!
+  userId: ID!
+  userName: String!
+  songId: ID!
+  songTitle: String!
+  artistName: String!
+  requestType: RequestType!
+  status: RequestStatus!
+  queuePosition: Int
+  price: Float!
+  dedication: String
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+}
+
+type Queue {
+  eventId: ID!
+  orderedRequests: [QueuedRequest!]!
+  lastUpdated: AWSTimestamp!
+}
+
+type QueuedRequest {
+  requestId: ID!
+  songTitle: String!
+  artistName: String!
+  userName: String!
+  requestType: RequestType!
+  queuePosition: Int!
+}
+
+type User {
+  userId: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  tier: TierLevel!
+  profileImage: String
+  createdAt: AWSTimestamp!
+}
+
+# Input Types
+input CreateEventInput {
+  venueName: String!
+  venueLocation: VenueLocationInput
+  startTime: AWSTimestamp!
+  endTime: AWSTimestamp!
+  status: EventStatus!
+}
+
+input VenueLocationInput {
+  address: String
+  city: String
+  province: String
+  latitude: Float
+  longitude: Float
+}
+
+input EventSettingsInput {
+  basePrice: Float
+  requestCapPerHour: Int
+  spotlightSlotsPerBlock: Int
+  spotlightPriceMultiplier: Float
+  allowDedications: Boolean
+  allowGroupRequests: Boolean
+  isSoldOut: Boolean
+}
+
+input SongInput {
+  title: String!
+  artist: String!
+  genre: String!
+  basePrice: Float!
+  isEnabled: Boolean
+  albumArt: String
+  duration: Int
+  spotifyId: String
+  itunesId: Int
+}
+
+input CreateRequestInput {
+  eventId: ID!
+  songId: ID!
+  requestType: RequestType!
+  dedication: String
+}
+
+# Queries
+type Query {
+  # Event queries
+  getEvent(eventId: ID!): Event
+  listActiveEvents: [Event!]!
+  listEventsByPerformer(performerId: ID!): [Event!]!
+  
+  # Song queries
+  getSong(songId: ID!): Song
+  listSongsByPerformer(performerId: ID!): [Song!]!
+  getEventTracklist(eventId: ID!): [Song!]!
+  
+  # Request queries
+  getRequest(requestId: ID!): Request
+  getQueue(eventId: ID!): Queue
+  
+  # User queries
+  getUser(userId: ID!): User
+}
+
+# Mutations
+type Mutation {
+  # Event mutations
+  createEvent(input: CreateEventInput!): Event
+  updateEventStatus(eventId: ID!, status: EventStatus!): Event
+  updateEventSettings(eventId: ID!, settings: EventSettingsInput!): Event
+  
+  # Song mutations
+  uploadTracklist(performerId: ID!, songs: [SongInput!]!): UploadTracklistResponse
+  updateSong(songId: ID!, updates: SongInput!): Song
+  deleteSong(songId: ID!): DeleteResponse
+  toggleSong(songId: ID!): Song
+  
+  # Request mutations
+  createRequest(input: CreateRequestInput!): Request
+  vetoRequest(requestId: ID!, reason: String): VetoResponse
+  reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
+}
+
+# Subscriptions
+type Subscription {
+  # Queue updates
+  onQueueUpdate(eventId: ID!): Queue
+    @aws_subscribe(mutations: ["reorderQueue", "createRequest", "vetoRequest"])
+  
+  # New requests
+  onNewRequest(eventId: ID!): Request
+    @aws_subscribe(mutations: ["createRequest"])
+  
+  # Request status changes
+  onRequestStatusChange(requestId: ID!): Request
+    @aws_subscribe(mutations: ["vetoRequest", "reorderQueue"])
+}
+
+# Response Types
+type UploadTracklistResponse {
+  success: Boolean!
+  songsAdded: Int!
+  message: String
+}
+
+type VetoResponse {
+  success: Boolean!
+  requestId: ID!
+  refundAmount: Float!
+  message: String
+}
+
+type DeleteResponse {
+  success: Boolean!
+  message: String
+}
+
+# Schema
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

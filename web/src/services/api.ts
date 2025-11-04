@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, HttpLink, ApolloLink, from } from '@apollo/client';
+import { ApolloClient, InMemoryCache, HttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import awsconfig from '../aws-exports';
