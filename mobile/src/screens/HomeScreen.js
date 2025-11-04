@@ -5,6 +5,11 @@ import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
   const { user, logout } = useAuth();
+  
+  // Get user role from attributes (if configured in Cognito)
+  const userRole = user?.attributes?.['custom:role'] || 'AUDIENCE';
+  const isPerformer = userRole === 'PERFORMER';
+  
   return (
     <LinearGradient
       colors={['#1f2937', '#111827']}
@@ -12,43 +17,100 @@ export default function HomeScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>🎵 BeatMatchMe</Text>
-          <Text style={styles.subtitle}>Request Your Favorite Songs</Text>
+          <Text style={styles.title}>
+            {isPerformer ? '🎧 DJ Portal' : '🎵 BeatMatchMe'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {isPerformer ? 'Manage Your Event' : 'Request Your Favorite Songs'}
+          </Text>
           {user && (
             <Text style={styles.userName}>Welcome, {user.attributes?.name || 'User'}!</Text>
           )}
+          <Text style={styles.roleText}>
+            Role: {isPerformer ? 'Performer' : 'Audience'}
+          </Text>
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => navigation.navigate('SongSelection')}
-          >
-            <Text style={styles.primaryButtonText}>🎸 Browse Songs</Text>
-          </TouchableOpacity>
+          {isPerformer ? (
+            // DJ/Performer buttons
+            <>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={() => navigation.navigate('Queue')}
+              >
+                <Text style={styles.primaryButtonText}>📋 Manage Queue</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => navigation.navigate('Queue')}
-          >
-            <Text style={styles.secondaryButtonText}>📋 View Queue</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => alert('DJ Library - Coming Soon!')}
+              >
+                <Text style={styles.secondaryButtonText}>🎸 My Library</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => navigation.navigate('RequestTracking')}
-          >
-            <Text style={styles.secondaryButtonText}>🎯 Track My Request</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => alert('Revenue Dashboard - Coming Soon!')}
+              >
+                <Text style={styles.secondaryButtonText}>💰 Revenue</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => alert('Event Settings - Coming Soon!')}
+              >
+                <Text style={styles.secondaryButtonText}>⚙️ Settings</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            // Audience buttons
+            <>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={() => navigation.navigate('SongSelection')}
+              >
+                <Text style={styles.primaryButtonText}>🎸 Browse Songs</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate('Queue')}
+              >
+                <Text style={styles.secondaryButtonText}>📋 View Queue</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => navigation.navigate('RequestTracking')}
+              >
+                <Text style={styles.secondaryButtonText}>🎯 Track My Request</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>How it works:</Text>
-          <Text style={styles.infoText}>1. Browse the DJ's tracklist</Text>
-          <Text style={styles.infoText}>2. Select your favorite song</Text>
-          <Text style={styles.infoText}>3. Choose request type & add-ons</Text>
-          <Text style={styles.infoText}>4. Pay securely</Text>
-          <Text style={styles.infoText}>5. Track your request in real-time!</Text>
+          <Text style={styles.infoTitle}>
+            {isPerformer ? 'DJ Features:' : 'How it works:'}
+          </Text>
+          {isPerformer ? (
+            <>
+              <Text style={styles.infoText}>• Manage your song queue</Text>
+              <Text style={styles.infoText}>• View incoming requests</Text>
+              <Text style={styles.infoText}>• Track revenue (coming soon)</Text>
+              <Text style={styles.infoText}>• Manage your library (coming soon)</Text>
+              <Text style={styles.infoText}>• Configure event settings (coming soon)</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.infoText}>1. Browse the DJ's tracklist</Text>
+              <Text style={styles.infoText}>2. Select your favorite song</Text>
+              <Text style={styles.infoText}>3. Choose request type & add-ons</Text>
+              <Text style={styles.infoText}>4. Pay securely</Text>
+              <Text style={styles.infoText}>5. Track your request in real-time!</Text>
+            </>
+          )}
         </View>
 
         <TouchableOpacity
@@ -139,6 +201,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8b5cf6',
     marginTop: 8,
+  },
+  roleText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   logoutButton: {
     backgroundColor: '#374151',

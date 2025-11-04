@@ -25,7 +25,9 @@ export default function LoginScreen({ navigation }) {
       await login(email, password);
       navigation.replace('Home');
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      console.error('Login error:', error);
+      const errorMsg = error.message || error.toString() || 'Unknown error occurred';
+      Alert.alert('Login Failed', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -43,7 +45,9 @@ export default function LoginScreen({ navigation }) {
       setMode('confirm');
       Alert.alert('Success', 'Check your email for verification code');
     } catch (error) {
-      Alert.alert('Signup Failed', error.message);
+      console.error('Signup error:', error);
+      const errorMsg = error.message || error.toString() || 'Unknown error occurred';
+      Alert.alert('Signup Failed', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -71,27 +75,34 @@ export default function LoginScreen({ navigation }) {
     return (
       <LinearGradient colors={['#1f2937', '#111827']} style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Verify Email</Text>
-          <Text style={styles.subtitle}>Enter the code sent to your email</Text>
+          <View style={styles.centerContent}>
+            <Text style={styles.logo}>✉️</Text>
+            <Text style={styles.title}>Verify Email</Text>
+            <Text style={styles.subtitle}>Enter the code sent to your email</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Verification Code"
-            placeholderTextColor="#9ca3af"
-            value={confirmCode}
-            onChangeText={setConfirmCode}
-            keyboardType="number-pad"
-          />
+            <TextInput
+              style={styles.input}
+              placeholder="Verification Code"
+              placeholderTextColor="#9ca3af"
+              value={confirmCode}
+              onChangeText={setConfirmCode}
+              keyboardType="number-pad"
+            />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleConfirm}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Confirming...' : 'Confirm Account'}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleConfirm}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Confirming...' : 'Confirm Account'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setMode('login')}>
+              <Text style={styles.linkText}>Back to login</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </LinearGradient>
     );
@@ -101,29 +112,32 @@ export default function LoginScreen({ navigation }) {
     return (
       <LinearGradient colors={['#1f2937', '#111827']} style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Choose Your Role</Text>
+          <View style={styles.centerContent}>
+            <Text style={styles.title}>Choose Your Role</Text>
+            <Text style={[styles.subtitle, {marginBottom: 30}]}>Select how you'll use BeatMatchMe</Text>
 
-          <TouchableOpacity
-            style={styles.roleCard}
-            onPress={() => setRole('PERFORMER')}
-          >
-            <Text style={styles.roleEmoji}>🎧</Text>
-            <Text style={styles.roleTitle}>I'm a Performer</Text>
-            <Text style={styles.roleSubtitle}>DJ, Band, or Artist</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.roleCard}
+              onPress={() => setRole('PERFORMER')}
+            >
+              <Text style={styles.roleEmoji}>🎧</Text>
+              <Text style={styles.roleTitle}>I'm a Performer</Text>
+              <Text style={styles.roleSubtitle}>DJ, Band, or Artist</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.roleCard}
-            onPress={() => setRole('AUDIENCE')}
-          >
-            <Text style={styles.roleEmoji}>🎵</Text>
-            <Text style={styles.roleTitle}>I'm Here to Request</Text>
-            <Text style={styles.roleSubtitle}>Music Lover & Fan</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.roleCard}
+              onPress={() => setRole('AUDIENCE')}
+            >
+              <Text style={styles.roleEmoji}>🎵</Text>
+              <Text style={styles.roleTitle}>I'm Here to Request</Text>
+              <Text style={styles.roleSubtitle}>Music Lover & Fan</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setMode('login')}>
-            <Text style={styles.linkText}>Already have an account? Login</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => setMode('login')}>
+              <Text style={styles.linkText}>Already have an account? Login</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </LinearGradient>
     );
@@ -133,16 +147,75 @@ export default function LoginScreen({ navigation }) {
     return (
       <LinearGradient colors={['#1f2937', '#111827']} style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Sign Up</Text>
-          <Text style={styles.subtitle}>Create your BeatMatchMe account</Text>
+          <View style={styles.centerContent}>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleBadgeText}>
+                {role === 'PERFORMER' ? '🎧 Performer' : '🎵 Audience'}
+              </Text>
+            </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            placeholderTextColor="#9ca3af"
-            value={name}
-            onChangeText={setName}
-          />
+            <Text style={styles.title}>Sign Up</Text>
+            <Text style={styles.subtitle}>Create your BeatMatchMe account</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor="#9ca3af"
+              value={name}
+              onChangeText={setName}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#9ca3af"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Password (min 8 characters)"
+              placeholderTextColor="#9ca3af"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setRole(null)}>
+              <Text style={styles.linkText}>Change role</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setMode('login')}>
+              <Text style={styles.linkText}>Already have an account? Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <LinearGradient colors={['#1f2937', '#111827']} style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.centerContent}>
+          <View style={styles.header}>
+            <Text style={styles.logo}>🎵</Text>
+            <Text style={styles.title}>BeatMatchMe</Text>
+            <Text style={styles.subtitle}>Live Music Request Platform</Text>
+          </View>
 
           <TextInput
             style={styles.input}
@@ -156,7 +229,7 @@ export default function LoginScreen({ navigation }) {
 
           <TextInput
             style={styles.input}
-            placeholder="Password (min 8 characters)"
+            placeholder="Password"
             placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
@@ -165,67 +238,22 @@ export default function LoginScreen({ navigation }) {
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSignup}
+            onPress={handleLogin}
             disabled={loading}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? 'Logging in...' : 'Login'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setMode('login')}>
-            <Text style={styles.linkText}>Already have an account? Login</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.linkText}>Forgot Password?</Text>
           </TouchableOpacity>
-        </ScrollView>
-      </LinearGradient>
-    );
-  }
 
-  return (
-    <LinearGradient colors={['#1f2937', '#111827']} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>🎵</Text>
-          <Text style={styles.title}>BeatMatchMe</Text>
-          <Text style={styles.subtitle}>Live Music Request Platform</Text>
+          <TouchableOpacity onPress={() => setMode('signup')}>
+            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+          </TouchableOpacity>
         </View>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#9ca3af"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#9ca3af"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Logging in...' : 'Login'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.linkText}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => setMode('signup')}>
-          <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
@@ -236,8 +264,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 20,
-    paddingTop: 80,
+    minHeight: '100%',
   },
   header: {
     alignItems: 'center',
@@ -313,5 +343,23 @@ const styles = StyleSheet.create({
   roleSubtitle: {
     fontSize: 14,
     color: '#9ca3af',
+  },
+  centerContent: {
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  roleBadge: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  roleBadgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

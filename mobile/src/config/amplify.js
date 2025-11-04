@@ -4,6 +4,14 @@
 
 import { Amplify } from 'aws-amplify';
 
+// Log environment variables for debugging
+console.log('=== Amplify Configuration ===');
+console.log('User Pool ID:', process.env.EXPO_PUBLIC_USER_POOL_ID);
+console.log('User Pool Client ID:', process.env.EXPO_PUBLIC_USER_POOL_CLIENT_ID);
+console.log('Region:', process.env.EXPO_PUBLIC_AWS_REGION);
+console.log('Identity Pool ID:', process.env.EXPO_PUBLIC_IDENTITY_POOL_ID);
+console.log('============================');
+
 const amplifyConfig = {
   Auth: {
     Cognito: {
@@ -40,7 +48,23 @@ const amplifyConfig = {
   },
 };
 
+console.log('Amplify config created:', JSON.stringify(amplifyConfig, null, 2));
+
 // Configure Amplify
-Amplify.configure(amplifyConfig);
+try {
+  Amplify.configure(amplifyConfig);
+  console.log('✓ Amplify configured successfully');
+} catch (configError) {
+  console.error('✗ Amplify configuration failed:', configError);
+  console.error('Config error details:', JSON.stringify(configError, null, 2));
+}
+
+// Test if Amplify is properly configured
+try {
+  const currentConfig = Amplify.getConfig();
+  console.log('Current Amplify config:', JSON.stringify(currentConfig, null, 2));
+} catch (getConfigError) {
+  console.error('Could not get Amplify config:', getConfigError);
+}
 
 export default amplifyConfig;
