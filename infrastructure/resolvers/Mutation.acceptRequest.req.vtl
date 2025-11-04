@@ -1,0 +1,33 @@
+## Mutation.acceptRequest Request Mapping Template
+## Accepts a pending request and assigns queue position
+
+#set($currentTime = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2018-05-29",
+  "operation": "UpdateItem",
+  "key": {
+    "requestId": $util.dynamodb.toDynamoDBJson($ctx.args.requestId)
+  },
+  "update": {
+    "expression": "SET #status = :accepted, acceptedAt = :now, queuePosition = :position",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":accepted": $util.dynamodb.toDynamoDBJson("ACCEPTED"),
+      ":now": $util.dynamodb.toDynamoDBJson($currentTime),
+      ":position": $util.dynamodb.toDynamoDBJson(999)
+    }
+  },
+  "condition": {
+    "expression": "#status = :pending AND setId = :setId",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":pending": $util.dynamodb.toDynamoDBJson("PENDING"),
+      ":setId": $util.dynamodb.toDynamoDBJson($ctx.args.setId)
+    }
+  }
+}

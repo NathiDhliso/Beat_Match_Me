@@ -206,14 +206,73 @@ interface QueueVisualizerProps {
     id: string;
     songTitle: string;
     artistName: string;
+    albumArt?: string;
     type: 'standard' | 'spotlight' | 'dedication';
     position: number;
+    userName?: string;
+    userTier?: string;
+    price?: number;
+    dedication?: string;
   }>;
+  onRequestTap?: (request: any) => void;
+  onAccept?: (id: string) => void;
   onVeto: (id: string) => void;
 }
 
-export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ requests, onVeto }) => {
+export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ 
+  requests, 
+  onRequestTap,
+  onAccept,
+  onVeto 
+}) => {
+  const [dragState, setDragState] = useState<{ id: string; startY: number; currentY: number } | null>(null);
   const nextRequests = requests.slice(0, 5);
+
+  const handlePointerDown = (e: React.PointerEvent, request: any) => {
+    e.preventDefault();
+    setDragState({ id: request.id, startY: e.clientY, currentY: e.clientY });
+  };
+
+  const handlePointerMove = (e: PointerEvent) => {
+    if (dragState) {
+      setDragState({ ...dragState, currentY: e.clientY });
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (dragState) {
+      const delta = dragState.currentY - dragState.startY;
+      
+      // Swipe up threshold (100px) - Accept
+      if (delta < -100 && onAccept) {
+        onAccept(dragState.id);
+      }
+      // Swipe down threshold (100px) - Veto
+      else if (delta > 100) {
+        onVeto(dragState.id);
+      }
+      // No significant swipe - Tap to view details
+      else if (Math.abs(delta) < 10 && onRequestTap) {
+        const request = requests.find(r => r.id === dragState.id);
+        if (request) {
+          onRequestTap(request);
+        }
+      }
+      
+      setDragState(null);
+    }
+  };
+
+  useEffect(() => {
+    if (dragState) {
+      window.addEventListener('pointermove', handlePointerMove as any);
+      window.addEventListener('pointerup', handlePointerUp);
+      return () => {
+        window.removeEventListener('pointermove', handlePointerMove as any);
+        window.removeEventListener('pointerup', handlePointerUp);
+      };
+    }
+  }, [dragState]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-30">
@@ -245,6 +304,10 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ reques
             dedication: 'border-pink-500',
           };
 
+          // Apply drag offset if this card is being dragged
+          const isDragging = dragState?.id === request.id;
+          const dragOffset = isDragging ? (dragState.currentY - dragState.startY) : 0;
+
           return (
             <div
               key={request.id}
@@ -252,35 +315,44 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ reques
               style={{
                 left: '50%',
                 top: '50%',
-                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y + dragOffset}px))`,
                 animationDelay: `${index * 0.2}s`,
+                transition: isDragging ? 'none' : 'transform 0.3s ease',
               }}
             >
               <div
-                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group`}
-                onMouseDown={(e) => {
-                  // Swipe down to veto
-                  const startY = e.clientY;
-                  const handleMove = (moveE: MouseEvent) => {
-                    if (moveE.clientY - startY > 50) {
-                      onVeto(request.id);
-                      window.removeEventListener('mousemove', handleMove);
-                    }
-                  };
-                  window.addEventListener('mousemove', handleMove);
-                  window.addEventListener('mouseup', () => {
-                    window.removeEventListener('mousemove', handleMove);
-                  }, { once: true });
+                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group relative ${
+                  isDragging && dragOffset < -50 ? 'ring-4 ring-green-500' : ''
+                } ${
+                  isDragging && dragOffset > 50 ? 'ring-4 ring-red-500' : ''
+                }`}
+                onPointerDown={(e) => handlePointerDown(e, request)}
+                style={{
+                  touchAction: 'none',
                 }}
               >
+                {/* Position Badge */}
                 <span className="text-white text-xs sm:text-sm font-bold">#{request.position}</span>
                 <Music className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white mt-1" />
                 
+                {/* Drag Indicators */}
+                {isDragging && dragOffset < -50 && (
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-green-400 font-bold text-sm whitespace-nowrap">
+                    ↑ ACCEPT
+                  </div>
+                )}
+                {isDragging && dragOffset > 50 && (
+                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-red-400 font-bold text-sm whitespace-nowrap">
+                    ↓ VETO
+                  </div>
+                )}
+                
                 {/* Tooltip */}
-                <div className="absolute -bottom-12 sm:-bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-lg rounded-lg px-2 py-1 sm:px-3 sm:py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                <div className="absolute -bottom-12 sm:-bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-lg rounded-lg px-2 py-1 sm:px-3 sm:py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                   <p className="text-white text-xs sm:text-sm font-semibold">{request.songTitle}</p>
                   <p className="text-gray-400 text-xs">{request.artistName}</p>
-                  <p className="text-xs text-gray-500 mt-1">Swipe down to veto</p>
+                  <p className="text-xs text-green-400 mt-1">↑ Swipe up to accept</p>
+                  <p className="text-xs text-red-400">↓ Swipe down to veto</p>
                 </div>
               </div>
 

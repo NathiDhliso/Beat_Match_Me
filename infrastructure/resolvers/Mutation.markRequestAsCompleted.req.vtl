@@ -1,0 +1,31 @@
+## Mutation.markRequestAsCompleted Request Mapping Template
+## Marks request as completed after song finishes
+
+#set($currentTime = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2018-05-29",
+  "operation": "UpdateItem",
+  "key": {
+    "requestId": $util.dynamodb.toDynamoDBJson($ctx.args.requestId)
+  },
+  "update": {
+    "expression": "SET #status = :completed, completedAt = :now",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":completed": $util.dynamodb.toDynamoDBJson("COMPLETED"),
+      ":now": $util.dynamodb.toDynamoDBJson($currentTime)
+    }
+  },
+  "condition": {
+    "expression": "#status = :playing",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":playing": $util.dynamodb.toDynamoDBJson("PLAYING")
+    }
+  }
+}

@@ -1,46 +1,33 @@
 /**
  * BeatMatchMe Component Library
- * Core Components Only
+ * Core Components Only - Existing Components
  */
 
-// Core Value Prop Features
+// Core Value Prop Features - EXISTING COMPONENTS ONLY
 export { TracklistManager } from './TracklistManager';
-export { RequestCapManager, SoldOutBanner } from './RequestCapManager';
-export { SpotlightSlots, SpotlightSettings } from './SpotlightSlots';
+export { RequestCapManager } from './RequestCapManager';
 export { EventSelection } from './EventSelection';
-export { TierModal } from './TierModal';
 export { RoleToggle } from './RoleToggle';
 export { FloatingActionBubble, StatusArc, CircularQueueVisualizer, GestureHandler } from './OrbitalInterface';
 export { DJLibrary } from './DJLibrary';
 export type { Track } from './DJLibrary';
 export { EventDiscovery, AlbumArtGrid, MassiveRequestButton, LockedInAnimation, EnergyBeam, NowPlayingCelebration } from './AudienceInterface';
 
-// DJ Discovery & Profile Management (Phase 1B Critical UX Fixes)
-export { DJCard, DJList, DJSearch, DJAvailabilityNotification } from './DJDiscovery';
-export type { DJProfile, SearchFilters } from './DJDiscovery';
+// Profile Management - EXISTING
 export { TierComparison, UserProfileScreen, DJProfileScreen, TIER_DATA } from './ProfileManagement';
 export type { TierInfo, UserProfileData, DJProfileData } from './ProfileManagement';
 
-// Discovery Workflow (Phase 1A - P0 CRITICAL)
-export { QRCodeGenerator, GeolocationDiscovery, QRCodeScanner } from './DiscoveryWorkflow';
-export type { EventWithLocation } from './DiscoveryWorkflow';
+// Social Login / OAuth - EXISTING
+export { SocialLoginButtons } from './SocialLoginButtons';
 
-// Social Login / OAuth (Phase 1 - P1)
-export { SocialLoginButtons, SocialLoginButtonsCompact } from './SocialLoginButtons';
-
-// Event Management (DJ-User Integration)
+// Event Management - EXISTING
 export { EventCreator } from './EventCreator';
 export { QRCodeDisplay } from './QRCodeDisplay';
 
-// Music Database Integration
+// Music Database Integration - EXISTING
 export { SongSearchModal } from './SongSearchModal';
 
-// REMOVED: Non-value-prop features
-// - Exploratory Features (Feeling Lucky, Genre Roulette) - Not in value prop
-// - Constellation Navigation - Not in value prop
-// - Social Features (Friends, Activity Feed) - Not in value prop
-
-// Notifications (Phase 7)
+// Notifications - EXISTING
 export {
   NotificationToast,
   NotificationCenter,
@@ -50,29 +37,26 @@ export {
 } from './Notifications';
 export type { Notification, NotificationType } from './Notifications';
 
-// Analytics (Phase 8)
-export {
-  StatsCard,
-  GenreChart,
-  RequestRateChart,
-  RevenueTracker,
-  AudienceInsights,
-  PerformanceMetrics,
-  AnalyticsDashboard,
-} from './Analytics';
-export type { AnalyticsData } from './Analytics';
+// Payment - EXISTING
+export { PaymentModal } from './PaymentModal';
+export { YocoCardInput } from './YocoCardInput';
 
-// REMOVED: Old components from cleanup
-// - RequestHistory, SongSelection, RequestConfirmation, GroupRequest, RequestTracking, QueueViews
-// These were part of the old UI that has been replaced
+// Queue Management - EXISTING
+export { QueueCard } from './QueueCard';
 
-// Payment
-export { PaymentModal, PaymentSuccessModal } from './PaymentModal';
-export type { PaymentData } from './PaymentModal';
+// Request Flow - Features 3 & 4 - EXISTING
+export { RequestConfirmation } from './RequestConfirmation';
+export { QueueTracking } from './QueueTracking';
 
-// REMOVED: Educational features - Not in value prop
-// - Genre education, DJ tips, etc. - Not core to request system
+// Theme - EXISTING
+export { useTheme, ThemeProvider, ThemeToggle, DarkModeGradients, DarkModeWrapper, SophisticatedCard, ElegantButton, DarkModeText, Divider } from './DarkModeTheme';
 
-// Utilities
-export * from '../utils/gradients';
-export * from '../utils/haptics';
+// FUTURE FEATURES - Components not yet implemented (commented out to prevent build errors)
+// export { TierModal } from './TierModal';
+// export { SpotlightSlots, SpotlightSettings } from './SpotlightSlots';
+// export { DJCard, DJList, DJSearch, DJAvailabilityNotification } from './DJDiscovery';
+// export { QRCodeGenerator, GeolocationDiscovery, QRCodeScanner } from './DiscoveryWorkflow';
+// export { GroupRequestModal, GroupRequestCard, GroupRequestDetails } from './GroupRequestModal';
+// export { UpvoteButton, UpvoteLeaderboard } from './UpvoteButton';
+// export { AnalyticsDashboard, RevenueChart, RequestAnalytics, AudienceInsights, PerformanceMetrics, ExportReports } from './Analytics';
+

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@aws-sdk/client-appsync": "^3.922.0",
     "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {

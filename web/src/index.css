@@ -14,3 +14,306 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Custom Animations for Features 3 & 4 */
+@layer utilities {
+  /* Pulse Glow Animation */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+      transform: scale(1.02);
+    }
+  }
+
+  /* Heartbeat Animation */
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(1.1);
+    }
+    50% {
+      transform: scale(1);
+    }
+    75% {
+      transform: scale(1.05);
+    }
+  }
+
+  /* Float Animation for Particles */
+  .animate-float {
+    animation: float linear infinite;
+  }
+  
+  @keyframes float {
+    0% {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px);
+      opacity: 0;
+    }
+  }
+
+  /* Confetti Animation */
+  .animate-confetti {
+    animation: confetti 1.5s ease-out forwards;
+  }
+  
+  @keyframes confetti {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--x, 0), var(--y, 100px)) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  /* Scale In Animation */
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out;
+  }
+  
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Vinyl Spin Animation */
+  .animate-vinyl-spin {
+    animation: vinylSpin 20s linear infinite;
+  }
+  
+  @keyframes vinylSpin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Swipe Animations */
+  .animate-swipe-left {
+    animation: swipeLeft 0.3s ease-out forwards;
+  }
+  
+  @keyframes swipeLeft {
+    0% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-100%) rotate(-10deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-swipe-right {
+    animation: swipeRight 0.3s ease-out forwards;
+  }
+  
+  @keyframes swipeRight {
+    0% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%) rotate(10deg);
+      opacity: 0;
+    }
+  }
+
+  /* Bounce Animation */
+  .animate-bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  @keyframes bounceIn {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Shimmer Animation */
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Slide Up Animation */
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  @keyframes slideUp {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Toast Slide In/Out Animations */
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  @keyframes slideInRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-out-right {
+    animation: slideOutRight 0.3s ease-in forwards;
+  }
+  
+  @keyframes slideOutRight {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+}
+
+/* Utility Classes */
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent;
+  }
+
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+  }
+
+  .button-primary {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 
+           text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl 
+           transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .button-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 
+           rounded-xl transition-all duration-300 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-xl 
+           text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 
+           transition-colors;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+
+  .modal-content {
+    @apply bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+  }
+
+  .tier-badge-bronze {
+    @apply bg-gradient-to-r from-orange-700 to-orange-500 text-white;
+  }
+
+  .tier-badge-silver {
+    @apply bg-gradient-to-r from-gray-400 to-gray-300 text-gray-900;
+  }
+
+  .tier-badge-gold {
+    @apply bg-gradient-to-r from-yellow-500 to-yellow-300 text-gray-900;
+  }
+
+  .tier-badge-platinum {
+    @apply bg-gradient-to-r from-gray-300 to-white text-gray-900;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
+}
+

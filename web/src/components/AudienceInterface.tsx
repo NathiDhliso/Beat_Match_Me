@@ -27,8 +27,14 @@ interface EventDiscoveryProps {
 export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelectEvent }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
 
   const currentEvent = events[currentIndex];
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
 
   const handleSwipe = (direction: 'left' | 'right') => {
     setSwipeDirection(direction);
@@ -37,11 +43,78 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
       if (direction === 'right' && currentEvent) {
         onSelectEvent(currentEvent.id);
       } else {
-        setCurrentIndex(prev => Math.min(prev + 1, events.length - 1));
+        setCurrentIndex(prev => Math.min(prev + 1, events.length));
         setSwipeDirection(null);
+        setDragOffset(0);
       }
     }, 300);
   };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+    if (touchStart) {
+      const offset = e.targetTouches[0].clientX - touchStart;
+      setDragOffset(offset);
+    }
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) {
+      setDragOffset(0);
+      return;
+    }
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      handleSwipe('left');
+    } else if (isRightSwipe) {
+      handleSwipe('right');
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  // Keyboard navigation
+  React.useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handleSwipe('left');
+      } else if (e.key === 'ArrowRight') {
+        handleSwipe('right');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, currentEvent]);
+
+  // Show "No more events" screen
+  if (currentIndex >= events.length) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center max-w-md px-4">
+          <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-white text-2xl font-bold mb-2">That's all for now!</h3>
+          <p className="text-gray-400 mb-6">No more events nearby. Check back later for new events.</p>
+          <button
+            onClick={() => setCurrentIndex(0)}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-semibold transition-all"
+          >
+            Review Events Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentEvent) {
     return (
@@ -57,12 +130,26 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
   return (
     <div className="h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       <div className="relative w-full max-w-md">
+        {/* Event Counter */}
+        <div className="text-center mb-4">
+          <span className="text-gray-400 text-sm">
+            Event {currentIndex + 1} of {events.length}
+          </span>
+        </div>
+
         {/* Event Card */}
         <div
-          className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${
+          className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 cursor-grab active:cursor-grabbing ${
             swipeDirection === 'left' ? 'animate-swipe-left' : ''
           } ${swipeDirection === 'right' ? 'animate-swipe-right' : ''}`}
-          style={{ height: 'min(600px, 70vh)' }}
+          style={{ 
+            height: 'min(600px, 70vh)',
+            transform: swipeDirection ? undefined : `translateX(${dragOffset}px) rotate(${dragOffset * 0.02}deg)`,
+            transition: swipeDirection ? 'all 0.3s ease-out' : dragOffset ? 'none' : 'all 0.3s ease-out',
+          }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           {/* Event Image/Gradient */}
           <div className="h-2/3 relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -76,6 +163,30 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
             <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2">
               <span className="text-white font-semibold">{currentEvent.distance}</span>
             </div>
+
+            {/* Swipe Direction Indicators */}
+            {dragOffset !== 0 && (
+              <>
+                {/* Skip indicator (left) */}
+                {dragOffset < -30 && (
+                  <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center backdrop-blur-sm transition-opacity">
+                    <div className="text-center">
+                      <X className="w-24 h-24 text-white mb-2 animate-pulse" />
+                      <p className="text-white text-2xl font-bold">SKIP</p>
+                    </div>
+                  </div>
+                )}
+                {/* Join indicator (right) */}
+                {dragOffset > 30 && (
+                  <div className="absolute inset-0 bg-green-500/30 flex items-center justify-center backdrop-blur-sm transition-opacity">
+                    <div className="text-center">
+                      <Heart className="w-24 h-24 text-white mb-2 animate-pulse" />
+                      <p className="text-white text-2xl font-bold">JOIN</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Event Info */}
@@ -99,23 +210,30 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
         <div className="flex justify-center gap-8 mt-8">
           <button
             onClick={() => handleSwipe('left')}
-            className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500 flex items-center justify-center hover:scale-110 transition-all"
+            className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500 flex items-center justify-center hover:scale-110 hover:bg-red-500/30 active:scale-95 transition-all"
+            aria-label="Skip event"
           >
             <X className="w-8 h-8 text-red-500" />
           </button>
           
           <button
             onClick={() => handleSwipe('right')}
-            className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center hover:scale-110 transition-all"
+            className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center hover:scale-110 hover:bg-green-500/30 active:scale-95 transition-all"
+            aria-label="Join event"
           >
             <Heart className="w-10 h-10 text-green-500" />
           </button>
         </div>
 
         {/* Swipe Hint */}
-        <p className="text-center text-gray-400 text-sm mt-4">
-          Swipe right to join • Swipe left to skip
-        </p>
+        <div className="text-center text-gray-400 text-sm mt-4 space-y-1">
+          <p className="hidden md:block">
+            Press <kbd className="px-2 py-1 bg-gray-800 rounded text-xs">←</kbd> to skip or <kbd className="px-2 py-1 bg-gray-800 rounded text-xs">→</kbd> to join
+          </p>
+          <p className="md:hidden">
+            Swipe or tap buttons below
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -133,32 +251,43 @@ interface AlbumGridProps {
     genre: string;
   }>;
   onSelectSong: (song: any) => void;
+  selectedSongId?: string;
 }
 
-export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong }) => {
+export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, selectedSongId }) => {
   const [scrollY, setScrollY] = useState(0);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollY(e.currentTarget.scrollTop);
   };
 
+  const handleSelectSong = (song: any) => {
+    onSelectSong(song);
+  };
+
   return (
-    <div className="h-full overflow-y-auto" onScroll={handleScroll}>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+    <div className="h-full overflow-y-auto pb-4" onScroll={handleScroll}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 p-4">
         {songs.map((song, index) => {
           // Parallax effect - different speeds for different rows
           const row = Math.floor(index / 4);
-          const parallaxOffset = (scrollY * (row % 3 === 0 ? 0.1 : row % 3 === 1 ? 0.2 : 0.3));
+          const parallaxOffset = (scrollY * (row % 3 === 0 ? 0.05 : row % 3 === 1 ? 0.1 : 0.15));
+          const isSelected = selectedSongId === song.id;
           
           return (
-            <div
+            <button
               key={song.id}
-              className="relative group cursor-pointer"
+              className={`relative group cursor-pointer focus:outline-none rounded-2xl transition-all ${
+                isSelected 
+                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-gray-900' 
+                  : 'focus:ring-2 focus:ring-purple-500'
+              }`}
               style={{
-                transform: `translateY(${parallaxOffset}px)`,
-                transition: 'transform 0.1s ease-out',
+                transform: `translateY(${parallaxOffset}px) scale(${isSelected ? 1.05 : 1})`,
+                transition: 'transform 0.2s ease-out',
               }}
-              onClick={() => onSelectSong(song)}
+              onClick={() => handleSelectSong(song)}
+              aria-label={`Select ${song.title} by ${song.artist}`}
             >
               {/* Album Art */}
               <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 relative">
@@ -170,8 +299,17 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong }) 
                   </div>
                 )}
                 
+                {/* Selected Checkmark */}
+                {isSelected && (
+                  <div className="absolute top-2 left-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-scale-in">
+                    <Check className="w-5 h-5 text-gray-900" />
+                  </div>
+                )}
+                
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className={`absolute inset-0 bg-black/60 ${
+                  isSelected ? 'opacity-100 bg-yellow-400/20' : 'opacity-0'
+                } group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center`}>
                   <div className="text-center p-4">
                     <p className="text-white font-semibold text-sm mb-1 truncate">{song.title}</p>
                     <p className="text-gray-300 text-xs truncate">{song.artist}</p>
@@ -179,7 +317,7 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong }) 
                 </div>
 
                 {/* Genre Badge */}
-                <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
                   {song.genre}
                 </div>
               </div>
@@ -189,7 +327,7 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong }) 
                 <p className="text-white text-sm font-semibold truncate">{song.title}</p>
                 <p className="text-gray-400 text-xs truncate">{song.artist}</p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -204,24 +342,35 @@ interface RequestButtonProps {
   onPress: () => void;
   disabled?: boolean;
   price: number;
+  selectedSong?: string;
 }
 
-export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, disabled, price }) => {
+export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, disabled, price, selectedSong }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
       <button
         onClick={onPress}
         disabled={disabled}
-        className={`w-full h-20 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-bold text-2xl shadow-2xl pointer-events-auto ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-glow hover:scale-105'
-        } transition-all flex items-center justify-center gap-3`}
+        className={`w-full h-16 sm:h-20 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-bold text-lg sm:text-2xl shadow-2xl pointer-events-auto ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-glow hover:scale-105 active:scale-95'
+        } transition-all flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3`}
         style={{
-          boxShadow: '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3)',
+          boxShadow: disabled 
+            ? '0 0 20px rgba(168, 85, 247, 0.3)' 
+            : '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3)',
         }}
       >
-        <Zap className="w-8 h-8" />
-        <span>Request Song - R{price}</span>
-        <Zap className="w-8 h-8" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Zap className="w-6 h-6 sm:w-8 sm:h-8" />
+          <span className="hidden sm:inline">Request Song - R{price}</span>
+          <span className="sm:hidden text-base">Request - R{price}</span>
+          <Zap className="w-6 h-6 sm:w-8 sm:h-8" />
+        </div>
+        {selectedSong && (
+          <span className="text-xs sm:text-sm text-purple-200 truncate max-w-[200px] sm:max-w-xs">
+            {selectedSong}
+          </span>
+        )}
       </button>
     </div>
   );
@@ -255,17 +404,23 @@ export const LockedInAnimation: React.FC<LockedInProps> = ({ songTitle, onComple
         
         {/* Confetti Effect */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: '50%',
-                animationDelay: `${Math.random() * 0.5}s`,
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const randomX = (Math.random() - 0.5) * 200;
+            const randomY = Math.random() * 300 + 100;
+            return (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-confetti"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: '50%',
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  '--x': `${randomX}px`,
+                  '--y': `${randomY}px`,
+                } as React.CSSProperties}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
@@ -332,22 +487,28 @@ export const NowPlayingCelebration: React.FC<NowPlayingProps> = ({ songTitle, ar
   }, [onDismiss]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 flex items-center justify-center z-50 animate-vinyl-spin">
+    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 flex items-center justify-center z-50">
       <div className="text-center relative">
         {/* Confetti Burst */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-3 h-3 rounded-full animate-confetti"
-              style={{
-                left: `${50 + (Math.random() - 0.5) * 100}%`,
-                top: '50%',
-                background: `hsl(${Math.random() * 360}, 70%, 60%)`,
-                animationDelay: `${Math.random() * 0.5}s`,
-              }}
-            />
-          ))}
+          {[...Array(50)].map((_, i) => {
+            const randomX = (Math.random() - 0.5) * 400;
+            const randomY = Math.random() * 400 + 100;
+            return (
+              <div
+                key={i}
+                className="absolute w-3 h-3 rounded-full animate-confetti"
+                style={{
+                  left: `${50 + (Math.random() - 0.5) * 100}%`,
+                  top: '50%',
+                  background: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  '--x': `${randomX}px`,
+                  '--y': `${randomY}px`,
+                } as React.CSSProperties}
+              />
+            );
+          })}
         </div>
 
         {/* Now Playing Badge */}

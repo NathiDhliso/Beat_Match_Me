@@ -39,13 +39,13 @@ enum UserTier {
 
 type Event {
   eventId: ID!
-  venueName: String!
+  venueName: String
   venueLocation: VenueLocation
-  startTime: AWSTimestamp!
-  endTime: AWSTimestamp!
+  startTime: AWSTimestamp
+  endTime: AWSTimestamp
   status: EventStatus!
   theme: String
-  createdBy: ID!
+  createdBy: ID
   createdAt: AWSTimestamp!
   totalRevenue: Float!
   totalRequests: Int!
@@ -114,6 +114,8 @@ type Request {
   songTitle: String!
   artistName: String!
   genre: String
+  albumArt: String
+  duration: String
   status: RequestStatus!
   requestType: RequestType!
   price: Float!
@@ -121,19 +123,25 @@ type Request {
   dedication: String
   shoutout: String
   submittedAt: AWSTimestamp!
+  acceptedAt: AWSTimestamp
   playedAt: AWSTimestamp
   vetoedAt: AWSTimestamp
+  vetoReason: String
+  vetoedBy: ID
   transactionId: String!
+  refundTransactionId: String
   groupRequestId: String
   upvotes: Int!
 }
 
 enum RequestStatus {
   PENDING
+  ACCEPTED
   APPROVED
   PLAYING
   COMPLETED
   VETOED
+  VETOED_REFUND_PENDING
 }
 
 enum RequestType {
@@ -329,7 +337,10 @@ type Mutation {
   toggleSetAvailability(setId: ID!, isAcceptingRequests: Boolean!): DJSet
   
   createRequest(input: CreateRequestInput!): Request
+  acceptRequest(requestId: ID!, setId: ID!): Request
   updateRequestStatus(requestId: ID!, status: RequestStatus!): Request
+  markRequestAsPlaying(requestId: ID!, setId: ID!): Request
+  markRequestAsCompleted(requestId: ID!): Request
   vetoRequest(requestId: ID!, reason: String): Request
   
   reorderQueue(setId: ID!, orderedRequestIds: [ID!]!): Queue

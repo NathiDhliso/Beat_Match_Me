@@ -133,15 +133,13 @@ export const getUserRequests = /* GraphQL */ `
 export const getEventTracklist = /* GraphQL */ `
   query GetEventTracklist($eventId: ID!) {
     getEventTracklist(eventId: $eventId) {
-      songs {
-        id
-        title
-        artist
-        genre
-        duration
-        albumArt
-      }
-      lastUpdated
+      trackId
+      title
+      artist
+      genre
+      duration
+      albumArt
+      basePrice
     }
   }
 `;
@@ -469,6 +467,70 @@ export async function submitUploadTracklist(performerId: string, songs: any[]) {
   const response: any = await client.graphql({ query: uploadTracklist, variables: { performerId, songs } });
   return response.data.uploadTracklist;
 }
+
+// ============================================
+// NEW MUTATIONS - Features 6, 10, 12
+// ============================================
+
+export const acceptRequest = /* GraphQL */ `
+  mutation AcceptRequest($requestId: ID!, $setId: ID!) {
+    acceptRequest(requestId: $requestId, setId: $setId) {
+      requestId
+      status
+      acceptedAt
+      queuePosition
+      songTitle
+      artistName
+    }
+  }
+`;
+
+export const markRequestAsPlaying = /* GraphQL */ `
+  mutation MarkRequestAsPlaying($requestId: ID!, $setId: ID!) {
+    markRequestAsPlaying(requestId: $requestId, setId: $setId) {
+      requestId
+      status
+      playedAt
+      songTitle
+      artistName
+    }
+  }
+`;
+
+export const markRequestAsCompleted = /* GraphQL */ `
+  mutation MarkRequestAsCompleted($requestId: ID!) {
+    markRequestAsCompleted(requestId: $requestId) {
+      requestId
+      status
+      completedAt
+    }
+  }
+`;
+
+export async function submitAcceptRequest(requestId: string, setId: string) {
+  const response: any = await client.graphql({
+    query: acceptRequest,
+    variables: { requestId, setId }
+  });
+  return response.data.acceptRequest;
+}
+
+export async function submitMarkPlaying(requestId: string, setId: string) {
+  const response: any = await client.graphql({
+    query: markRequestAsPlaying,
+    variables: { requestId, setId }
+  });
+  return response.data.markRequestAsPlaying;
+}
+
+export async function submitMarkCompleted(requestId: string) {
+  const response: any = await client.graphql({
+    query: markRequestAsCompleted,
+    variables: { requestId }
+  });
+  return response.data.markRequestAsCompleted;
+}
+
 
 export async function submitSetEventTracklist(eventId: string, songIds: string[]) {
   const response: any = await client.graphql({ query: setEventTracklist, variables: { eventId, songIds } });

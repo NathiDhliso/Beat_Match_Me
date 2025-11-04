@@ -1,0 +1,33 @@
+## Mutation.markRequestAsPlaying Request Mapping Template
+## Marks request as currently playing
+
+#set($currentTime = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2018-05-29",
+  "operation": "UpdateItem",
+  "key": {
+    "requestId": $util.dynamodb.toDynamoDBJson($ctx.args.requestId)
+  },
+  "update": {
+    "expression": "SET #status = :playing, playedAt = :now",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":playing": $util.dynamodb.toDynamoDBJson("PLAYING"),
+      ":now": $util.dynamodb.toDynamoDBJson($currentTime)
+    }
+  },
+  "condition": {
+    "expression": "#status = :accepted AND setId = :setId AND queuePosition = :position",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":accepted": $util.dynamodb.toDynamoDBJson("ACCEPTED"),
+      ":setId": $util.dynamodb.toDynamoDBJson($ctx.args.setId),
+      ":position": $util.dynamodb.toDynamoDBJson(1)
+    }
+  }
+}

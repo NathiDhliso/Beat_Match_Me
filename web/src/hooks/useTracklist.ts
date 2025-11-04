@@ -7,7 +7,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchEventTracklist } from '../services/graphql';
 import { useQueue } from './useQueue';
-import { useEvent } from './useEvent';
 
 export interface Song {
   id: string;
@@ -23,7 +22,6 @@ export interface Song {
 
 export function useTracklist(eventId: string | null) {
   const { queue } = useQueue(eventId || '');
-  const { event } = useEvent(eventId);
   const [tracklist, setTracklist] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,16 +40,21 @@ export function useTracklist(eventId: string | null) {
         // Fetch tracklist from backend
         const data = await fetchEventTracklist(eventId);
         
-        if (data && data.songs) {
+        if (data && Array.isArray(data)) {
           // Add basePrice from event settings and mark songs in queue
           const queuedSongKeys = new Set(
             queue?.orderedRequests?.map((r: any) => `${r.songTitle}-${r.artistName}`) || []
           );
           
-          const enrichedSongs = data.songs.map((song: any) => ({
-            ...song,
-            basePrice: event?.settings?.basePrice || 20,
-            isInQueue: queuedSongKeys.has(`${song.title}-${song.artist}`),
+          const enrichedSongs = data.map((track: any) => ({
+            id: track.trackId,
+            title: track.title,
+            artist: track.artist,
+            genre: track.genre,
+            duration: track.duration,
+            albumArt: track.albumArt,
+            basePrice: track.basePrice || 20,
+            isInQueue: queuedSongKeys.has(`${track.title}-${track.artist}`),
           }));
           
           setTracklist(enrichedSongs);
@@ -71,7 +74,7 @@ export function useTracklist(eventId: string | null) {
     };
 
     loadTracklist();
-  }, [eventId, queue, event]);
+  }, [eventId, queue?.orderedRequests]);
 
   // Extract unique genres from tracklist
   const genres = useMemo(() => {

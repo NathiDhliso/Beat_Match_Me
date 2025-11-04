@@ -21,10 +21,21 @@
   #set($position = $position + 1)
 #end
 
+## Get eventId and performerId from first item if available
+#if($ctx.result.items.size() > 0)
+  #set($eventId = $ctx.result.items[0].eventId)
+  #set($performerId = $ctx.result.items[0].performerId)
+#else
+  ## If no items, we need to fetch DJ set info
+  ## For now return empty strings - frontend should handle this
+  #set($eventId = "UNKNOWN")
+  #set($performerId = "UNKNOWN")
+#end
+
 {
   "setId": "$ctx.args.setId",
-  "eventId": "$ctx.result.items[0].eventId",
-  "performerId": "$ctx.result.items[0].performerId",
+  "eventId": "$eventId",
+  "performerId": "$performerId",
   "orderedRequests": $util.toJson($orderedRequests),
   "lastUpdated": $util.time.nowEpochMilliSeconds(),
   "currentlyPlaying": null

@@ -17,12 +17,28 @@ AWS region (default: us-east-1)
 #>
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$ApiId,
     
     [Parameter(Mandatory=$false)]
     [string]$Region = "us-east-1"
 )
+
+# Load API ID from config if not provided
+if (-not $ApiId) {
+    $configPath = Join-Path $PSScriptRoot "appsync-config.json"
+    if (Test-Path $configPath) {
+        $config = Get-Content $configPath | ConvertFrom-Json
+        $ApiId = $config.ApiId
+        $Region = $config.Region
+        Write-Host "📋 Loaded configuration from appsync-config.json" -ForegroundColor Cyan
+    } else {
+        Write-Error "API ID not provided and appsync-config.json not found"
+        Write-Host ""
+        Write-Host "Usage: .\deploy-schema-and-resolvers.ps1 -ApiId <your-api-id>" -ForegroundColor Yellow
+        exit 1
+    }
+}
 
 Write-Host "🚀 Deploying GraphQL Schema and Resolvers to AppSync" -ForegroundColor Cyan
 Write-Host "API ID: $ApiId" -ForegroundColor Yellow

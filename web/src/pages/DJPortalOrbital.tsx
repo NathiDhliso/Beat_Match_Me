@@ -16,8 +16,13 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode } from 'lucide-react';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play } from 'lucide-react';
 import { EventCreator, QRCodeDisplay } from '../components';
+import { AcceptRequestPanel } from '../components/AcceptRequestPanel';
+import { VetoConfirmation } from '../components/VetoConfirmation';
+import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
+import { NowPlayingCard } from '../components/NowPlayingCard';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted } from '../services/graphql';
 
 type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
 
@@ -39,6 +44,15 @@ export const DJPortalOrbital: React.FC = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [mySets, setMySets] = useState<any[]>([]);
   const [showSetSelector, setShowSetSelector] = useState(false);
+
+  // Features 6, 10, 12 - Accept/Veto/Playing state
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [showAcceptPanel, setShowAcceptPanel] = useState(false);
+  const [showVetoModal, setShowVetoModal] = useState(false);
+  const [showPlayingPanel, setShowPlayingPanel] = useState(false);
+  const [showPlayingCelebration, setShowPlayingCelebration] = useState(false);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Load performer's DJ sets on mount
   useEffect(() => {
@@ -205,7 +219,108 @@ export const DJPortalOrbital: React.FC = () => {
 
   const handleVeto = (requestId: string) => {
     console.log('Veto request:', requestId);
-    // TODO: Implement veto with GraphQL mutation
+    const request = queueRequests.find((r: any) => r.requestId === requestId);
+    if (request) {
+      setSelectedRequest(request);
+      setShowVetoModal(true);
+    }
+  };
+
+  // Features 6, 10, 12 - Request Management Handlers
+  const handleRequestTap = (request: any) => {
+    setSelectedRequest(request);
+    setShowAcceptPanel(true);
+  };
+
+  const handleAccept = async () => {
+    if (!selectedRequest || !currentSetId) return;
+    setIsProcessing(true);
+    
+    try {
+      await submitAcceptRequest(selectedRequest.requestId, currentSetId);
+      setShowAcceptPanel(false);
+      setSelectedRequest(null);
+      // Queue will auto-refresh via WebSocket
+      console.log('✅ Request accepted successfully');
+    } catch (error) {
+      console.error('❌ Accept failed:', error);
+      alert('Failed to accept request. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleVetoConfirm = async (reason?: string) => {
+    if (!selectedRequest) return;
+    setIsProcessing(true);
+    
+    try {
+      await submitVeto(selectedRequest.requestId, reason);
+      setShowVetoModal(false);
+      setSelectedRequest(null);
+      console.log('✅ Request vetoed, refund processing automatically');
+    } catch (error) {
+      console.error('❌ Veto failed:', error);
+      alert('Failed to veto request. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleMarkPlaying = () => {
+    // Get the #1 request in queue
+    const topRequest = queueRequests.find((r: any) => r.queuePosition === 1) || queueRequests[0];
+    if (topRequest) {
+      setSelectedRequest(topRequest);
+      setShowPlayingPanel(true);
+    }
+  };
+
+  const handlePlayingConfirm = async () => {
+    if (!selectedRequest || !currentSetId) return;
+    setIsProcessing(true);
+    
+    try {
+      await submitMarkPlaying(selectedRequest.requestId, currentSetId);
+      setShowPlayingPanel(false);
+      setShowPlayingCelebration(true);
+      setCurrentlyPlaying({
+        requestId: selectedRequest.requestId,
+        songTitle: selectedRequest.songTitle,
+        artistName: selectedRequest.artistName,
+        albumArt: selectedRequest.albumArt,
+        duration: selectedRequest.duration || '3:00',
+        userName: selectedRequest.userName,
+        userTier: selectedRequest.userTier,
+        price: selectedRequest.price,
+        startedAt: Date.now(),
+      });
+      
+      // Auto-hide celebration after 2 seconds
+      setTimeout(() => {
+        setShowPlayingCelebration(false);
+      }, 2000);
+
+      console.log('✅ Marked as playing successfully');
+    } catch (error) {
+      console.error('❌ Mark playing failed:', error);
+      alert('Failed to mark as playing. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleMarkComplete = async () => {
+    if (!currentlyPlaying) return;
+    
+    try {
+      await submitMarkCompleted(currentlyPlaying.requestId);
+      setCurrentlyPlaying(null);
+      console.log('✅ Request marked as completed');
+    } catch (error) {
+      console.error('❌ Mark complete failed:', error);
+      alert('Failed to mark as complete.');
+    }
   };
 
   const handleEventCreated = async (eventId: string, setId?: string) => {
@@ -455,10 +570,25 @@ export const DJPortalOrbital: React.FC = () => {
                 </div>
               ) : queueRequests.length > 0 ? (
                 // Has Event + Requests
-                <CircularQueueVisualizer
-                  requests={queueRequests}
-                  onVeto={handleVeto}
-                />
+                <div className="flex flex-col items-center gap-6">
+                  <CircularQueueVisualizer
+                    requests={queueRequests}
+                    onVeto={handleVeto}
+                    onRequestTap={handleRequestTap}
+                    onAccept={handleAccept}
+                  />
+                  
+                  {/* Play Next Song Button (Feature 12) */}
+                  {!currentlyPlaying && queueRequests.length > 0 && (
+                    <button
+                      onClick={handleMarkPlaying}
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-full shadow-2xl transition-all transform hover:scale-105 flex items-center gap-3"
+                    >
+                      <Play className="w-6 h-6" />
+                      <span className="text-lg">Play Next Song</span>
+                    </button>
+                  )}
+                </div>
               ) : (
                 // Has Event, No Requests
                 <div className="text-center max-w-md">
@@ -690,6 +820,66 @@ export const DJPortalOrbital: React.FC = () => {
             eventId={currentEventId}
             venueName={currentEvent.venueName}
             onClose={() => setShowQRCode(false)}
+          />
+        )}
+
+        {/* Features 6, 10, 12 - Request Management Modals */}
+        {showAcceptPanel && selectedRequest && (
+          <AcceptRequestPanel
+            request={selectedRequest}
+            onAccept={handleAccept}
+            onSkip={() => {
+              setShowAcceptPanel(false);
+              setShowVetoModal(true);
+            }}
+            onClose={() => {
+              setShowAcceptPanel(false);
+              setSelectedRequest(null);
+            }}
+            isProcessing={isProcessing}
+          />
+        )}
+
+        {showVetoModal && selectedRequest && (
+          <VetoConfirmation
+            request={selectedRequest}
+            onConfirm={handleVetoConfirm}
+            onCancel={() => {
+              setShowVetoModal(false);
+              setSelectedRequest(null);
+            }}
+            isProcessing={isProcessing}
+          />
+        )}
+
+        {showPlayingPanel && selectedRequest && (
+          <MarkPlayingPanel
+            request={{
+              ...selectedRequest,
+              waitTime: selectedRequest.submittedAt 
+                ? Math.floor((Date.now() - selectedRequest.submittedAt) / 60000)
+                : 0,
+            }}
+            onConfirm={handlePlayingConfirm}
+            onCancel={() => {
+              setShowPlayingPanel(false);
+              setSelectedRequest(null);
+            }}
+            isProcessing={isProcessing}
+          />
+        )}
+
+        {showPlayingCelebration && selectedRequest && (
+          <PlayingCelebration
+            request={selectedRequest}
+            onComplete={() => setShowPlayingCelebration(false)}
+          />
+        )}
+
+        {currentlyPlaying && (
+          <NowPlayingCard
+            playing={currentlyPlaying}
+            onMarkComplete={handleMarkComplete}
           />
         )}
       </div>
