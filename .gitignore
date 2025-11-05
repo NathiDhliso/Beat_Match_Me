@@ -15,6 +15,10 @@ QUICK_START_GOOGLE_OAUTH.md
 SETUP_GOOGLE_NOW.md
 web/.env
 mobile/.env
+github-actions-credentials.txt
+*credentials*.txt
+cloudfront-current.json
+cloudfront-updated.json
 *.lock-wscript
 tmp.lock
 *.tsbuildinfo
