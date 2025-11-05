@@ -110,7 +110,7 @@ export const DJPortalOrbital: React.FC = () => {
 
       // Close context after short delay to free resources
       setTimeout(() => {
-        try { audioContext.close(); } catch (e) { /* ignore */ }
+        try { audioContext.close(); } catch { /* ignore */ }
       }, 1000);
     } catch (error) {
       console.log('Could not play notification sound:', error);

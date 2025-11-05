@@ -237,7 +237,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       await Promise.race([signOut(), timeout]);
       setUser(null);
-    } catch (err: any) {
+    } catch {
       // Even if logout times out, clear user locally
       setUser(null);
       console.warn('Logout timeout, cleared local session');

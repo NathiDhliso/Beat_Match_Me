@@ -46,9 +46,6 @@ export {
 // Payment - EXISTING
 export { YocoCardInput } from './YocoCardInput';
 
-// Queue Management - EXISTING
-export { QueueCard } from './QueueCard';
-
 // Request Flow - Features 3 & 4 - EXISTING
 export { RequestConfirmation } from './RequestConfirmation';
 export { RefundConfirmation } from './RefundConfirmation';

@@ -1,6 +1,27 @@
 {
+  "name": "beatmatchme",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "mobile",
+    "aws/lambda"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "dev:web": "npm run dev -w web",
+    "dev:mobile": "npm run start -w mobile",
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm run build -w web",
+    "test": "npm run test --workspaces --if-present",
+    "test:web": "npm run test -w web",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  },
   "dependencies": {
     "@aws-sdk/client-appsync": "^3.922.0",
+    "graphql": "^16.9.0",
+    "aws-amplify": "^6.15.7",
     "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {

@@ -904,10 +904,15 @@ export const UserPortalInnovative: React.FC = () => {
                   
                   // 4. Submit request to backend with payment proof
                   console.log('Submitting request to backend...');
+                  
+                  if (!user?.userId) {
+                    throw new Error('User ID not found');
+                  }
+                  
                   const request = await submitRequest({
                     eventId: currentEventId!,
                     setId: currentSetId!,
-                    userId: user?.userId!,
+                    userId: user.userId,
                     songId: selectedSong.id,
                     songTitle: selectedSong.title,
                     artistName: selectedSong.artist,

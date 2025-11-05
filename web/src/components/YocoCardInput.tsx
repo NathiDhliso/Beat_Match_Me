@@ -1,17 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, Lock } from 'lucide-react';
+import type { YocoSDKInstance, YocoResult } from '../types/yoco';
 
 interface YocoCardInputProps {
   amount: number;
   onSuccess: (token: string) => void;
   onError: (error: string) => void;
   publicKey: string;
-}
-
-declare global {
-  interface Window {
-    YocoSDK: any;
-  }
 }
 
 export const YocoCardInput: React.FC<YocoCardInputProps> = ({
@@ -22,7 +17,7 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
 }) => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const sdkRef = useRef<any>(null);
+  const sdkRef = useRef<YocoSDKInstance | null>(null);
 
   useEffect(() => {
     // Load Yoco SDK
@@ -37,7 +32,7 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
             publicKey: publicKey || 'pk_test_ed3c54a6gOol69qa7f45',
           });
           setLoading(false);
-        } catch (error) {
+        } catch {
           onError('Failed to initialize payment');
           setLoading(false);
         }
@@ -70,18 +65,19 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
         currency: 'ZAR',
         name: 'BeatMatchMe',
         description: 'Song Request Payment',
-        callback: function (result: any) {
+        callback: function (result: YocoResult) {
           if (result.error) {
             onError(result.error.message || 'Payment failed');
             setProcessing(false);
-          } else {
+          } else if (result.id) {
             onSuccess(result.id);
             setProcessing(false);
           }
         },
       });
-    } catch (error: any) {
-      onError(error.message || 'Payment failed');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
+      onError(errorMessage);
       setProcessing(false);
     }
   };

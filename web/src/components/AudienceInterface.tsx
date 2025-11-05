@@ -94,7 +94,6 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, currentEvent]);
 
   // Show "No more events" screen
