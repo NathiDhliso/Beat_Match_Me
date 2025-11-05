@@ -6,6 +6,8 @@ type User {
   profileImage: String
   tier: UserTier!
   phone: String
+  bio: String
+  genres: [String!]
   createdAt: AWSTimestamp!
   updatedAt: AWSTimestamp!
   stats: UserStats!
@@ -325,15 +327,34 @@ input GroupRequestInput {
   targetAmount: Float!
 }
 
+input UpdateDJSetSettingsInput {
+  requestCapPerHour: Int
+  basePrice: Float
+  isSoldOut: Boolean
+  allowDedications: Boolean
+  allowGroupRequests: Boolean
+  spotlightSlotsPerBlock: Int
+}
+
+input UpdateDJProfileInput {
+  name: String
+  bio: String
+  genres: [String!]
+  photo: String
+  basePrice: Float
+}
+
 type Mutation {
   createUser(email: String!, name: String!, role: UserRole!): User
   updateUser(userId: ID!, name: String, profileImage: String, phone: String): User
+  updateDJProfile(userId: ID!, input: UpdateDJProfileInput!): User
   
   createEvent(input: CreateEventInput!): Event
   updateEventStatus(eventId: ID!, status: EventStatus!): Event
   
   createDJSet(input: CreateDJSetInput!): DJSet
   updateDJSetStatus(setId: ID!, status: SetStatus!): DJSet
+  updateDJSetSettings(setId: ID!, input: UpdateDJSetSettingsInput!): DJSet
   toggleSetAvailability(setId: ID!, isAcceptingRequests: Boolean!): DJSet
   
   createRequest(input: CreateRequestInput!): Request

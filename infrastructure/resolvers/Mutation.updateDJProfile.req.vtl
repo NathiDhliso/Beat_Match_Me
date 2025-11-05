@@ -1,0 +1,63 @@
+## Mutation.updateDJProfile Request Mapping Template
+## Updates DJ user profile (bio, genres, name, photo, basePrice)
+
+#set($update = {})
+#set($expressionNames = {})
+#set($expressionValues = {})
+
+## Build the update expression dynamically based on provided input
+#if($ctx.args.input.name)
+  $!{update.put("#name", ":name")}
+  $!{expressionNames.put("#name", "name")}
+  $!{expressionValues.put(":name", $util.dynamodb.toDynamoDBJson($ctx.args.input.name))}
+#end
+
+#if($ctx.args.input.bio)
+  $!{update.put("bio", ":bio")}
+  $!{expressionValues.put(":bio", $util.dynamodb.toDynamoDBJson($ctx.args.input.bio))}
+#end
+
+#if($ctx.args.input.genres)
+  $!{update.put("genres", ":genres")}
+  $!{expressionValues.put(":genres", $util.dynamodb.toDynamoDBJson($ctx.args.input.genres))}
+#end
+
+#if($ctx.args.input.photo)
+  $!{update.put("profileImage", ":photo")}
+  $!{expressionValues.put(":photo", $util.dynamodb.toDynamoDBJson($ctx.args.input.photo))}
+#end
+
+## Add updatedAt timestamp
+$!{update.put("updatedAt", ":updatedAt")}
+$!{expressionValues.put(":updatedAt", $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()))}
+
+## Build SET expression
+#set($updateExpression = "SET ")
+#set($first = true)
+#foreach($key in $update.keySet())
+  #if(!$first)
+    #set($updateExpression = "$updateExpression, ")
+  #end
+  #set($updateExpression = "$updateExpression $key = $update.get($key)")
+  #set($first = false)
+#end
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "userId": $util.dynamodb.toDynamoDBJson($ctx.args.userId)
+  },
+  "update": {
+    "expression": "$updateExpression"
+    #if(!$expressionValues.isEmpty())
+      ,"expressionValues": $util.toJson($expressionValues)
+    #end
+    #if(!$expressionNames.isEmpty())
+      ,"expressionNames": $util.toJson($expressionNames)
+    #end
+  },
+  "condition": {
+    "expression": "attribute_exists(userId)"
+  }
+}

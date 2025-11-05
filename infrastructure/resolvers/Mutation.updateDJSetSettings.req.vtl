@@ -1,0 +1,66 @@
+## Mutation.updateDJSetSettings Request Mapping Template
+## Updates DJ set settings (request cap, pricing, sold-out mode, etc.)
+
+#set($update = {})
+#set($expressionNames = {})
+#set($expressionValues = {})
+
+## Build the update expression dynamically based on provided input
+#if($ctx.args.input.requestCapPerHour)
+  $!{update.put("settings.requestCapPerHour", ":requestCap")}
+  $!{expressionValues.put(":requestCap", $util.dynamodb.toDynamoDBJson($ctx.args.input.requestCapPerHour))}
+#end
+
+#if($ctx.args.input.basePrice)
+  $!{update.put("settings.basePrice", ":basePrice")}
+  $!{expressionValues.put(":basePrice", $util.dynamodb.toDynamoDBJson($ctx.args.input.basePrice))}
+#end
+
+#if($ctx.args.input.isSoldOut != $null)
+  $!{update.put("isAcceptingRequests", ":isAccepting")}
+  ## Invert isSoldOut to isAcceptingRequests
+  $!{expressionValues.put(":isAccepting", $util.dynamodb.toDynamoDBJson(!$ctx.args.input.isSoldOut))}
+#end
+
+#if($ctx.args.input.allowDedications != $null)
+  $!{update.put("settings.allowDedications", ":allowDedications")}
+  $!{expressionValues.put(":allowDedications", $util.dynamodb.toDynamoDBJson($ctx.args.input.allowDedications))}
+#end
+
+#if($ctx.args.input.allowGroupRequests != $null)
+  $!{update.put("settings.allowGroupRequests", ":allowGroupRequests")}
+  $!{expressionValues.put(":allowGroupRequests", $util.dynamodb.toDynamoDBJson($ctx.args.input.allowGroupRequests))}
+#end
+
+#if($ctx.args.input.spotlightSlotsPerBlock)
+  $!{update.put("settings.spotlightSlotsPerBlock", ":spotlightSlots")}
+  $!{expressionValues.put(":spotlightSlots", $util.dynamodb.toDynamoDBJson($ctx.args.input.spotlightSlotsPerBlock))}
+#end
+
+## Build SET expression
+#set($updateExpression = "SET ")
+#set($first = true)
+#foreach($key in $update.keySet())
+  #if(!$first)
+    #set($updateExpression = "$updateExpression, ")
+  #end
+  #set($updateExpression = "$updateExpression $key = $update.get($key)")
+  #set($first = false)
+#end
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "setId": $util.dynamodb.toDynamoDBJson($ctx.args.setId)
+  },
+  "update": {
+    "expression": "$updateExpression"
+    #if(!$expressionValues.isEmpty())
+      ,"expressionValues": $util.toJson($expressionValues)
+    #end
+    #if(!$expressionNames.isEmpty())
+      ,"expressionNames": $util.toJson($expressionNames)
+    #end
+  }
+}
