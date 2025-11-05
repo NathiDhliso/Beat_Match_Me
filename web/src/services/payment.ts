@@ -40,9 +40,9 @@ interface RefundResult {
   estimatedDays: string;
 }
 
-// Yoco API configuration - uncomment and use in production
-// const YOCO_PUBLIC_KEY = process.env.REACT_APP_YOCO_PUBLIC_KEY || '';
-// const YOCO_SECRET_KEY = process.env.REACT_APP_YOCO_SECRET_KEY || '';
+// Yoco API configuration (for future backend integration)
+// const YOCO_PUBLIC_KEY = import.meta.env.VITE_YOCO_PUBLIC_KEY || '';
+// const YOCO_SECRET_KEY = import.meta.env.VITE_YOCO_SECRET_KEY || '';
 // const YOCO_API_BASE = 'https://payments.yoco.com/api/checkouts';
 
 /**

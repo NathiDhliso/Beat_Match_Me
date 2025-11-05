@@ -3,7 +3,7 @@
 
 resource "aws_cognito_user_pool_client" "web_client" {
   name         = "beatmatchme-web-public"
-  user_pool_id = "us-east-1_m1PhjZ4yD"
+  user_pool_id = "us-east-1_g5ri75gFs"
 
   # Public client - no secret for web apps
   generate_secret = false

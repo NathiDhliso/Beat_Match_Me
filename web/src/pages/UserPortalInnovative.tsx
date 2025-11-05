@@ -224,7 +224,9 @@ export const UserPortalInnovative: React.FC = () => {
         }
         
         const { generateClient } = await import('aws-amplify/api');
-        const client = generateClient();
+        const client = generateClient({
+          authMode: 'userPool'
+        });
         
         const response: any = await client.graphql({
           query: `
@@ -240,8 +242,7 @@ export const UserPortalInnovative: React.FC = () => {
                 }
               }
             }
-          `,
-          authMode: 'userPool'
+          `
         });
         
         console.log('✅ Events fetched:', response.data.listActiveEvents);

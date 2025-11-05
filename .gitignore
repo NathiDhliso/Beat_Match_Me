@@ -40,3 +40,15 @@ mobile/.expo/
 mobile/node_modules/
 infra/.terraform/
 infra/terraform.tfstate*
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfstate*
+terraform/*.tfvars
+!terraform/*.tfvars.example
+terraform/environments/*.tfvars
+!terraform/environments/*.tfvars.example
+
+# Lambda environment files
+aws/lambda/.env
+!aws/lambda/.env.example

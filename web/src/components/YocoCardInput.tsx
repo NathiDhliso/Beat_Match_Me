@@ -18,6 +18,9 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const sdkRef = useRef<YocoSDKInstance | null>(null);
+  
+  // Get Yoco public key from props or environment
+  const yocoPublicKey = publicKey || import.meta.env.VITE_YOCO_PUBLIC_KEY || '';
 
   useEffect(() => {
     // Load Yoco SDK
@@ -29,7 +32,7 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
       if (window.YocoSDK) {
         try {
           sdkRef.current = new window.YocoSDK({
-            publicKey: publicKey || 'pk_test_ed3c54a6gOol69qa7f45',
+            publicKey: yocoPublicKey,
           });
           setLoading(false);
         } catch {
@@ -49,7 +52,7 @@ export const YocoCardInput: React.FC<YocoCardInputProps> = ({
     return () => {
       document.body.removeChild(script);
     };
-  }, [publicKey, onError]);
+  }, [yocoPublicKey, onError]);
 
   const handlePayment = async () => {
     if (!sdkRef.current) {

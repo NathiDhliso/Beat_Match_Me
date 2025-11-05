@@ -13,15 +13,22 @@ const authLink = setContext(async (_, { headers }) => {
   try {
     const session = await fetchAuthSession();
     const token = session.tokens?.idToken?.toString();
+    
+    console.log('🔑 Auth Link - Token present:', !!token);
+    
+    if (!token) {
+      console.warn('⚠️ No ID token found in session');
+      return { headers };
+    }
 
     return {
       headers: {
         ...headers,
-        authorization: token ? `Bearer ${token}` : '',
+        Authorization: token,  // AppSync expects 'Authorization' not 'authorization'
       },
     };
   } catch (error) {
-    console.error('Error getting auth token:', error);
+    console.error('❌ Error getting auth token:', error);
     return { headers };
   }
 });

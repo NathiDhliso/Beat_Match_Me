@@ -134,6 +134,9 @@ resource "aws_lambda_function" "functions" {
       ENVIRONMENT           = var.environment
       S3_BUCKET_NAME       = aws_s3_bucket.assets.id
       USER_NOTIFICATIONS_TOPIC = aws_sns_topic.notifications.arn
+      YOCO_SECRET_KEY      = var.yoco_secret_key
+      YOCO_PUBLIC_KEY      = var.yoco_public_key
+      YOCO_API_BASE_URL    = "https://payments.yoco.com/api/checkouts"
     }
   }
 

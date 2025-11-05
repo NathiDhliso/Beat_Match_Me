@@ -76,6 +76,18 @@ variable "alert_email" {
   default     = "alerts@beatmatchme.com"
 }
 
+# Yoco Payment Configuration
+variable "yoco_secret_key" {
+  description = "Yoco secret key for payment processing"
+  type        = string
+  sensitive   = true
+}
+
+variable "yoco_public_key" {
+  description = "Yoco public key for payment processing"
+  type        = string
+}
+
 # Tags
 variable "additional_tags" {
   description = "Additional tags to apply to resources"

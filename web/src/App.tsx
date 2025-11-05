@@ -9,6 +9,7 @@ import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { DJPortalOrbital as DJPortal } from './pages/DJPortalOrbital';
 import { UserPortalInnovative as UserPortal } from './pages/UserPortalInnovative';
+import { YocoTestPage } from './pages/YocoTestPage';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFORMER' | 'AUDIENCE' }> = ({
@@ -139,6 +140,7 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/yoco-test" element={<YocoTestPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route
                 path="/dj-portal"

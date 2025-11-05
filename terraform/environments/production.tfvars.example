@@ -1,0 +1,14 @@
+# Production Environment Configuration
+environment = "production"
+aws_region  = "us-east-1"
+
+# Yoco Payment - LIVE KEYS (REPLACE WITH YOUR ACTUAL LIVE KEYS)
+yoco_secret_key = "sk_live_YOUR_LIVE_SECRET_KEY_HERE"
+yoco_public_key = "pk_live_YOUR_LIVE_PUBLIC_KEY_HERE"
+
+# Alert email
+alert_email = "alerts@beatmatchme.com"
+
+# Lambda Configuration (Production optimized)
+lambda_memory_size = 1024
+lambda_timeout     = 60

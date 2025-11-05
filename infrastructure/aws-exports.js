@@ -8,8 +8,8 @@ const awsconfig = {
   
   // Amazon Cognito
   cognito: {
-    userPoolId: 'us-east-1_m1PhjZ4yD',
-    userPoolWebClientId: '748pok6842ocsr2bpkm4nhtqnl',
+    userPoolId: 'us-east-1_g5ri75gFs',
+    userPoolWebClientId: '5k2gpu9k57710ck1dcu93lo93t',
     region: 'us-east-1',
     // Optional: Configure OAuth if needed
     oauth: {

@@ -95,7 +95,7 @@ async function updateUserTier(userId, newTier, oldTier) {
   try {
     await cognito
       .adminUpdateUserAttributes({
-        UserPoolId: 'us-east-1_m1PhjZ4yD',
+        UserPoolId: 'us-east-1_g5ri75gFs',
         Username: userId,
         UserAttributes: [
           {
