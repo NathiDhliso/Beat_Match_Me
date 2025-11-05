@@ -103,6 +103,9 @@ A transparent request system where:
    - Find DJs by name, genre, or venue
    - See DJ availability status
    - Filter by distance, genre, price range
+   - View real performer names (not placeholders)
+   - See attendee count per event
+   - Calculate and display distance from user location
 
 2. **DJ Discovery**
    - Search for specific DJs
@@ -115,7 +118,7 @@ A transparent request system where:
    - Browse DJ's available songs
    - See price BEFORE requesting
    - Request song with payment
-   - Get confirmation ("Locked In")
+   - Get confirmation with queue position
    - Track request in queue
 
 4. **Queue Tracking**
@@ -128,6 +131,8 @@ A transparent request system where:
    - Secure payment (Yoco/PayFast/Ozow)
    - Automatic refund on veto
    - Payment history
+   - Error recovery with retry option
+   - Clear payment failure reasons
 
 6. **Profile Management**
    - Update user profile
@@ -138,6 +143,13 @@ A transparent request system where:
    - Transparent pricing
    - Guaranteed refund on veto
    - Clear queue position visibility
+
+8. **User Experience Quality**
+   - Loading states for all async operations
+   - Empty state messages when no data available
+   - Offline mode detection and notification
+   - Success confirmation after payment
+   - Graceful error handling with actionable feedback
 
 ---
 
@@ -249,6 +261,9 @@ A transparent request system where:
    - Clear refund policy
    - Visible queue updates
    - Honest status messages (no "loading..." when backend failed)
+   - Loading indicators for all async operations
+   - Empty states with clear next actions
+   - Error messages with recovery options
 
 ---
 
@@ -277,6 +292,13 @@ A transparent request system where:
 - ✅ Event playlist management (preset and custom)
 - ✅ Playlist persistence across sessions
 - ✅ Live mode controls (GO LIVE, PAUSE)
+- ✅ Loading states for all async operations
+- ✅ Empty state messaging (no events, no songs, etc.)
+- ✅ Payment error recovery UI
+- ✅ Success confirmation with queue position
+- ✅ Real performer name display
+- ✅ Attendee count per event
+- ✅ Geolocation and distance calculation
 
 ### P1 (Should Have - First Month):
 - Revenue analytics (DJ)
@@ -285,6 +307,9 @@ A transparent request system where:
 - Genre suggestions API
 - Spotify/iTunes auto-fill (optional)
 - Profile management (both personas)
+- Refund visibility in payment history
+- DJ earnings dashboard
+- Event editing capability
 
 ### P2 (Nice to Have - Quarter 1):
 - Advanced filtering (events by genre, price, distance)
@@ -380,6 +405,17 @@ A transparent request system where:
 
 ## 📝 Change Log
 
+### November 5, 2025 - UX Quality Improvements
+- Added P0 requirement: Loading states for all async operations
+- Added P0 requirement: Empty state messaging (no events, no songs, etc.)
+- Added P0 requirement: Payment error recovery UI with retry
+- Added P0 requirement: Success confirmation modal with queue position
+- Added P0 requirement: Real performer name display (not placeholders)
+- Added P0 requirement: Attendee count per event
+- Added P0 requirement: Geolocation and distance calculation
+- Updated UI/UX guardrails: Trust Through Clarity section expanded
+- Audience features updated: Added user experience quality requirements
+
 ### November 5, 2025 - Playlist Persistence & Live Mode Controls
 - Added event-specific playlist management (preset and custom playlists)
 - Added playlist persistence to backend (auto-loads saved playlists across sessions)
@@ -424,4 +460,4 @@ A transparent request system where:
 ---
 
 **Last Updated:** November 5, 2025  
-**Status:** Active - Playlist persistence and live mode controls deployed to production
+**Status:** Active - UX quality improvements deployed (loading states, empty states, payment error recovery, geolocation, attendee counts)

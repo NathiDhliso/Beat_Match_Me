@@ -197,6 +197,58 @@ export const UserPortalInnovative: React.FC = () => {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [performerNames, setPerformerNames] = useState<Record<string, string>>({});
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  // Helper: Request user's location for distance calculation
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          console.log('📍 User location acquired:', position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.warn('⚠️ Geolocation permission denied or unavailable:', error);
+          // Continue without location - will show "Nearby" instead of distance
+        }
+      );
+    }
+  }, []);
+
+  // Helper: Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  };
+
+  // Helper: Format distance string
+  const formatDistance = (distanceKm: number): string => {
+    if (distanceKm < 1) {
+      return `${Math.round(distanceKm * 1000)}m away`;
+    } else if (distanceKm < 10) {
+      return `${distanceKm.toFixed(1)} km away`;
+    } else {
+      return `${Math.round(distanceKm)} km away`;
+    }
+  };
 
   // Helper: Fetch performer name by userId
   const fetchPerformerName = async (userId: string): Promise<string> => {
@@ -231,6 +283,36 @@ export const UserPortalInnovative: React.FC = () => {
     } catch (error) {
       console.warn(`Failed to fetch performer name for ${userId}:`, error);
       return 'DJ'; // Fallback
+    }
+  };
+
+  // Helper: Fetch attendee count for an event
+  const fetchAttendeeCount = async (eventId: string): Promise<number> => {
+    try {
+      const { generateClient } = await import('aws-amplify/api');
+      const client = generateClient({ authMode: 'userPool' });
+      
+      const response: any = await client.graphql({
+        query: `
+          query GetQueue($eventId: ID!) {
+            getQueue(eventId: $eventId) {
+              orderedRequests {
+                userName
+              }
+            }
+          }
+        `,
+        variables: { eventId }
+      });
+
+      const requests = response.data?.getQueue?.orderedRequests || [];
+      
+      // Count unique users (attendees)
+      const uniqueUsers = new Set(requests.map((r: any) => r.userName));
+      return uniqueUsers.size;
+    } catch (error) {
+      console.warn(`Failed to fetch attendee count for event ${eventId}:`, error);
+      return 0; // Fallback
     }
   };
 
@@ -273,6 +355,13 @@ export const UserPortalInnovative: React.FC = () => {
                 items {
                   eventId
                   venueName
+                  venueLocation {
+                    address
+                    city
+                    province
+                    latitude
+                    longitude
+                  }
                   startTime
                   endTime
                   status
@@ -288,30 +377,48 @@ export const UserPortalInnovative: React.FC = () => {
         // Handle connection response (deployed schema returns { items: [], nextToken: null })
         const rawEvents = response.data.listActiveEvents?.items || [];
         
-        // Transform events and fetch performer names
+        // Transform events and fetch performer names, attendee counts, and calculate distances
         const transformedEvents = await Promise.all(
           rawEvents.map(async (event: any) => {
             // Fetch DJ name asynchronously
             const djName = event.createdBy ? await fetchPerformerName(event.createdBy) : 'DJ';
             
+            // Fetch attendee count asynchronously
+            const attendees = await fetchAttendeeCount(event.eventId);
+            
+            // Calculate distance if user location and venue location are available
+            let distance = 'Nearby';
+            if (userLocation && event.venueLocation?.latitude && event.venueLocation?.longitude) {
+              const distanceKm = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                event.venueLocation.latitude,
+                event.venueLocation.longitude
+              );
+              distance = formatDistance(distanceKm);
+            } else if (event.venueLocation?.city) {
+              distance = event.venueLocation.city; // Show city if no coordinates
+            }
+            
             return {
               id: event.eventId,
               eventId: event.eventId,
               venueName: event.venueName,
+              venueLocation: event.venueLocation,
               performerId: event.createdBy,
               djName, // Now shows real performer name!
               startTime: event.startTime,
               endTime: event.endTime,
               status: event.status,
               genre: 'All Genres', // TODO: Get from event settings
-              attendees: 0, // TODO: Get real count
-              distance: 'Nearby', // TODO: Calculate from geolocation when venueLocation is available
+              attendees, // Now shows real attendee count!
+              distance, // Now shows real distance or city!
               image: null, // TODO: Get venue/DJ image
             };
           })
         );
         
-        console.log('📋 Transformed events with DJ names:', transformedEvents);
+        console.log('📋 Transformed events with DJ names, attendees, and distances:', transformedEvents);
         
         setEvents(transformedEvents);
       } catch (error: any) {
