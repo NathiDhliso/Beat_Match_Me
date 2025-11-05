@@ -4,8 +4,8 @@
  */
 
 export const SPOTIFY_CONFIG = {
-  clientId: '4fce2b706ca44c78b7892a3625d14fd1',
-  clientSecret: 'e38d3deae7144a62bb3b0d9f59c37931',
+  clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID || '',
+  clientSecret: import.meta.env.VITE_SPOTIFY_CLIENT_SECRET || '',
   redirectUri: typeof window !== 'undefined' ? `${window.location.origin}/callback` : 'http://localhost:5173/callback',
   scopes: [
     'user-read-private',

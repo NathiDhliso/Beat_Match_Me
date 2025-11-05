@@ -26,9 +26,13 @@ interface SongData {
   previewUrl?: string;
 }
 
-// Spotify API credentials
-const SPOTIFY_CLIENT_ID = '4fce2b706ca44c78b7892a3625d14fd1';
-const SPOTIFY_CLIENT_SECRET = 'e38d3deae7144a62bb3b0d9f59c37931';
+// Spotify API credentials - from environment variables
+const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
+const SPOTIFY_CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET || '';
+
+if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
+  console.warn('⚠️ Spotify credentials not configured. Set VITE_SPOTIFY_CLIENT_ID and VITE_SPOTIFY_CLIENT_SECRET in .env file');
+}
 
 let accessToken: string | null = null;
 let tokenExpirationTime = 0;
