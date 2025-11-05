@@ -52,3 +52,6 @@ terraform/environments/*.tfvars
 # Lambda environment files
 aws/lambda/.env
 !aws/lambda/.env.example
+
+# Deployment summaries with sensitive data
+YOCO_DEPLOYMENT_SUMMARY.md

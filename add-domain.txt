@@ -1,0 +1,14 @@
+aws amplify create-domain-association `
+  --app-id d2e60cfthu6tcm `
+  --domain-name beatmatchme.com `
+  --sub-domain-settings '[
+    {
+      \"prefix\": \"\",
+      \"branchName\": \"main\"
+    },
+    {
+      \"prefix\": \"www\",
+      \"branchName\": \"main\"
+    }
+  ]' `
+  --region us-east-1

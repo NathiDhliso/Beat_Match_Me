@@ -46,6 +46,11 @@ export {
 // Payment - EXISTING
 export { YocoCardInput } from './YocoCardInput';
 
+// Payment & Earnings - NEW
+export { PaymentPage } from './PaymentPage';
+export { PayoutDashboard } from './PayoutDashboard';
+export { PaymentAccess, QuickRequestButton } from './PaymentAccess';
+
 // Request Flow - Features 3 & 4 - EXISTING
 export { RequestConfirmation } from './RequestConfirmation';
 export { RefundConfirmation } from './RefundConfirmation';
