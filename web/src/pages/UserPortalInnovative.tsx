@@ -23,8 +23,11 @@ import { RequestConfirmation } from '../components/RequestConfirmation';
 import { NotificationCenter } from '../components/Notifications';
 import { UserNowPlayingNotification } from '../components/LiveModeIndicators';
 import { UniversalHelp } from '../components/UniversalHelp';
+import { EmptyState } from '../components/EmptyState';
+import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
+import { PaymentErrorModal, SuccessConfirmation } from '../components/StatusModals';
 import { requestNotificationPermission } from '../services/notifications';
-import { LogOut, User, Star, ArrowLeft, Bell } from 'lucide-react';
+import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
 import { submitRequest, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';
@@ -55,11 +58,8 @@ export const UserPortalInnovative: React.FC = () => {
   const [userPlayingData, setUserPlayingData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  
-  // Note: isProcessing and paymentError will be used for enhanced error UI in future iteration
-  if (isProcessing && paymentError) {
-    // Future: Show payment error modal with retry button
-  }
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successQueuePosition, setSuccessQueuePosition] = useState<number | null>(null);
 
   // Feature 6: Refund modal state
   const [showRefundModal, setShowRefundModal] = useState(false);
@@ -196,6 +196,43 @@ export const UserPortalInnovative: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
+  const [performerNames, setPerformerNames] = useState<Record<string, string>>({});
+
+  // Helper: Fetch performer name by userId
+  const fetchPerformerName = async (userId: string): Promise<string> => {
+    // Check cache first
+    if (performerNames[userId]) {
+      return performerNames[userId];
+    }
+
+    try {
+      const { generateClient } = await import('aws-amplify/api');
+      const client = generateClient({ authMode: 'userPool' });
+      
+      const response: any = await client.graphql({
+        query: `
+          query GetUser($userId: ID!) {
+            getUser(userId: $userId) {
+              userId
+              name
+              email
+            }
+          }
+        `,
+        variables: { userId }
+      });
+
+      const userName = response.data?.getUser?.name || 'DJ';
+      
+      // Update cache
+      setPerformerNames(prev => ({ ...prev, [userId]: userName }));
+      
+      return userName;
+    } catch (error) {
+      console.warn(`Failed to fetch performer name for ${userId}:`, error);
+      return 'DJ'; // Fallback
+    }
+  };
 
   useEffect(() => {
     const fetchActiveEvents = async () => {
@@ -251,23 +288,30 @@ export const UserPortalInnovative: React.FC = () => {
         // Handle connection response (deployed schema returns { items: [], nextToken: null })
         const rawEvents = response.data.listActiveEvents?.items || [];
         
-        // Transform events to match EventDiscovery component expectations
-        const transformedEvents = rawEvents.map((event: any) => ({
-          id: event.eventId,
-          eventId: event.eventId,
-          venueName: event.venueName,
-          performerId: event.createdBy, // Use createdBy as performerId
-          djName: 'DJ', // TODO: Fetch performer name from performerId
-          startTime: event.startTime,
-          endTime: event.endTime,
-          status: event.status,
-          genre: 'All Genres', // TODO: Get from event settings
-          attendees: 0, // TODO: Get real count
-          distance: 'Nearby', // TODO: Calculate from geolocation when venueLocation is available
-          image: null, // TODO: Get venue/DJ image
-        }));
+        // Transform events and fetch performer names
+        const transformedEvents = await Promise.all(
+          rawEvents.map(async (event: any) => {
+            // Fetch DJ name asynchronously
+            const djName = event.createdBy ? await fetchPerformerName(event.createdBy) : 'DJ';
+            
+            return {
+              id: event.eventId,
+              eventId: event.eventId,
+              venueName: event.venueName,
+              performerId: event.createdBy,
+              djName, // Now shows real performer name!
+              startTime: event.startTime,
+              endTime: event.endTime,
+              status: event.status,
+              genre: 'All Genres', // TODO: Get from event settings
+              attendees: 0, // TODO: Get real count
+              distance: 'Nearby', // TODO: Calculate from geolocation when venueLocation is available
+              image: null, // TODO: Get venue/DJ image
+            };
+          })
+        );
         
-        console.log('📋 Transformed events:', transformedEvents);
+        console.log('📋 Transformed events with DJ names:', transformedEvents);
         
         setEvents(transformedEvents);
       } catch (error: any) {
@@ -657,35 +701,29 @@ export const UserPortalInnovative: React.FC = () => {
         {viewState === 'discovery' && (
           <>
             {eventsLoading ? (
-              <div className="flex items-center justify-center h-screen">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
-                  <p className="text-gray-400">Loading events...</p>
+              <LoadingState message="Finding events near you...">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 mt-8">
+                  <EventCardSkeleton />
+                  <EventCardSkeleton />
+                  <EventCardSkeleton />
                 </div>
-              </div>
+              </LoadingState>
             ) : eventsError ? (
-              <div className="flex items-center justify-center h-screen p-4">
-                <div className="max-w-md w-full bg-red-500/10 border border-red-500/50 rounded-2xl p-6 text-center">
-                  <div className="text-red-400 text-5xl mb-4">⚠️</div>
-                  <h3 className="text-xl font-bold text-red-400 mb-3">Unable to Load Events</h3>
-                  <p className="text-gray-300 mb-4">{eventsError}</p>
-                  <div className="bg-black/30 rounded-lg p-4 text-left text-sm text-gray-400">
-                    <p className="font-semibold mb-2">Technical Details:</p>
-                    <p>The backend AppSync API needs configuration:</p>
-                    <ul className="list-disc ml-4 mt-2 space-y-1">
-                      <li>Query: listActiveEvents</li>
-                      <li>Resolver: Query.listActiveEvents.vtl</li>
-                      <li>Data source: DynamoDB Events table</li>
-                    </ul>
-                  </div>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
+              <EmptyState
+                emoji="⚠️"
+                title="Unable to Load Events"
+                message={eventsError}
+                action={{
+                  label: "Retry",
+                  onClick: () => window.location.reload()
+                }}
+              />
+            ) : events.length === 0 ? (
+              <EmptyState
+                icon={Calendar}
+                title="No Events Nearby"
+                message="Check back soon or try a different location. New events are added daily!"
+              />
             ) : (
               <EventDiscovery
                 events={events}
@@ -840,16 +878,28 @@ export const UserPortalInnovative: React.FC = () => {
             )}
 
             {tracklistLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-white text-xl">Loading songs...</div>
-              </div>
-            ) : songs.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <p className="text-gray-400 text-xl mb-2">No songs available</p>
-                  <p className="text-gray-500 text-sm">The DJ hasn't added any songs yet</p>
+              <LoadingState message="Loading DJ's library...">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 mt-8">
+                  <SongCardSkeleton />
+                  <SongCardSkeleton />
+                  <SongCardSkeleton />
+                  <SongCardSkeleton />
                 </div>
-              </div>
+              </LoadingState>
+            ) : songs.length === 0 ? (
+              <EmptyState
+                icon={Music}
+                title="No Songs Available"
+                message="The DJ hasn't uploaded their tracklist yet. Check back soon!"
+                action={{
+                  label: "Back to Events",
+                  onClick: () => {
+                    setCurrentEventId(null);
+                    setCurrentSetId(null);
+                    setViewState('discovery');
+                  }
+                }}
+              />
             ) : (
               <>
                 <AlbumArtGrid
@@ -945,21 +995,17 @@ export const UserPortalInnovative: React.FC = () => {
                     payment.transactionId
                   );
                   
-                  // 6. Show success animation
-                  setShowLockedIn(true);
+                  // 6. Show success modal with queue position
+                  setSuccessQueuePosition(request.queuePosition || 1);
+                  setShowSuccessModal(true);
+                  setMyRequestPosition(request.queuePosition || null);
                   
-                  // 7. Transition to waiting state
-                  setTimeout(() => {
-                    setShowLockedIn(false);
-                    setViewState('waiting');
-                    setMyRequestPosition(request.queuePosition || null);
-                    
-                    addNotification({
-                      type: 'info',
-                      title: '🎵 Request Submitted!',
-                      message: `${selectedSong.title} added to the queue`,
-                    });
-                  }, 2000);
+                  // 7. Add notification
+                  addNotification({
+                    type: 'info',
+                    title: '🎵 Request Submitted!',
+                    message: `${selectedSong.title} added to the queue`,
+                  });
                   
                 } catch (error: any) {
                   console.error('Request submission failed:', error);
@@ -1179,6 +1225,39 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Payment Error Modal */}
+      {paymentError && (
+        <PaymentErrorModal
+          error={paymentError}
+          onRetry={() => {
+            setPaymentError(null);
+            // Re-trigger the request confirmation
+            if (selectedSong) {
+              setViewState('requesting');
+            }
+          }}
+          onCancel={() => {
+            setPaymentError(null);
+            setViewState('browsing');
+          }}
+          isRetrying={isProcessing}
+        />
+      )}
+
+      {/* Success Confirmation Modal */}
+      {showSuccessModal && selectedSong && successQueuePosition !== null && (
+        <SuccessConfirmation
+          songTitle={selectedSong.title}
+          artist={selectedSong.artist}
+          queuePosition={successQueuePosition}
+          onClose={() => {
+            setShowSuccessModal(false);
+            setSuccessQueuePosition(null);
+            setViewState('waiting');
+          }}
+        />
+      )}
 
       {/* Universal Help Button - Always Available */}
       <UniversalHelp mode="fan" />

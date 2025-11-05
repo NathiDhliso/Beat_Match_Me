@@ -6,6 +6,11 @@
 // Error Handling - NEW
 export { ErrorDisplay, InlineError, ErrorPage } from './ErrorDisplay';
 
+// UI Components - NEW
+export { EmptyState } from './EmptyState';
+export { EventCardSkeleton, SongCardSkeleton, QueueItemSkeleton, LoadingSpinner, LoadingState } from './LoadingSkeleton';
+export { OfflineBanner, PaymentErrorModal, SuccessConfirmation } from './StatusModals';
+
 // Core Value Prop Features - EXISTING COMPONENTS ONLY
 export { RequestCapManager } from './RequestCapManager';
 export { FloatingActionBubble, StatusArc, CircularQueueVisualizer, GestureHandler } from './OrbitalInterface';

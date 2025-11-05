@@ -10,6 +10,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { DJPortalOrbital as DJPortal } from './pages/DJPortalOrbital';
 import { UserPortalInnovative as UserPortal } from './pages/UserPortalInnovative';
 import { YocoTestPage } from './pages/YocoTestPage';
+import { OfflineBanner } from './components/StatusModals';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFORMER' | 'AUDIENCE' }> = ({
@@ -78,14 +79,6 @@ const LoadingScreen: React.FC<{ message?: string }> = ({ message = 'Loading...' 
 };
 
 // Offline Mode Banner
-const OfflineBanner: React.FC = () => {
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-600 text-white px-4 py-2 text-center">
-      <p className="text-sm font-semibold">⚠️ You're offline. Some features may not work.</p>
-    </div>
-  );
-};
-
 function App() {
   const { isReady, errors } = useBackend();
   const [isOffline, setIsOffline] = React.useState(false);

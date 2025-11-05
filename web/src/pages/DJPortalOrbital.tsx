@@ -29,7 +29,7 @@ import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
 import { UniversalHelp } from '../components/UniversalHelp';
-import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist } from '../services/graphql';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
@@ -353,7 +353,10 @@ export const DJPortalOrbital: React.FC = () => {
 
   // Track Management with Backend Sync
   const syncTracksToBackend = async (updatedTracks: Track[]) => {
-    if (!user?.userId || !currentEventId) return;
+    if (!user?.userId || !currentEventId) {
+      console.warn('⚠️ Cannot sync tracks: missing userId or eventId');
+      return;
+    }
     
     try {
       console.log('💾 Syncing tracks to backend...');
@@ -367,11 +370,28 @@ export const DJPortalOrbital: React.FC = () => {
         duration: t.duration
       }));
       
-      await submitUploadTracklist(user.userId, songs);
-      console.log('✅ Tracks synced successfully');
+      // Step 1: Upload tracks to DJ's library
+      const uploadResult = await submitUploadTracklist(user.userId, songs);
+      console.log('✅ Tracks uploaded to library:', uploadResult);
+      
+      // Step 2: Link tracks to the current event (use track titles as IDs for now)
+      // Note: In production, you'd use actual song IDs returned from uploadTracklist
+      const songIds = updatedTracks.map(t => t.id);
+      const linkResult = await submitSetEventTracklist(currentEventId, songIds);
+      console.log('✅ Tracks linked to event:', linkResult);
+      
+      addNotification({
+        type: 'info',
+        title: '✅ Tracklist Updated',
+        message: `${songs.length} songs synced to event`,
+      });
     } catch (error) {
       console.error('❌ Failed to sync tracks:', error);
-      // Don't block UI, just log the error
+      addNotification({
+        type: 'error',
+        title: '❌ Sync Failed',
+        message: 'Could not sync tracks to backend',
+      });
     }
   };
 
