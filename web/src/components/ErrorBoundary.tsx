@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import { ErrorPage } from './ErrorDisplay';
+import { logError } from '../services/errorHandler';
 
 interface Props {
   children: ReactNode;
@@ -24,32 +26,32 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo);
+    logError(error, 'ErrorBoundary');
     this.props.onError?.(error, errorInfo);
   }
 
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
+  handleGoHome = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/';
+  };
+
   render() {
-    if (this.state.hasError) {
+    if (this.state.hasError && this.state.error) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              ⚠️ Something Went Wrong
-            </h2>
-            <p className="text-gray-300 mb-6">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-colors"
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
+        <ErrorPage
+          error={this.state.error}
+          onRetry={this.handleRetry}
+          onGoHome={this.handleGoHome}
+        />
       );
     }
 

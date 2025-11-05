@@ -473,8 +473,18 @@ export const UserPortalInnovative: React.FC = () => {
           
           console.log('✅ Loaded active request:', activeRequest);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load active requests:', error);
+        
+        // Check if it's a schema error
+        const isSchemaError = error.errors?.some((e: any) => 
+          e.message?.includes('Cannot query field') || 
+          e.message?.includes('getUserActiveRequests')
+        );
+        
+        if (isSchemaError) {
+          console.warn('⚠️ Active requests feature not available - schema not deployed');
+        }
         // Don't show error to user - just continue normally
       }
     };

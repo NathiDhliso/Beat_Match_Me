@@ -10,6 +10,7 @@ import {
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
+import { parseError, logError } from '../services/errorHandler';
 
 export type UserRole = 'PERFORMER' | 'AUDIENCE';
 export type UserTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -128,25 +129,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await checkAuthStatus();
     } catch (err: any) {
       // User-friendly error messages
-      let errorMessage = 'Failed to login';
-      
-      if (err.name === 'UserAlreadyAuthenticatedException' || err.message?.includes('already a signed in user')) {
-        errorMessage = 'You were already signed in. Signing out and logging in again...';
-      } else if (err.message?.includes('SECRET_HASH')) {
-        errorMessage = '⚠️ Configuration Error: Your Cognito app client has a secret enabled. Web apps cannot use client secrets. Please see FIX_COGNITO_SECRET.md in the project root for step-by-step instructions to create a new app client without a secret.';
-      } else if (err.message?.includes('unauthorized attribute')) {
-        errorMessage = 'Configuration Error: Custom user attributes not set up in Cognito. Signup will work but role/tier will need to be set later.';
-      } else if (err.message?.includes('User does not exist')) {
-        errorMessage = 'No account found with this email. Please sign up first.';
-      } else if (err.message?.includes('Incorrect username or password')) {
-        errorMessage = 'Incorrect email or password. Please try again.';
-      } else if (err.message?.includes('User is not confirmed')) {
-        errorMessage = 'Please verify your email before logging in.';
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
+      const errorInfo = parseError(err);
+      logError(err, 'login');
+      setError(errorInfo.message);
       throw err;
     } finally {
       setLoading(false);
@@ -179,21 +164,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await Promise.race([signUp(signUpInput), timeout]);
     } catch (err: any) {
       // User-friendly error messages
-      let errorMessage = 'Failed to sign up';
-      
-      if (err.message?.includes('SECRET_HASH')) {
-        errorMessage = 'Configuration Error: Please check the setup guide (FIX_COGNITO_SECRET.md)';
-      } else if (err.message?.includes('User already exists')) {
-        errorMessage = 'An account with this email already exists. Please login instead.';
-      } else if (err.message?.includes('Password did not conform')) {
-        errorMessage = 'Password must be at least 8 characters with uppercase, lowercase, and numbers.';
-      } else if (err.message?.includes('Invalid email')) {
-        errorMessage = 'Please enter a valid email address.';
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
+      const errorInfo = parseError(err);
+      logError(err, 'signup');
+      setError(errorInfo.message);
       throw err;
     } finally {
       setLoading(false);
@@ -218,7 +191,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         timeout
       ]);
     } catch (err: any) {
-      setError(err.message || 'Failed to confirm signup');
+      const errorInfo = parseError(err);
+      logError(err, 'confirmSignup');
+      setError(errorInfo.message);
       throw err;
     } finally {
       setLoading(false);
@@ -267,7 +242,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ]);
       await checkAuthStatus();
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+      const errorInfo = parseError(err);
+      logError(err, 'updateProfile');
+      setError(errorInfo.message);
       throw err;
     } finally {
       setLoading(false);

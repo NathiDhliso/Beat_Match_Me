@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
+import { InlineError } from '../components/ErrorDisplay';
 import { Shield, Check, Lock, Mail, Sparkles } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
@@ -105,11 +106,8 @@ export const Login: React.FC = () => {
         </div>
 
         {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg mb-4">
-            <p className="text-sm">{error}</p>
-            <button onClick={clearError} className="text-xs underline mt-1">
-              Dismiss
-            </button>
+          <div className="mb-4">
+            <InlineError error={{ message: error }} />
           </div>
         )}
 

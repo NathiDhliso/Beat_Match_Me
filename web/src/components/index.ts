@@ -3,6 +3,9 @@
  * Core Components Only - Existing Components
  */
 
+// Error Handling - NEW
+export { ErrorDisplay, InlineError, ErrorPage } from './ErrorDisplay';
+
 // Core Value Prop Features - EXISTING COMPONENTS ONLY
 export { RequestCapManager } from './RequestCapManager';
 export { FloatingActionBubble, StatusArc, CircularQueueVisualizer, GestureHandler } from './OrbitalInterface';

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, Check } from 'lucide-react';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import { parseError } from '../services/errorHandler';
+import { InlineError } from '../components/ErrorDisplay';
 
 type ForgotPasswordStep = 'request' | 'reset';
 
@@ -25,7 +27,8 @@ export const ForgotPassword: React.FC = () => {
       await resetPassword({ username: email });
       setStep('reset');
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset code. Please try again.');
+      const errorMessage = parseError(err);
+      setError(errorMessage.message);
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,8 @@ export const ForgotPassword: React.FC = () => {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
-      setError(err.message || 'Failed to reset password. Please try again.');
+      const errorMessage = parseError(err);
+      setError(errorMessage.message);
     } finally {
       setLoading(false);
     }
@@ -93,8 +97,8 @@ export const ForgotPassword: React.FC = () => {
         </div>
 
         {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-100 px-4 py-3 rounded-lg mb-4">
-            <p className="text-sm">{error}</p>
+          <div className="mb-4">
+            <InlineError error={{ message: error }} />
           </div>
         )}
 

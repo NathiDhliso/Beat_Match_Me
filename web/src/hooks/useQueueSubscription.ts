@@ -94,6 +94,21 @@ export function useQueueSubscription(setId: string, eventId: string) {
       } catch (err: any) {
         // Only log errors in development mode to reduce console spam
         if (process.env.NODE_ENV === 'development') {
+          // Check if it's a schema error (missing query)
+          const isSchemaError = err.errors?.some((e: any) => 
+            e.message?.includes('Cannot query field') || 
+            e.message?.includes('getQueue')
+          );
+          
+          if (isSchemaError) {
+            console.warn('⚠️ Queue polling disabled - schema not deployed');
+            // Don't set error for schema issues, just stop polling
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+            }
+            return;
+          }
+          
           console.error('Polling error:', err);
           console.error('Error details:', err.errors || err.message);
         }

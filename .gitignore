@@ -55,3 +55,8 @@ aws/lambda/.env
 
 # Deployment summaries with sensitive data
 YOCO_DEPLOYMENT_SUMMARY.md
+
+# Database management scripts (local only)
+reset-database.ps1
+clear-test-events.ps1
+DATABASE_RESET_COMPLETE.md
