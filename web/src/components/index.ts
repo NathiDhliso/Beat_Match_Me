@@ -4,10 +4,7 @@
  */
 
 // Core Value Prop Features - EXISTING COMPONENTS ONLY
-export { TracklistManager } from './TracklistManager';
 export { RequestCapManager } from './RequestCapManager';
-export { EventSelection } from './EventSelection';
-export { RoleToggle } from './RoleToggle';
 export { FloatingActionBubble, StatusArc, CircularQueueVisualizer, GestureHandler } from './OrbitalInterface';
 export { DJLibrary } from './DJLibrary';
 export type { Track } from './DJLibrary';
@@ -38,7 +35,6 @@ export {
 export type { Notification, NotificationType } from './Notifications';
 
 // Payment - EXISTING
-export { PaymentModal } from './PaymentModal';
 export { YocoCardInput } from './YocoCardInput';
 
 // Queue Management - EXISTING
@@ -46,7 +42,19 @@ export { QueueCard } from './QueueCard';
 
 // Request Flow - Features 3 & 4 - EXISTING
 export { RequestConfirmation } from './RequestConfirmation';
-export { QueueTracking } from './QueueTracking';
+export { RefundConfirmation } from './RefundConfirmation';
+export { VetoConfirmation } from './VetoConfirmation';
+export { AcceptRequestPanel } from './AcceptRequestPanel';
+export { MarkPlayingPanel, PlayingCelebration } from './MarkPlayingPanel';
+export { NowPlayingCard } from './NowPlayingCard';
+
+// Status & Indicators - EXISTING
+export { StatusIndicator } from './StatusIndicators';
+export type { RequestStatus } from './StatusIndicators';
+export { TierBadge } from './TierBadge';
+
+// Error Handling - EXISTING
+export { ErrorBoundary } from './ErrorBoundary';
 
 // Theme - EXISTING
 export { useTheme, ThemeProvider, ThemeToggle, DarkModeGradients, DarkModeWrapper, SophisticatedCard, ElegantButton, DarkModeText, Divider } from './DarkModeTheme';

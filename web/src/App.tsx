@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ApolloProvider } from '@apollo/client';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './components/DarkModeTheme';
+import { useBackend } from './context/BackendContext';
 import { apolloClient } from './services/api';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
@@ -59,7 +60,36 @@ const Dashboard: React.FC = () => {
   return <Navigate to="/user-portal" replace />;
 };
 
+// Loading Screen Component
+const LoadingScreen: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-white text-2xl mb-4">{message}</div>
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
+  const { isReady, errors } = useBackend();
+
+  useEffect(() => {
+    if (isReady && errors.length > 0) {
+      console.warn('Backend validation warnings:', errors);
+    }
+  }, [isReady, errors]);
+
+  // Show loading screen until backend is validated
+  if (!isReady) {
+    return <LoadingScreen message="Connecting to backend..." />;
+  }
+
   return (
     <ThemeProvider defaultMode="dark">
       <ApolloProvider client={apolloClient}>

@@ -4,7 +4,9 @@
 
 This document provides a comprehensive list of ALL code files that have been moved to the "FUTURE FEATURES DO NOT DELETE" folder.
 
-**Total Files Moved:** 17 items (5 Lambda folders, 5 React components, 6 documentation files, 1 README)
+**Total Files Moved:** 22 items (5 Lambda folders, 10 React components, 6 documentation files, 1 README)
+
+**Last Updated:** November 4, 2025 - Added Medium & Low Priority Components
 
 ---
 
@@ -86,9 +88,47 @@ This document provides a comprehensive list of ALL code files that have been mov
 
 ---
 
-## 📄 Feature Documentation Files
+## � Medium Priority Components (Moved Nov 4, 2025)
 
-### 11. `Feature-01-Discover-and-Join-Event.md`
+### 11. `EventSelection.tsx`
+- **Path:** `web/src/components/EventSelection.tsx` → `FUTURE FEATURES DO NOT DELETE/EventSelection.tsx`
+- **Purpose:** QR code scanning, GPS discovery, and event search interface
+- **Priority:** Medium (Nice to Have)
+- **Why Deferred:** Current Tinder-style discovery works well; QR/GPS are enhancements
+
+### 12. `QueueTracking.tsx`
+- **Path:** `web/src/components/QueueTracking.tsx` → `FUTURE FEATURES DO NOT DELETE/QueueTracking.tsx`
+- **Purpose:** Real-time queue position tracking with subscription support
+- **Priority:** Medium (Nice to Have)
+- **Why Deferred:** Current EnergyBeam component provides good UX; this is more detailed alternative
+
+### 13. `PaymentModal.tsx`
+- **Path:** `web/src/components/PaymentModal.tsx` → `FUTURE FEATURES DO NOT DELETE/PaymentModal.tsx`
+- **Purpose:** Detailed payment form with card input and validation
+- **Priority:** Medium (Nice to Have)
+- **Why Deferred:** Yoco integration handles payments; this would add more pre-payment UI
+
+---
+
+## 🔽 Low Priority Components (Moved Nov 4, 2025)
+
+### 14. `TracklistManager.tsx`
+- **Path:** `web/src/components/TracklistManager.tsx` → `FUTURE FEATURES DO NOT DELETE/TracklistManager.tsx`
+- **Purpose:** Alternative DJ library management with bulk operations
+- **Priority:** Low (Optional/Alternative)
+- **Why Deferred:** Current DJLibrary component works well; this is an alternative implementation
+
+### 15. `RoleToggle.tsx`
+- **Path:** `web/src/components/RoleToggle.tsx` → `FUTURE FEATURES DO NOT DELETE/RoleToggle.tsx`
+- **Purpose:** Toggle between PERFORMER and AUDIENCE roles
+- **Priority:** Low (Optional)
+- **Why Deferred:** Current architecture has fixed roles at signup; dual roles not needed yet
+
+---
+
+## �📄 Feature Documentation Files
+
+### 16. `Feature-01-Discover-and-Join-Event.md`
 - **Topic:** QR scanning, GPS discovery, event search
 - **User Role:** Audience
 - **Size:** 6,851 bytes

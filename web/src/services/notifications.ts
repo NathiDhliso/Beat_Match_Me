@@ -1,7 +1,16 @@
 /**
- * Notification Service
+ * Notification Service (Browser-Safe)
  * Handles push notifications and in-app alerts for queue position changes
+ * ⚠️ CRITICAL: No localStorage - uses memory-only storage
  */
+
+// Memory-only storage (no localStorage for browser compatibility)
+let notificationPermission: NotificationPermission = 'default';
+let notificationSettings = {
+  enabled: false,
+  soundEnabled: true,
+  vibrationEnabled: true
+};
 
 // Types
 export type NotificationType = 
@@ -20,6 +29,24 @@ export interface NotificationPayload {
   data?: Record<string, any>;
 }
 
+// Get current notification permission (from memory)
+export const getNotificationPermission = (): NotificationPermission => {
+  if ('Notification' in window) {
+    notificationPermission = Notification.permission;
+  }
+  return notificationPermission;
+};
+
+// Update notification settings (memory-only)
+export const updateNotificationSettings = (settings: Partial<typeof notificationSettings>) => {
+  notificationSettings = { ...notificationSettings, ...settings };
+};
+
+// Get notification settings
+export const getNotificationSettings = () => {
+  return { ...notificationSettings };
+};
+
 // Request notification permission
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window)) {
@@ -28,12 +55,21 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 
   if (Notification.permission === 'granted') {
+    notificationPermission = 'granted';
+    notificationSettings.enabled = true;
     return true;
   }
 
   if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission();
-    return permission === 'granted';
+    try {
+      const permission = await Notification.requestPermission();
+      notificationPermission = permission;
+      notificationSettings.enabled = permission === 'granted';
+      return permission === 'granted';
+    } catch (error) {
+      console.error('Failed to request notification permission:', error);
+      return false;
+    }
   }
 
   return false;
@@ -41,38 +77,47 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 // Send browser notification
 export function sendNotification(payload: NotificationPayload): void {
+  if (!('Notification' in window)) {
+    console.warn('Notifications not supported in this browser');
+    return;
+  }
+
   if (Notification.permission !== 'granted') {
     console.warn('Notification permission not granted');
     return;
   }
 
-  const notification = new Notification(payload.title, {
-    body: payload.message,
-    icon: '/logo.png',
-    badge: '/badge.png',
-    tag: payload.type,
-    requireInteraction: ['youre_next', 'vetoed', 'dj_set_ended'].includes(payload.type),
-    data: payload.data,
-  } as NotificationOptions);
+  try {
+    const notification = new Notification(payload.title, {
+      body: payload.message,
+      icon: '/logo.png',
+      badge: '/badge.png',
+      tag: payload.type,
+      requireInteraction: ['youre_next', 'vetoed', 'dj_set_ended'].includes(payload.type),
+      data: payload.data,
+    } as NotificationOptions);
 
-  // Trigger vibration if available
-  if ('vibrate' in navigator) {
-    navigator.vibrate(getVibrationPattern(payload.type));
-  }
-
-  notification.onclick = () => {
-    window.focus();
-    notification.close();
-    
-    // Navigate based on notification type
-    if (payload.data?.url) {
-      window.location.href = payload.data.url;
+    // Trigger vibration if available and enabled
+    if ('vibrate' in navigator && notificationSettings.vibrationEnabled) {
+      navigator.vibrate(getVibrationPattern(payload.type));
     }
-  };
 
-  // Auto-close after 5 seconds for non-critical notifications
-  if (!['vetoed', 'dj_set_ended'].includes(payload.type)) {
-    setTimeout(() => notification.close(), 5000);
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+      
+      // Navigate based on notification type
+      if (payload.data?.url) {
+        window.location.href = payload.data.url;
+      }
+    };
+
+    // Auto-close after 5 seconds for non-critical notifications
+    if (!['vetoed', 'dj_set_ended'].includes(payload.type)) {
+      setTimeout(() => notification.close(), 5000);
+    }
+  } catch (error) {
+    console.error('Failed to show notification:', error);
   }
 }
 

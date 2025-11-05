@@ -15,7 +15,9 @@ export type NotificationType =
   | 'friend_request'
   | 'friend_at_event'
   | 'achievement'
-  | 'milestone';
+  | 'milestone'
+  | 'info'
+  | 'error';
 
 export interface Notification {
   id: string;
@@ -185,6 +187,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       case 'friend_at_event': return '📍';
       case 'achievement': return '🏆';
       case 'milestone': return '🎉';
+      case 'info': return 'ℹ️';
+      case 'error': return '⚠️';
     }
   };
 

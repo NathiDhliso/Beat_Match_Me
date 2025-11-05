@@ -3,11 +3,13 @@
  * Revolutionary gesture-first design with floating controls
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
 import { useTracklist } from '../hooks/useTracklist';
+import { useNotifications } from '../context/NotificationContext';
+import { useQueueSubscription } from '../hooks/useQueueSubscription';
 import {
   FloatingActionBubble,
   StatusArc,
@@ -16,13 +18,17 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play } from 'lucide-react';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell } from 'lucide-react';
 import { EventCreator, QRCodeDisplay } from '../components';
 import { AcceptRequestPanel } from '../components/AcceptRequestPanel';
 import { VetoConfirmation } from '../components/VetoConfirmation';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
+import { DJProfileScreen } from '../components/ProfileManagement';
+import { RequestCapManager } from '../components/RequestCapManager';
+import { NotificationCenter } from '../components/Notifications';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted } from '../services/graphql';
+import { updateDJSetSettings, updateDJProfile } from '../services/djSettings';
 
 type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
 
@@ -53,6 +59,82 @@ export const DJPortalOrbital: React.FC = () => {
   const [showPlayingCelebration, setShowPlayingCelebration] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Phase 4: DJ Portal features
+  const [showProfile, setShowProfile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
+
+  // Real-time queue subscription (rename to avoid shadowing local queue variable)
+  const { queueData: liveQueueData, connectionStatus } = useQueueSubscription(
+    currentSetId || '',
+    currentEventId || ''
+  );
+
+  // Track last queue count for new request notifications
+  const lastQueueCountRef = useRef(0);
+  const lastNotificationTime = useRef<Record<string, number>>({});
+
+  // Play a short notification beep using Web Audio API (browser-safe)
+  const playNotificationSound = useCallback(() => {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const audioContext = new AudioCtx();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 880; // A high beep
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.25, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.45);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.45);
+
+      // Close context after short delay to free resources
+      setTimeout(() => {
+        try { audioContext.close(); } catch (e) { /* ignore */ }
+      }, 1000);
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+    }
+  }, []);
+
+  // Helper: simple throttle so we don't spam sounds/notifications (1 per 2 seconds per type)
+  const canNotify = useCallback((key: string, minInterval = 2000) => {
+    const now = Date.now();
+    const last = lastNotificationTime.current[key] || 0;
+    if (now - last < minInterval) return false;
+    lastNotificationTime.current[key] = now;
+    return true;
+  }, []);
+
+  // Watch live subscription updates and notify on new requests
+  useEffect(() => {
+    const newCount = liveQueueData?.orderedRequests?.length || 0;
+
+    // If queue grew, notify
+    if (newCount > lastQueueCountRef.current) {
+      // Throttle notification events
+      if (canNotify('new_request')) {
+        playNotificationSound();
+        addNotification({
+          type: 'queue_update',
+          title: '🎵 New Request',
+          message: `Queue now has ${newCount} request${newCount === 1 ? '' : 's'}`,
+          metadata: { eventId: currentEventId || undefined },
+        });
+      }
+    }
+
+    lastQueueCountRef.current = newCount;
+  }, [liveQueueData, playNotificationSound, addNotification, canNotify, currentEventId]);
 
   // Load performer's DJ sets on mount
   useEffect(() => {
@@ -452,6 +534,20 @@ export const DJPortalOrbital: React.FC = () => {
           menuOptions={menuOptions}
         />
 
+        {/* Notification Bell (open notifications) */}
+        <button
+          onClick={() => setShowNotifications(true)}
+          className="relative fixed top-2 right-14 sm:top-4 sm:right-20 z-40 p-2 sm:p-3 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all"
+          title="Notifications"
+        >
+          <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
         {/* Logout Button - Top Right Corner */}
         <button
           onClick={logout}
@@ -460,6 +556,37 @@ export const DJPortalOrbital: React.FC = () => {
         >
           <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 group-hover:text-red-300" />
         </button>
+
+        {/* Connection Status Indicator (shows subscription state) */}
+        {currentEventId && connectionStatus && (
+          <div className="fixed top-12 right-2 sm:top-16 sm:right-4 z-40">
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold shadow-lg ${
+              connectionStatus === 'connected'
+                ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                : connectionStatus === 'connecting'
+                ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400'
+                : connectionStatus === 'error'
+                ? 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-400'
+                : 'bg-gray-500/20 border border-gray-500/50 text-gray-400'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'connected'
+                  ? 'bg-green-400 animate-pulse'
+                  : connectionStatus === 'connecting'
+                  ? 'bg-blue-400 animate-pulse'
+                  : connectionStatus === 'error'
+                  ? 'bg-yellow-400'
+                  : 'bg-gray-400'
+              }`} />
+              <span>
+                {connectionStatus === 'connected' && '🔴 Live'}
+                {connectionStatus === 'connecting' && '⏳ Connecting'}
+                {connectionStatus === 'error' && '⚠️ Reconnecting'}
+                {connectionStatus === 'disconnected' && '🔄 Updates'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* DJ Set Selector - Bottom Left Corner */}
         <div className="fixed bottom-20 sm:bottom-6 left-2 sm:left-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none">
@@ -717,6 +844,14 @@ export const DJPortalOrbital: React.FC = () => {
                         <p className="text-gray-400 text-sm">Role</p>
                         <p className="text-purple-400 font-semibold">{user?.role}</p>
                       </div>
+                                <div className="pt-3">
+                                  <button
+                                    onClick={() => setShowProfile(true)}
+                                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-semibold transition-all"
+                                  >
+                                    Manage Profile
+                                  </button>
+                                </div>
                     </div>
                   </div>
 
@@ -779,6 +914,59 @@ export const DJPortalOrbital: React.FC = () => {
                         )}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Request Cap Manager - DJ control */}
+                  <div className="mt-6 bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-white mb-4">Request Cap Manager</h3>
+                    <RequestCapManager
+                      currentRequestCount={queueRequests.length}
+                      requestCapPerHour={requestsPerHour}
+                      isSoldOut={false}
+                      onUpdateSettings={async (settings) => {
+                        console.log('Updating request cap settings:', settings);
+                        
+                        // Update local state immediately for responsive UI
+                        setRequestsPerHour(settings.requestCapPerHour);
+                        
+                        // Persist to backend
+                        if (currentSetId) {
+                          try {
+                            const success = await updateDJSetSettings(currentSetId, {
+                              requestCapPerHour: settings.requestCapPerHour,
+                              isSoldOut: settings.isSoldOut
+                            });
+                            
+                            if (success) {
+                              addNotification({
+                                type: 'info',
+                                title: '✅ Settings Saved',
+                                message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
+                              });
+                            } else {
+                              addNotification({
+                                type: 'info',
+                                title: 'Settings Updated Locally',
+                                message: 'Backend sync pending - settings will persist after deployment',
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Failed to save settings:', error);
+                            addNotification({
+                              type: 'error',
+                              title: '⚠️ Save Failed',
+                              message: 'Could not save to backend. Using local settings.',
+                            });
+                          }
+                        } else {
+                          addNotification({
+                            type: 'info',
+                            title: 'Settings Updated',
+                            message: 'Select an active set to persist changes',
+                          });
+                        }
+                      }}
+                    />
                   </div>
 
                   {/* Actions */}
@@ -881,6 +1069,99 @@ export const DJPortalOrbital: React.FC = () => {
             playing={currentlyPlaying}
             onMarkComplete={handleMarkComplete}
           />
+        )}
+
+        {/* Notification Center Modal */}
+        {showNotifications && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="max-w-2xl w-full max-h-[90vh]">
+              <NotificationCenter
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
+                onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
+                onNotificationClick={(notification) => {
+                  markAsRead(notification.id);
+                  if (notification.metadata?.requestId) {
+                    console.log('Open request:', notification.metadata.requestId);
+                  }
+                }}
+                className="w-full"
+              />
+              <button
+                onClick={() => setShowNotifications(false)}
+                className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* DJ Profile Management Modal */}
+        {showProfile && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <DJProfileScreen
+                profile={{
+                  userId: user?.userId || '',
+                  name: user?.name || 'DJ',
+                  email: user?.email || '',
+                  photo: undefined,
+                  tier: (user?.tier as any) || 'BRONZE',
+                  bio: '',
+                  genres: [],
+                  basePrice: basePrice,
+                  stats: undefined,
+                }}
+                onUpdateProfile={async (updates) => {
+                  console.log('Save DJ profile updates:', updates);
+                  
+                  if (user?.userId) {
+                    try {
+                      const success = await updateDJProfile(user.userId, {
+                        name: updates.name,
+                        bio: updates.bio,
+                        genres: updates.genres,
+                        basePrice: updates.basePrice,
+                      });
+                      
+                      if (success) {
+                        addNotification({ 
+                          type: 'info', 
+                          title: '✅ Profile Updated', 
+                          message: 'Your profile changes were saved successfully.' 
+                        });
+                      } else {
+                        addNotification({ 
+                          type: 'info', 
+                          title: 'Profile Updated Locally', 
+                          message: 'Backend sync pending - changes will persist after deployment' 
+                        });
+                      }
+                      
+                      setShowProfile(false);
+                    } catch (error) {
+                      console.error('Failed to update profile:', error);
+                      addNotification({ 
+                        type: 'error', 
+                        title: '⚠️ Update Failed', 
+                        message: 'Could not save profile. Please try again.' 
+                      });
+                    }
+                  }
+                }}
+                onUpgradeTier={(tier) => {
+                  console.log('Upgrade to tier:', tier);
+                  addNotification({ 
+                    type: 'info', 
+                    title: 'Upgrade Requested', 
+                    message: `Requested upgrade to ${tier}. Contact support to complete.` 
+                  });
+                }}
+              />
+            </div>
+          </div>
         )}
       </div>
     </GestureHandler>

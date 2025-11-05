@@ -3,11 +3,13 @@
  * Revolutionary audience experience with gesture-first design
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
 import { useTracklist } from '../hooks/useTracklist';
+import { useNotifications } from '../context/NotificationContext';
+import { useQueueSubscription } from '../hooks/useQueueSubscription';
 import {
   EventDiscovery,
   AlbumArtGrid,
@@ -17,7 +19,10 @@ import {
   NowPlayingCelebration,
 } from '../components/AudienceInterface';
 import { RefundConfirmation } from '../components/RefundConfirmation';
-import { LogOut, User, Star, ArrowLeft } from 'lucide-react';
+import { RequestConfirmation } from '../components/RequestConfirmation';
+import { NotificationCenter } from '../components/Notifications';
+import { requestNotificationPermission } from '../services/notifications';
+import { LogOut, User, Star, ArrowLeft, Bell } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -44,6 +49,117 @@ export const UserPortalInnovative: React.FC = () => {
   // Feature 6: Refund modal state
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundData, setRefundData] = useState<any>(null);
+
+  // Phase 3: Notification features
+  const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showOptInBanner, setShowOptInBanner] = useState(false);
+  const [hasRequestedPermission, setHasRequestedPermission] = useState(false);
+
+  // Phase 3: Real-time queue subscription
+  const { queueData, connectionStatus } = useQueueSubscription(
+    currentSetId || '',
+    currentEventId || ''
+  );
+
+  // Notification throttle tracking (memory-only)
+  const lastNotificationTime = useRef<Record<string, number>>({});
+
+  // Helper: Throttle notifications (max 1 per type per 5 seconds)
+  const shouldShowNotification = (type: string): boolean => {
+    const now = Date.now();
+    const lastTime = lastNotificationTime.current[type] || 0;
+    const timeSinceLastNotification = now - lastTime;
+    
+    if (timeSinceLastNotification < 5000) {
+      console.log(`Throttling notification type: ${type} (${timeSinceLastNotification}ms since last)`);
+      return false;
+    }
+    
+    lastNotificationTime.current[type] = now;
+    return true;
+  };
+
+  // Helper: Request notification permission
+  const handleRequestPermission = async () => {
+    if (hasRequestedPermission) return;
+    
+    try {
+      const granted = await requestNotificationPermission();
+      setHasRequestedPermission(true);
+      setShowOptInBanner(false);
+      
+      if (granted) {
+        addNotification({
+          type: 'achievement',
+          title: '🔔 Notifications Enabled',
+          message: "You'll be notified when your song is coming up!",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to request permission:', error);
+    }
+  };
+
+  // Show opt-in banner when user joins event
+  useEffect(() => {
+    if (currentEventId && !hasRequestedPermission && viewState !== 'discovery') {
+      // Show banner after 2 seconds (not immediately on page load)
+      const timer = setTimeout(() => {
+        setShowOptInBanner(true);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentEventId, hasRequestedPermission, viewState]);
+
+  // Handle real-time queue updates
+  useEffect(() => {
+    if (!queueData || !user?.userId) return;
+
+    // Find user's request in queue
+    const myRequest = queueData.orderedRequests.find(req => 
+      req.requestId.includes(user.userId)
+    );
+
+    if (myRequest && myRequest.queuePosition) {
+      const position = myRequest.queuePosition;
+      setMyRequestPosition(position);
+
+      // Notifications with throttling
+      if (position === 1 && shouldShowNotification('now_playing')) {
+        addNotification({
+          type: 'now_playing',
+          title: '🎶 Your Song is Playing NOW!',
+          message: `${myRequest.songTitle || 'Your request'} is playing!`,
+          metadata: {
+            requestId: myRequest.requestId,
+            songTitle: myRequest.songTitle,
+          }
+        });
+      } else if (position === 2 && shouldShowNotification('coming_up')) {
+        addNotification({
+          type: 'coming_up',
+          title: '🔜 Your Song is Next!',
+          message: `${myRequest.songTitle || 'Your request'} will play soon!`,
+          metadata: {
+            requestId: myRequest.requestId,
+            songTitle: myRequest.songTitle,
+          }
+        });
+      } else if (position <= 5 && position > 2 && shouldShowNotification('queue_update')) {
+        addNotification({
+          type: 'queue_update',
+          title: `📊 Position #${position}`,
+          message: `${myRequest.songTitle || 'Your request'} is moving up!`,
+          metadata: {
+            requestId: myRequest.requestId,
+            songTitle: myRequest.songTitle,
+          }
+        });
+      }
+    }
+  }, [queueData, user?.userId, shouldShowNotification, addNotification]);
 
   // Fetch real data
   const { event: currentEvent, loading: eventLoading, error: eventError } = useEvent(currentEventId);
@@ -288,23 +404,6 @@ export const UserPortalInnovative: React.FC = () => {
     setViewState('requesting');
   };
 
-  const handleConfirmRequest = async () => {
-    // TODO: Submit request to backend
-    try {
-      // await submitRequest(currentEventId, selectedSong.id);
-      setShowLockedIn(true);
-      
-      setTimeout(() => {
-        setShowLockedIn(false);
-        setViewState('waiting');
-        // TODO: Get real position from backend
-        setMyRequestPosition(null);
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to submit request:', error);
-    }
-  };
-
   const handleCancelRequest = () => {
     setSelectedSong(null);
     setViewState('browsing');
@@ -336,13 +435,30 @@ export const UserPortalInnovative: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={logout}
-            className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
-            aria-label="Sign out"
-          >
-            <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Notification Bell */}
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={logout}
+              className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -568,56 +684,36 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
 
-        {/* Request Confirmation */}
+        {/* Request Confirmation - Enhanced Component */}
         {viewState === 'requesting' && selectedSong && (
-          <div className="h-full flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-black/80 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
-              <h2 className="text-3xl font-bold text-white mb-6 text-center">Confirm Request</h2>
-
-              {/* Song Details */}
-              <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-4xl">🎵</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-white truncate">{selectedSong.title}</h3>
-                    <p className="text-purple-200 truncate">{selectedSong.artist}</p>
-                    <p className="text-sm text-purple-300 mt-1">{selectedSong.genre}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="bg-white/5 rounded-2xl p-4 mb-6 text-center">
-                <p className="text-gray-400 text-sm mb-1">Total Price</p>
-                <p className="text-4xl font-bold text-yellow-400">R{selectedSong.basePrice}</p>
-              </div>
-
-              {/* Fair Play Promise */}
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6">
-                <p className="text-green-400 text-sm text-center">
-                  ✓ Fair-Play Promise: Full refund if DJ vetos
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCancelRequest}
-                  className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-semibold transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmRequest}
-                  className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-semibold transition-all shadow-lg"
-                >
-                  Confirm & Pay
-                </button>
-              </div>
-            </div>
-          </div>
+          <RequestConfirmation
+            song={selectedSong}
+            userTier={user?.tier as 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'}
+            estimatedQueuePosition={myRequestPosition || 8}
+            estimatedWaitTime={myRequestPosition ? `~${myRequestPosition * 3} minutes` : '~25 minutes'}
+            onConfirm={async (requestData) => {
+              try {
+                // TODO: Submit request to backend
+                console.log('Submitting request:', requestData);
+                
+                setShowLockedIn(true);
+                
+                setTimeout(() => {
+                  setShowLockedIn(false);
+                  setViewState('waiting');
+                  setMyRequestPosition(null);
+                }, 2000);
+              } catch (error) {
+                console.error('Request failed:', error);
+                addNotification({
+                  type: 'error',
+                  title: '❌ Request Failed',
+                  message: 'Failed to submit your request. Please try again.',
+                });
+              }
+            }}
+            onCancel={handleCancelRequest}
+          />
         )}
 
         {/* Waiting in Queue */}
@@ -696,6 +792,102 @@ export const UserPortalInnovative: React.FC = () => {
               setRefundData(null);
             }}
           />
+        )}
+
+        {/* Phase 3: Notification Center Modal */}
+        {showNotifications && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="max-w-2xl w-full max-h-[90vh]">
+              <NotificationCenter
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
+                onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
+                onNotificationClick={(notification) => {
+                  markAsRead(notification.id);
+                  // Handle navigation if needed
+                  if (notification.metadata?.requestId) {
+                    console.log('Navigate to request:', notification.metadata.requestId);
+                  }
+                }}
+                className="w-full"
+              />
+              <button
+                onClick={() => setShowNotifications(false)}
+                className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Phase 3: Opt-In Banner (Shows when user joins event) */}
+        {showOptInBanner && (
+          <div 
+            className="fixed bottom-20 left-4 right-4 z-40 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-4 shadow-2xl animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-3xl flex-shrink-0">🔔</span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-bold mb-1">Stay Updated!</h3>
+                <p className="text-purple-100 text-sm mb-3">
+                  Get notified when your song is coming up
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRequestPermission}
+                    className="flex-1 py-2 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                  >
+                    Enable Notifications
+                  </button>
+                  <button
+                    onClick={() => setShowOptInBanner(false)}
+                    className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
+                  >
+                    Later
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Phase 3: Connection Status Indicator */}
+        {currentEventId && connectionStatus && (
+          <div className="fixed top-16 sm:top-20 right-4 z-40">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold shadow-lg ${
+                connectionStatus === 'connected'
+                  ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                  : connectionStatus === 'connecting'
+                  ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400'
+                  : connectionStatus === 'error'
+                  ? 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-400'
+                  : 'bg-gray-500/20 border border-gray-500/50 text-gray-400'
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  connectionStatus === 'connected'
+                    ? 'bg-green-400 animate-pulse'
+                    : connectionStatus === 'connecting'
+                    ? 'bg-blue-400 animate-pulse'
+                    : connectionStatus === 'error'
+                    ? 'bg-yellow-400'
+                    : 'bg-gray-400'
+                }`}
+              />
+              <span>
+                {connectionStatus === 'connected' && '🔴 Live'}
+                {connectionStatus === 'connecting' && '⏳ Connecting'}
+                {connectionStatus === 'error' && '⚠️ Reconnecting'}
+                {connectionStatus === 'disconnected' && '🔄 Updates'}
+              </span>
+            </div>
+          </div>
         )}
       </div>
     </div>
