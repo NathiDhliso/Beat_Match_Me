@@ -11,7 +11,9 @@ import {
   onGroupRequestUpdate,
 } from './graphql';
 
-const client = generateClient();
+const client = generateClient({
+  authMode: 'userPool'
+});
 
 export function subscribeToQueueUpdates(eventId: string, callback: (data: any) => void) {
   const subscription = (client.graphql({

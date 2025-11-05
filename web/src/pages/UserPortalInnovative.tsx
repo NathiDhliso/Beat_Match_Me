@@ -226,7 +226,8 @@ export const UserPortalInnovative: React.FC = () => {
                 }
               }
             }
-          `
+          `,
+          authMode: 'userPool'
         });
         
         console.log('✅ Events fetched:', response.data.listActiveEvents);
@@ -335,7 +336,9 @@ export const UserPortalInnovative: React.FC = () => {
         console.log('🎵 Fetching DJ sets for event:', currentEventId);
         
         const { generateClient } = await import('aws-amplify/api');
-        const client = generateClient();
+        const client = generateClient({
+          authMode: 'userPool'
+        });
         
         const response: any = await client.graphql({
           query: `

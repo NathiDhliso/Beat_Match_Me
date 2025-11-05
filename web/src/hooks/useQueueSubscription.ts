@@ -46,7 +46,9 @@ export function useQueueSubscription(setId: string, eventId: string) {
 
     const poll = async () => {
       try {
-        const client = generateClient();
+        const client = generateClient({
+          authMode: 'userPool'
+        });
         
         const getQueueQuery = `
           query GetQueue($eventId: ID!, $setId: ID!) {
@@ -112,7 +114,9 @@ export function useQueueSubscription(setId: string, eventId: string) {
     try {
       trackConnectionStart();
       setConnectionStatus('connecting');
-      const client = generateClient();
+      const client = generateClient({
+        authMode: 'userPool'
+      });
 
       const subscriptionQuery = `
         subscription OnQueueUpdate($eventId: ID!) {

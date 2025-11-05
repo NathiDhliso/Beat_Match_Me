@@ -150,7 +150,9 @@ export const DJPortalOrbital: React.FC = () => {
 
       try {
         const { generateClient } = await import('aws-amplify/api');
-        const client = generateClient();
+        const client = generateClient({
+          authMode: 'userPool'
+        });
         
         console.log('📡 Querying listPerformerSets...');
         
@@ -457,7 +459,9 @@ export const DJPortalOrbital: React.FC = () => {
       // Fetch the event details for the new set
       try {
         const { generateClient } = await import('aws-amplify/api');
-        const client = generateClient();
+        const client = generateClient({
+          authMode: 'userPool'
+        });
         
         const eventResponse: any = await client.graphql({
           query: `

@@ -20,7 +20,9 @@ export interface GraphQLOptions {
 export async function graphqlWithTimeout<T = any>(options: GraphQLOptions): Promise<T> {
   const { query, variables = {}, timeout = 10000 } = options;
   
-  const client = generateClient();
+  const client = generateClient({
+    authMode: 'userPool'
+  });
   
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`GraphQL query timeout after ${timeout}ms`)), timeout)

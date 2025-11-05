@@ -10,7 +10,9 @@ export const validateBackendReady = async (): Promise<{
   let mutationsAvailable = false;
 
   try {
-    const client = generateClient();
+    const client = generateClient({
+      authMode: 'userPool'
+    });
 
     // Test with timeout wrapper
     const timeoutPromise = new Promise((_, reject) =>

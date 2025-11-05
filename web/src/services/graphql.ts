@@ -5,7 +5,10 @@
 
 import { generateClient } from 'aws-amplify/api';
 
-const client = generateClient();
+// Create client with explicit userPool auth mode
+const client = generateClient({
+  authMode: 'userPool'
+});
 
 // Queries
 export const getEvent = /* GraphQL */ `

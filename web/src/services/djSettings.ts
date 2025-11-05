@@ -22,7 +22,9 @@ export const updateDJSetSettings = async (
   settings: DJSetSettings
 ): Promise<boolean> => {
   try {
-    const client = generateClient();
+    const client = generateClient({
+      authMode: 'userPool'
+    });
 
     console.log('Updating DJ set settings:', { setId, settings });
 
@@ -91,7 +93,9 @@ export const updateDJProfile = async (
   updates: DJProfileUpdate
 ): Promise<boolean> => {
   try {
-    const client = generateClient();
+    const client = generateClient({
+      authMode: 'userPool'
+    });
 
     console.log('Updating DJ profile:', { userId, updates });
 
