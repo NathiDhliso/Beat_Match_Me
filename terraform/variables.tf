@@ -88,6 +88,37 @@ variable "yoco_public_key" {
   type        = string
 }
 
+# Amplify Configuration
+variable "github_repository" {
+  description = "GitHub repository URL for Amplify"
+  type        = string
+  default     = "https://github.com/NathiDhliso/Beat_Match_Me"
+}
+
+variable "git_branch" {
+  description = "Git branch to deploy"
+  type        = string
+  default     = "main"
+}
+
+variable "domain_name" {
+  description = "Custom domain name (leave empty to use Amplify default domain)"
+  type        = string
+  default     = ""
+}
+
+variable "enable_basic_auth" {
+  description = "Enable basic auth for non-production environments"
+  type        = bool
+  default     = false
+}
+
+variable "appsync_endpoint" {
+  description = "AppSync GraphQL endpoint URL"
+  type        = string
+  default     = ""
+}
+
 # Tags
 variable "additional_tags" {
   description = "Additional tags to apply to resources"

@@ -22,14 +22,41 @@ output "s3_assets_bucket" {
   value       = aws_s3_bucket.assets.id
 }
 
-output "s3_web_bucket" {
-  description = "S3 Web Bucket Name"
-  value       = aws_s3_bucket.web.id
+# AWS Amplify Hosting Outputs
+output "amplify_app_id" {
+  description = "Amplify App ID"
+  value       = aws_amplify_app.web.id
 }
 
-output "s3_web_url" {
-  description = "S3 Website URL"
-  value       = aws_s3_bucket_website_configuration.web.website_endpoint
+output "amplify_app_arn" {
+  description = "Amplify App ARN"
+  value       = aws_amplify_app.web.arn
+}
+
+output "amplify_default_domain" {
+  description = "Amplify Default Domain"
+  value       = aws_amplify_app.web.default_domain
+}
+
+output "amplify_branch_url" {
+  description = "Amplify Branch URL"
+  value       = "https://${aws_amplify_branch.main.branch_name}.${aws_amplify_app.web.default_domain}"
+}
+
+output "amplify_custom_domain" {
+  description = "Custom Domain (if configured)"
+  value       = var.domain_name != "" ? "https://${var.domain_name}" : "Not configured"
+}
+
+output "amplify_webhook_url" {
+  description = "Webhook URL for manual deployments"
+  value       = aws_amplify_webhook.main.url
+  sensitive   = true
+}
+
+output "web_url" {
+  description = "Web Application URL"
+  value       = local.amplify_url
 }
 
 output "dynamodb_tables" {
