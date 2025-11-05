@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
-import { UniversalHelp, HelpBadge } from '../components/UniversalHelp';
 import { Check, Lock, Mail, Sparkles } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
@@ -99,17 +98,6 @@ export const Login: React.FC = () => {
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">BeatMatchMe</h1>
-          
-          {/* Minimal Refund Badge */}
-          <div className="flex justify-center">
-            <HelpBadge title="100% Refund Guarantee" icon="💰">
-              <p className="font-semibold text-green-300 mb-2">You're Protected:</p>
-              <p>✓ DJ vetoes your song</p>
-              <p>✓ Technical issues</p>
-              <p>✓ Event cancelled</p>
-              <p className="mt-2 text-gray-400">💳 Refund in 3-5 days</p>
-            </HelpBadge>
-          </div>
         </div>
 
         {error && (
@@ -350,9 +338,6 @@ export const Login: React.FC = () => {
           </form>
         )}
       </div>
-
-      {/* Universal Help Button */}
-      <UniversalHelp mode="both" />
     </div>
   );
 };

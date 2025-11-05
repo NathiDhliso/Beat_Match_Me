@@ -28,7 +28,7 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
-import { UniversalHelp } from '../components/UniversalHelp';
+import { Settings as SettingsModal } from '../components/Settings';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
@@ -68,6 +68,7 @@ export const DJPortalOrbital: React.FC = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showPlaylistManager, setShowPlaylistManager] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
 
   // Live Mode Control - Manual toggle for when DJ is ready to accept requests
@@ -793,7 +794,7 @@ export const DJPortalOrbital: React.FC = () => {
       angle: 180,
       color: 'from-purple-500 to-pink-500',
       onClick: () => {
-        setCurrentView('settings');
+        setShowSettings(true);
         setIsMenuExpanded(false);
       },
     },
@@ -1621,8 +1622,13 @@ export const DJPortalOrbital: React.FC = () => {
         )}
       </div>
 
-      {/* Universal Help Button - DJ Mode */}
-      <UniversalHelp mode="dj" />
+      {/* Settings Modal */}
+      {showSettings && (
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          mode="dj"
+        />
+      )}
     </GestureHandler>
   );
 };
