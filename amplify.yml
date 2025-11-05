@@ -9,7 +9,8 @@ frontend:
         - echo "VITE_YOCO_PUBLIC_KEY=$VITE_YOCO_PUBLIC_KEY" >> web/.env
         - echo "VITE_USER_POOL_ID=$VITE_USER_POOL_ID" >> web/.env
         - echo "VITE_USER_POOL_CLIENT_ID=$VITE_USER_POOL_CLIENT_ID" >> web/.env
-        - echo "VITE_API_ENDPOINT=$VITE_API_ENDPOINT" >> web/.env
+        - echo "VITE_APPSYNC_ENDPOINT=$VITE_APPSYNC_ENDPOINT" >> web/.env
+        - echo "VITE_AWS_REGION=$VITE_AWS_REGION" >> web/.env
     build:
       commands:
         - npm run build:web
