@@ -23,6 +23,10 @@ import { RequestConfirmation } from '../components/RequestConfirmation';
 import { NotificationCenter } from '../components/Notifications';
 import { requestNotificationPermission } from '../services/notifications';
 import { LogOut, User, Star, ArrowLeft, Bell } from 'lucide-react';
+import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
+import { submitRequest, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
+import { requestRateLimiter } from '../services/rateLimiter';
+import { BusinessMetrics } from '../services/analytics';
 
 interface Song {
   id: string;
@@ -45,6 +49,13 @@ export const UserPortalInnovative: React.FC = () => {
   const [showLockedIn, setShowLockedIn] = useState(false);
   const [myRequestPosition, setMyRequestPosition] = useState<number | null>(null);
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  
+  // Note: isProcessing and paymentError will be used for enhanced error UI in future iteration
+  if (isProcessing && paymentError) {
+    // Future: Show payment error modal with retry button
+  }
 
   // Feature 6: Refund modal state
   const [showRefundModal, setShowRefundModal] = useState(false);
@@ -382,6 +393,44 @@ export const UserPortalInnovative: React.FC = () => {
     }
   }, [queue, myRequestPosition]);
 
+  // Load user's active requests on mount (queue position persistence)
+  useEffect(() => {
+    const loadMyRequests = async () => {
+      if (!user?.userId || !currentEventId) return;
+      
+      try {
+        const activeRequests = await fetchUserActiveRequests(user.userId, currentEventId);
+        
+        if (activeRequests && activeRequests.length > 0) {
+          const activeRequest = activeRequests[0]; // Get most recent active request
+          
+          setMyRequestPosition(activeRequest.queuePosition || null);
+          setSelectedSong({
+            id: activeRequest.songId,
+            title: activeRequest.songTitle,
+            artist: activeRequest.artistName,
+            genre: '', // Not returned from query
+            basePrice: activeRequest.price || 0,
+          });
+          
+          // Set appropriate view state
+          if (activeRequest.queuePosition === 1) {
+            setViewState('playing');
+          } else if (activeRequest.status === 'PENDING' || activeRequest.status === 'ACCEPTED') {
+            setViewState('waiting');
+          }
+          
+          console.log('✅ Loaded active request:', activeRequest);
+        }
+      } catch (error) {
+        console.error('Failed to load active requests:', error);
+        // Don't show error to user - just continue normally
+      }
+    };
+    
+    loadMyRequests();
+  }, [user?.userId, currentEventId]);
+
   // Feature 6: Subscribe to request status updates (for refunds)
   // TODO: Re-enable after fixing subscription infinite loop issue
   // useEffect(() => {
@@ -399,7 +448,85 @@ export const UserPortalInnovative: React.FC = () => {
     setViewState('browsing');
   };
 
-  const handleSelectSong = (song: Song) => {
+  const handleSelectSong = async (song: Song) => {
+    // Rate limiting check
+    if (!requestRateLimiter.tryConsume(user?.userId || 'anon')) {
+      const remaining = requestRateLimiter.getResetTime(user?.userId || 'anon');
+      const seconds = Math.ceil(remaining / 1000);
+      addNotification({
+        type: 'error',
+        title: '⏱️ Too Many Requests',
+        message: `Please wait ${seconds} seconds before trying again.`,
+      });
+      return;
+    }
+
+    // Check for duplicate requests
+    const existingRequest = queue?.orderedRequests?.find(
+      (req: any) => 
+        req.songTitle === song.title && 
+        req.artistName === song.artist &&
+        req.userId === user?.userId
+    );
+    
+    if (existingRequest) {
+      addNotification({
+        type: 'error',
+        title: '🔁 Already Requested',
+        message: 'You already requested this song!',
+      });
+      return;
+    }
+    
+    // Check user's active request limit (max 3)
+    const userActiveRequests = queue?.orderedRequests?.filter(
+      (req: any) => req.userId === user?.userId && req.status === 'PENDING'
+    ).length || 0;
+    
+    if (userActiveRequests >= 3) {
+      addNotification({
+        type: 'error',
+        title: '🚫 Request Limit Reached',
+        message: 'Maximum 3 active requests allowed',
+      });
+      return;
+    }
+
+    // Check DJ set capacity
+    if (currentSetId) {
+      try {
+        const djSet = await fetchDJSet(currentSetId);
+        
+        // Check if sold out
+        if (djSet.settings?.isSoldOut) {
+          addNotification({
+            type: 'error',
+            title: '🚫 Sold Out',
+            message: 'Request queue is currently full. Try again later!',
+          });
+          return;
+        }
+        
+        // Check request cap (requests in last hour)
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+        const requestsThisHour = queue?.orderedRequests?.filter((req: any) => {
+          return req.timestamp > oneHourAgo;
+        }).length || 0;
+        
+        if (djSet.settings?.requestCapPerHour && requestsThisHour >= djSet.settings.requestCapPerHour) {
+          addNotification({
+            type: 'error',
+            title: '⏰ Hourly Cap Reached',
+            message: 'Hourly request cap reached. Try again in a few minutes!',
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to check DJ set settings:', error);
+        // Don't block user if check fails
+      }
+    }
+    
     setSelectedSong(song);
     setViewState('requesting');
   };
@@ -692,25 +819,104 @@ export const UserPortalInnovative: React.FC = () => {
             estimatedQueuePosition={myRequestPosition || 8}
             estimatedWaitTime={myRequestPosition ? `~${myRequestPosition * 3} minutes` : '~25 minutes'}
             onConfirm={async (requestData) => {
-              try {
-                // TODO: Submit request to backend
-                console.log('Submitting request:', requestData);
+              const handleConfirmRequest = async (retryCount = 0): Promise<void> => {
+                const MAX_RETRIES = 3;
+                setIsProcessing(true);
+                setPaymentError(null);
                 
-                setShowLockedIn(true);
-                
-                setTimeout(() => {
-                  setShowLockedIn(false);
-                  setViewState('waiting');
-                  setMyRequestPosition(null);
-                }, 2000);
-              } catch (error) {
-                console.error('Request failed:', error);
-                addNotification({
-                  type: 'error',
-                  title: '❌ Request Failed',
-                  message: 'Failed to submit your request. Please try again.',
-                });
-              }
+                try {
+                  // Generate idempotency key to prevent double charges (will be used in production)
+                  // const idempotencyKey = `${user?.userId}-${selectedSong.id}-${Date.now()}`;
+                  
+                  // 1. Create payment intent
+                  console.log('Creating payment intent...');
+                  const paymentIntent = await createPaymentIntent({
+                    amount: selectedSong.basePrice,
+                    songId: selectedSong.id,
+                    eventId: currentEventId!,
+                    userId: user?.userId,
+                  });
+                  
+                  // 2. Process payment via Yoco
+                  console.log('Processing payment...');
+                  const payment = await processYocoPayment(paymentIntent);
+                  
+                  if (payment.status !== 'succeeded') {
+                    throw new Error('Payment failed');
+                  }
+                  
+                  // 3. Verify payment
+                  console.log('Verifying payment...');
+                  const verified = await verifyPayment(payment.transactionId);
+                  if (!verified) {
+                    throw new Error('Payment verification failed');
+                  }
+                  
+                  // 4. Submit request to backend with payment proof
+                  console.log('Submitting request to backend...');
+                  const request = await submitRequest({
+                    eventId: currentEventId!,
+                    setId: currentSetId!,
+                    userId: user?.userId!,
+                    songId: selectedSong.id,
+                    songTitle: selectedSong.title,
+                    artistName: selectedSong.artist,
+                    paymentTransactionId: payment.transactionId,
+                    amount: selectedSong.basePrice,
+                    dedication: requestData.dedication,
+                    requestType: requestData.requestType || 'standard',
+                  });
+                  
+                  // 5. Track successful request
+                  BusinessMetrics.requestSubmitted(
+                    selectedSong.title,
+                    selectedSong.basePrice,
+                    currentEventId!
+                  );
+                  BusinessMetrics.paymentProcessed(
+                    selectedSong.basePrice,
+                    payment.transactionId
+                  );
+                  
+                  // 6. Show success animation
+                  setShowLockedIn(true);
+                  
+                  // 7. Transition to waiting state
+                  setTimeout(() => {
+                    setShowLockedIn(false);
+                    setViewState('waiting');
+                    setMyRequestPosition(request.queuePosition || null);
+                    
+                    addNotification({
+                      type: 'info',
+                      title: '🎵 Request Submitted!',
+                      message: `${selectedSong.title} added to the queue`,
+                    });
+                  }, 2000);
+                  
+                } catch (error: any) {
+                  console.error('Request submission failed:', error);
+                  
+                  // Retry logic for network errors
+                  if (retryCount < MAX_RETRIES && isRetryableError(error)) {
+                    console.log(`Retrying payment (${retryCount + 1}/${MAX_RETRIES})...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                    return handleConfirmRequest(retryCount + 1);
+                  }
+                  
+                  // Show error to user
+                  setPaymentError(error.message || 'Request failed. Please try again.');
+                  addNotification({
+                    type: 'error',
+                    title: '❌ Request Failed',
+                    message: error.message || 'Failed to submit your request. Please try again.',
+                  });
+                } finally {
+                  setIsProcessing(false);
+                }
+              };
+              
+              await handleConfirmRequest();
             }}
             onCancel={handleCancelRequest}
           />

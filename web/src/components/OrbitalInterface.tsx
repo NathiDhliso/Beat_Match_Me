@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Music, DollarSign, Settings, LogOut, Plus, Search, Filter } from 'lucide-react';
+import { Music, DollarSign } from 'lucide-react';
 
 interface MenuOption {
   icon: React.ReactNode;

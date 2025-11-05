@@ -27,8 +27,10 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
-import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted } from '../services/graphql';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile } from '../services/djSettings';
+// import { processRefund } from '../services/payment'; // Available for future use
+import { BusinessMetrics } from '../services/analytics';
 
 type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
 
@@ -337,10 +339,37 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
+      // 1. Veto the request
       await submitVeto(selectedRequest.requestId, reason);
+      
+      // 2. Process refund automatically
+      try {
+        const refund = await submitRefund(selectedRequest.requestId, reason || 'DJ vetoed request');
+        console.log('✅ Refund processed:', refund);
+        
+        // 3. Notify DJ of successful veto + refund
+        addNotification({
+          type: 'info',
+          title: '✅ Request Vetoed',
+          message: `Refund of R${selectedRequest.price} processed for ${selectedRequest.userName}`,
+          metadata: {
+            requestId: selectedRequest.requestId,
+          }
+        });
+      } catch (refundError) {
+        console.error('⚠️ Refund processing failed:', refundError);
+        
+        // Alert DJ but don't fail the veto
+        addNotification({
+          type: 'error',
+          title: '⚠️ Refund Pending',
+          message: 'Request vetoed but refund needs manual processing. Contact support.',
+        });
+      }
+      
       setShowVetoModal(false);
       setSelectedRequest(null);
-      console.log('✅ Request vetoed, refund processing automatically');
+      console.log('✅ Request vetoed successfully');
     } catch (error) {
       console.error('❌ Veto failed:', error);
       alert('Failed to veto request. Please try again.');
@@ -458,10 +487,87 @@ export const DJPortalOrbital: React.FC = () => {
     }
   };
 
-  const handleEndSet = () => {
-    if (confirm('Are you sure you want to end this DJ set?')) {
+  const handleEndSet = async () => {
+    if (!currentSetId) return;
+    
+    const pendingRequests = queueRequests.filter(
+      (req: any) => req.status === 'PENDING' || req.status === 'ACCEPTED'
+    );
+    
+    const confirmMessage = pendingRequests.length > 0
+      ? `End set and refund ${pendingRequests.length} pending request${pendingRequests.length === 1 ? '' : 's'}?`
+      : 'Are you sure you want to end this DJ set?';
+    
+    if (!confirm(confirmMessage)) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      // 1. Update set status to COMPLETED
+      console.log('Ending DJ set:', currentSetId);
+      await submitUpdateSetStatus(currentSetId, 'COMPLETED');
+      
+      // 2. Process refunds for all pending requests
+      if (pendingRequests.length > 0) {
+        console.log(`Processing ${pendingRequests.length} refunds...`);
+        
+        const refundPromises = pendingRequests.map(async (req: any) => {
+          try {
+            const refund = await submitRefund(req.requestId, 'DJ set ended');
+            console.log('✅ Refunded:', req.requestId, refund);
+            return { success: true, requestId: req.requestId };
+          } catch (error) {
+            console.error('❌ Refund failed:', req.requestId, error);
+            return { success: false, requestId: req.requestId };
+          }
+        });
+        
+        const results = await Promise.all(refundPromises);
+        const successCount = results.filter(r => r.success).length;
+        const failCount = results.filter(r => !r.success).length;
+        
+        // 3. Notify DJ of results
+        if (failCount === 0) {
+          addNotification({
+            type: 'info',
+            title: '✅ Set Ended',
+            message: `${successCount} request${successCount === 1 ? '' : 's'} refunded successfully`,
+          });
+        } else {
+          addNotification({
+            type: 'error',
+            title: '⚠️ Set Ended (Refunds Pending)',
+            message: `${successCount} refunded, ${failCount} need manual processing`,
+          });
+        }
+        
+        // Track business metrics
+        BusinessMetrics.djSetEnded(
+          currentSetId,
+          totalRevenue,
+          queueRequests.length
+        );
+      } else {
+        addNotification({
+          type: 'info',
+          title: '✅ Set Ended',
+          message: 'No pending refunds required',
+        });
+      }
+      
+      // 4. Clear local state
       setCurrentSetId(null);
       setCurrentEventId(null);
+      
+    } catch (error) {
+      console.error('Failed to end set cleanly:', error);
+      addNotification({
+        type: 'error',
+        title: '❌ End Set Failed',
+        message: 'Failed to end set properly. Contact support if needed.',
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 

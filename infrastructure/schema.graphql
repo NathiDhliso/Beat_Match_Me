@@ -274,6 +274,7 @@ type Query {
   getEventTracklist(eventId: ID!): [Track!]!
   getRequest(requestId: ID!): Request
   getUserRequests(userId: ID!, limit: Int): [Request!]!
+  getUserActiveRequests(userId: ID!, eventId: ID!): [Request!]!
   getEventRequests(eventId: ID!, status: RequestStatus): [Request!]!
   getSetRequests(setId: ID!, status: RequestStatus): [Request!]!
   getTransaction(transactionId: ID!): Transaction
@@ -354,6 +355,7 @@ type Mutation {
   
   createDJSet(input: CreateDJSetInput!): DJSet
   updateDJSetStatus(setId: ID!, status: SetStatus!): DJSet
+  updateSetStatus(setId: ID!, status: String!): DJSet
   updateDJSetSettings(setId: ID!, input: UpdateDJSetSettingsInput!): DJSet
   toggleSetAvailability(setId: ID!, isAcceptingRequests: Boolean!): DJSet
   

@@ -191,6 +191,7 @@ type Query {
   # Request queries
   getRequest(requestId: ID!): Request
   getQueue(eventId: ID!): Queue
+  getUserActiveRequests(userId: ID!, eventId: ID!): [Request!]!
   
   # User queries
   getUser(userId: ID!): User
@@ -213,6 +214,7 @@ type Mutation {
   createRequest(input: CreateRequestInput!): Request
   vetoRequest(requestId: ID!, reason: String): VetoResponse
   reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
+  updateSetStatus(setId: ID!, status: String!): DJSet
 }
 
 # Subscriptions

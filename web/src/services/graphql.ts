@@ -531,6 +531,72 @@ export async function submitMarkCompleted(requestId: string) {
   return response.data.markRequestAsCompleted;
 }
 
+// ============================================
+// REFUND MUTATIONS - Feature 6
+// ============================================
+
+export const processRefund = /* GraphQL */ `
+  mutation ProcessRefund($requestId: ID!, $reason: String) {
+    processRefund(requestId: $requestId, reason: $reason) {
+      refundId
+      amount
+      status
+      transactionId
+      estimatedDays
+      refundedAt
+    }
+  }
+`;
+
+export const getUserActiveRequests = /* GraphQL */ `
+  query GetUserActiveRequests($userId: ID!, $eventId: ID!) {
+    getUserActiveRequests(userId: $userId, eventId: $eventId) {
+      requestId
+      songId
+      songTitle
+      artistName
+      queuePosition
+      status
+      price
+      submittedAt
+    }
+  }
+`;
+
+export const updateSetStatus = /* GraphQL */ `
+  mutation UpdateSetStatus($setId: ID!, $status: String!) {
+    updateSetStatus(setId: $setId, status: $status) {
+      setId
+      status
+      endedAt
+    }
+  }
+`;
+
+export async function submitRefund(requestId: string, reason?: string) {
+  const response: any = await client.graphql({
+    query: processRefund,
+    variables: { requestId, reason }
+  });
+  return response.data.processRefund;
+}
+
+export async function fetchUserActiveRequests(userId: string, eventId: string) {
+  const response: any = await client.graphql({
+    query: getUserActiveRequests,
+    variables: { userId, eventId }
+  });
+  return response.data.getUserActiveRequests;
+}
+
+export async function submitUpdateSetStatus(setId: string, status: string) {
+  const response: any = await client.graphql({
+    query: updateSetStatus,
+    variables: { setId, status }
+  });
+  return response.data.updateSetStatus;
+}
+
 
 export async function submitSetEventTracklist(eventId: string, songIds: string[]) {
   const response: any = await client.graphql({ query: setEventTracklist, variables: { eventId, songIds } });

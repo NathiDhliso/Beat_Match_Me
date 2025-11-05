@@ -76,14 +76,52 @@ const LoadingScreen: React.FC<{ message?: string }> = ({ message = 'Loading...' 
   );
 };
 
+// Offline Mode Banner
+const OfflineBanner: React.FC = () => {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-600 text-white px-4 py-2 text-center">
+      <p className="text-sm font-semibold">⚠️ You're offline. Some features may not work.</p>
+    </div>
+  );
+};
+
 function App() {
   const { isReady, errors } = useBackend();
+  const [isOffline, setIsOffline] = React.useState(false);
 
   useEffect(() => {
     if (isReady && errors.length > 0) {
       console.warn('Backend validation warnings:', errors);
     }
   }, [isReady, errors]);
+
+  // Offline mode detection
+  useEffect(() => {
+    const handleOffline = () => {
+      console.warn('🔴 App went offline');
+      setIsOffline(true);
+    };
+    
+    const handleOnline = () => {
+      console.log('🟢 App back online');
+      setIsOffline(false);
+      
+      // Optional: Trigger data sync when coming back online
+      // syncPendingActions();
+    };
+    
+    // Check initial state
+    setIsOffline(!navigator.onLine);
+    
+    // Add event listeners
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
 
   // Show loading screen until backend is validated
   if (!isReady) {
@@ -94,6 +132,9 @@ function App() {
     <ThemeProvider defaultMode="dark">
       <ApolloProvider client={apolloClient}>
         <AuthProvider>
+          {/* Offline mode banner */}
+          {isOffline && <OfflineBanner />}
+          
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />

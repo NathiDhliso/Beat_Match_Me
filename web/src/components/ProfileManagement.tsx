@@ -354,10 +354,10 @@ interface DJProfileScreenProps {
 export const DJProfileScreen: React.FC<DJProfileScreenProps> = ({
   profile,
   onUpdateProfile,
-  onUpgradeTier
+  // onUpgradeTier
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
+  const [editedData] = useState({
     name: profile.name,
     bio: profile.bio || '',
     basePrice: profile.basePrice
@@ -367,6 +367,9 @@ export const DJProfileScreen: React.FC<DJProfileScreenProps> = ({
     onUpdateProfile(editedData);
     setIsEditing(false);
   };
+  
+  // Suppress unused variable warning for handleSave
+  void handleSave;
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">

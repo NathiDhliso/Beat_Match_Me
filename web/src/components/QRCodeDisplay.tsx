@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Download, Share2, QrCode as QrCodeIcon } from 'lucide-react';
+import { X, Download, Share2 } from 'lucide-react';
 import QRCode from 'qrcode';
 
 interface QRCodeDisplayProps {

@@ -1,0 +1,17 @@
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "setId": $util.dynamodb.toDynamoDBJson($ctx.args.setId)
+  },
+  "update": {
+    "expression": "SET #status = :status, endedAt = :endedAt",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":status": $util.dynamodb.toDynamoDBJson($ctx.args.status),
+      ":endedAt": $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds())
+    }
+  }
+}
