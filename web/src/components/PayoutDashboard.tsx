@@ -4,11 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { DollarSign, TrendingUp, Download, Info, CheckCircle, Clock, AlertCircle, Wallet } from 'lucide-react';
+import { TrendingUp, Download, Info, CheckCircle, Clock, AlertCircle, Wallet } from 'lucide-react';
 import { calculatePaymentBreakdown, canRequestPayout, getPayoutTimeline, getCommissionExplanation } from '../services/paymentSplit';
 
 interface PayoutDashboardProps {
-  performerId: string;
   currentBalance: number;
   totalEarnings: number;
   platformFeesTotal: number;
@@ -19,7 +18,6 @@ interface PayoutDashboardProps {
 }
 
 export const PayoutDashboard: React.FC<PayoutDashboardProps> = ({
-  performerId,
   currentBalance,
   totalEarnings,
   platformFeesTotal,

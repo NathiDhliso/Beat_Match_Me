@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Shield, Lock, CreditCard, CheckCircle, Music, DollarSign, Info, X, Sparkles } from 'lucide-react';
+import { Shield, Lock, CreditCard, CheckCircle, Music, Info, Sparkles } from 'lucide-react';
 import { YocoCardInput } from './YocoCardInput';
 import { getPaymentDisplayInfo } from '../services/paymentSplit';
 
@@ -14,7 +14,6 @@ interface PaymentPageProps {
   artistName: string;
   amount: number;
   requestType?: 'standard' | 'spotlight';
-  userTier?: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
   djName?: string;
   estimatedPosition?: number;
   onSuccess: (paymentToken: string) => void;
@@ -27,7 +26,6 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
   artistName,
   amount,
   requestType = 'standard',
-  userTier = 'BRONZE',
   djName = 'the DJ',
   estimatedPosition,
   onSuccess,

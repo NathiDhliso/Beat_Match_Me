@@ -40,11 +40,6 @@ interface RefundResult {
   estimatedDays: string;
 }
 
-// Yoco API configuration
-const YOCO_PUBLIC_KEY = import.meta.env.VITE_YOCO_PUBLIC_KEY || '';
-// Note: Secret key should only be used in backend/Lambda functions
-const YOCO_API_BASE = 'https://payments.yoco.com/api/checkouts';
-
 /**
  * Create a payment intent for a song request
  */
