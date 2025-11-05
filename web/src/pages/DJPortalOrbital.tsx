@@ -262,22 +262,14 @@ export const DJPortalOrbital: React.FC = () => {
     position: index + 1,
   })) || [];
 
-  const [tracks, setTracks] = useState<Track[]>(
-    tracklist.map((t, i) => ({
-      id: `track-${i}`,
-      title: t.title,
-      artist: t.artist,
-      genre: t.genre,
-      basePrice: t.basePrice,
-      isEnabled: true,
-    }))
-  );
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [tracksLoaded, setTracksLoaded] = useState(false);
 
   const totalRevenue = queueRequests.reduce((sum: number) => sum + 20, 0);
 
-  // Load and apply saved playlist when set changes
+  // Load tracks from backend (from tracklist) and apply saved playlist
   useEffect(() => {
-    const loadSavedPlaylist = async () => {
+    const loadTracksAndPlaylist = async () => {
       if (!currentSetId || !user?.userId) return;
       
       try {
@@ -285,6 +277,24 @@ export const DJPortalOrbital: React.FC = () => {
           authMode: 'userPool'
         });
         
+        // 1. Load tracklist first (this contains the actual track data)
+        if (tracklist.length > 0 && !tracksLoaded) {
+          console.log(`📚 Loading ${tracklist.length} tracks from tracklist`);
+          const initialTracks = tracklist.map((t, i) => ({
+            id: `track-${i}`,
+            title: t.title,
+            artist: t.artist,
+            genre: t.genre,
+            basePrice: t.basePrice,
+            isEnabled: true,
+            duration: t.duration ? parseInt(t.duration) : undefined,
+            albumArt: t.albumArt,
+          }));
+          setTracks(initialTracks);
+          setTracksLoaded(true);
+        }
+        
+        // 2. Load saved playlist settings
         const response: any = await client.graphql({
           query: `
             query GetDJSet($setId: ID!) {
@@ -303,48 +313,34 @@ export const DJPortalOrbital: React.FC = () => {
         
         const set = response.data.getDJSet;
         
+        // 3. Apply saved playlist (enable/disable tracks based on saved IDs)
         if (set && set.playlistTracks && set.playlistTracks.length > 0) {
-          console.log(`🎵 Loading saved playlist: ${set.playlistName} (${set.playlistTracks.length} songs)`);
+          console.log(`🎵 Applying saved playlist: ${set.playlistName} (${set.playlistTracks.length} songs)`);
           
-          // Apply saved playlist to tracks
-          setTracks(prevTracks =>
-            prevTracks.map(track => ({
+          setTracks(prevTracks => {
+            if (prevTracks.length === 0) return prevTracks;
+            
+            return prevTracks.map(track => ({
               ...track,
               isEnabled: set.playlistTracks.includes(track.id)
-            }))
-          );
+            }));
+          });
           
           addNotification({
             type: 'info',
             title: '🎵 Playlist Loaded',
-            message: `${set.playlistName}: ${set.playlistTracks.length} songs`,
+            message: `${set.playlistName}: ${set.playlistTracks.length} songs enabled`,
           });
         } else {
           console.log('ℹ️ No saved playlist for this set');
         }
       } catch (error) {
-        console.error('❌ Failed to load saved playlist:', error);
+        console.error('❌ Failed to load tracks/playlist:', error);
       }
     };
     
-    loadSavedPlaylist();
-  }, [currentSetId]); // Run when set changes
-
-  // Update tracks when tracklist changes
-  useEffect(() => {
-    if (tracklist.length > 0) {
-      setTracks(
-        tracklist.map((t, i) => ({
-          id: `track-${i}`,
-          title: t.title,
-          artist: t.artist,
-          genre: t.genre,
-          basePrice: t.basePrice,
-          isEnabled: true,
-        }))
-      );
-    }
-  }, [tracklist]);
+    loadTracksAndPlaylist();
+  }, [currentSetId, tracklist, tracksLoaded, user?.userId]); // Run when set or tracklist changes
 
   // Gesture Navigation
   const handleSwipeUp = () => setCurrentView('queue');
@@ -1132,6 +1128,14 @@ export const DJPortalOrbital: React.FC = () => {
                     </div>
                   </div>
                 )}
+                
+                {/* Debug: Show track count */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="p-2 bg-blue-500/20 border-b border-blue-500/30 text-white text-xs">
+                    Debug: {tracks.length} tracks loaded | Tracklist: {tracklist.length} songs | Tracks loaded: {tracksLoaded ? 'Yes' : 'No'}
+                  </div>
+                )}
+                
                 <DJLibrary
                   tracks={tracks}
                   onAddTrack={handleAddTrack}
