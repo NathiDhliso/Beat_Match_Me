@@ -10,6 +10,9 @@ interface EventCreatorProps {
 export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCreated }) => {
   // Event fields
   const [venueName, setVenueName] = useState('');
+  const [venueAddress, setVenueAddress] = useState('');
+  const [venueCity, setVenueCity] = useState('');
+  const [venueProvince, setVenueProvince] = useState('');
   const [eventStartTime, setEventStartTime] = useState('');
   const [eventDuration, setEventDuration] = useState(6); // hours
   
@@ -30,8 +33,16 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
       const eventStartTimestamp = new Date(eventStartTime).getTime();
       const eventEndTimestamp = eventStartTimestamp + (eventDuration * 60 * 60 * 1000);
 
+      // Build venue location object if city is provided
+      const venueLocation = venueCity ? {
+        address: venueAddress || venueName,
+        city: venueCity,
+        province: venueProvince || 'Unknown'
+      } : null;
+
       console.log('🚀 Creating event in backend:', {
         venueName,
+        venueLocation,
         startTime: eventStartTimestamp,
         endTime: eventEndTimestamp,
         status: 'ACTIVE'
@@ -39,6 +50,7 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
 
       const eventResult = await submitCreateEvent({
         venueName,
+        venueLocation,
         startTime: eventStartTimestamp,
         endTime: eventEndTimestamp,
         status: 'ACTIVE'
@@ -130,6 +142,39 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
               placeholder="Venue name"
               className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
             />
+          </div>
+
+          {/* Venue Location - Collapsible */}
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-purple-300">📍 Venue Location</span>
+              <span className="text-xs text-gray-400">(Optional but recommended)</span>
+            </div>
+            
+            <input
+              type="text"
+              value={venueAddress}
+              onChange={(e) => setVenueAddress(e.target.value)}
+              placeholder="Street address"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm"
+            />
+            
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={venueCity}
+                onChange={(e) => setVenueCity(e.target.value)}
+                placeholder="City"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm"
+              />
+              <input
+                type="text"
+                value={venueProvince}
+                onChange={(e) => setVenueProvince(e.target.value)}
+                placeholder="Province"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm"
+              />
+            </div>
           </div>
 
           {/* Event Start Time - Icon only, no label */}

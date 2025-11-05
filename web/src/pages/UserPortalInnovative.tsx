@@ -324,8 +324,10 @@ export const UserPortalInnovative: React.FC = () => {
                     address
                     city
                     province
-                    latitude
-                    longitude
+                    coordinates {
+                      lat
+                      lng
+                    }
                   }
                   startTime
                   endTime
@@ -353,12 +355,12 @@ export const UserPortalInnovative: React.FC = () => {
             
             // Calculate distance if user location and venue location are available
             let distance = 'Nearby';
-            if (userLocation && event.venueLocation?.latitude && event.venueLocation?.longitude) {
+            if (userLocation && event.venueLocation?.coordinates?.lat && event.venueLocation?.coordinates?.lng) {
               const distanceKm = calculateDistance(
                 userLocation.latitude,
                 userLocation.longitude,
-                event.venueLocation.latitude,
-                event.venueLocation.longitude
+                event.venueLocation.coordinates.lat,
+                event.venueLocation.coordinates.lng
               );
               distance = formatDistance(distanceKm);
             } else if (event.venueLocation?.city) {
