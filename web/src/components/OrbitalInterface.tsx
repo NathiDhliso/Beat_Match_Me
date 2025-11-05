@@ -62,7 +62,7 @@ export const FloatingActionBubble: React.FC<FloatingBubbleProps> = ({ onMenuTogg
     <>
       {/* Main Floating Bubble */}
       <div
-        className="fixed z-50 cursor-move"
+        className="fixed z-50 cursor-move hidden md:block"
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,

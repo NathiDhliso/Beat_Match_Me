@@ -40,11 +40,24 @@ export function useQueueSubscription(setId: string, eventId: string) {
   // Polling fallback
   const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) return;
+    
+    // Don't start polling if we don't have valid IDs (check for empty strings too)
+    if (!setId || !eventId || setId === '' || eventId === '') {
+      console.log('⚠️ Cannot start polling: missing or empty setId/eventId');
+      setConnectionStatus('disconnected');
+      return;
+    }
 
     console.log('Starting polling mode (10s interval)');
     setConnectionStatus('connected');
 
     const poll = async () => {
+      // Double-check IDs are still valid (including empty strings)
+      if (!eventId || !setId || eventId === '' || setId === '') {
+        console.log('⚠️ Polling skipped: missing or empty IDs');
+        return;
+      }
+      
       try {
         const client = generateClient({
           authMode: 'userPool'
@@ -72,10 +85,18 @@ export function useQueueSubscription(setId: string, eventId: string) {
           variables: { eventId }
         });
 
-        setQueueData(response.data.getQueue);
-        setError(null);
+        if (response.data?.getQueue) {
+          setQueueData(response.data.getQueue);
+          setError(null);
+        } else {
+          console.log('⚠️ Polling returned no queue data');
+        }
       } catch (err: any) {
-        console.error('Polling error:', err);
+        // Only log errors in development mode to reduce console spam
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Polling error:', err);
+          console.error('Error details:', err.errors || err.message);
+        }
         setError(err);
       }
     };
@@ -106,9 +127,12 @@ export function useQueueSubscription(setId: string, eventId: string) {
 
   // Real-time subscription
   const connectSubscription = useCallback(async () => {
-    if (!setId || !eventId || !subscriptionsAvailable) {
-      startPolling();
-      trackPollingFallback();
+    if (!setId || !eventId || setId === '' || eventId === '' || !subscriptionsAvailable) {
+      console.log('⚠️ Cannot connect subscription: invalid IDs or subscriptions unavailable');
+      if (setId && eventId && setId !== '' && eventId !== '') {
+        startPolling();
+        trackPollingFallback();
+      }
       return;
     }
 
@@ -182,7 +206,12 @@ export function useQueueSubscription(setId: string, eventId: string) {
   }, []);
 
   useEffect(() => {
-    if (!setId || !eventId) return;
+    // Guard: Don't attempt connection without valid IDs (check for empty strings too)
+    if (!setId || !eventId || setId === '' || eventId === '') {
+      console.log('⚠️ useQueueSubscription: Waiting for valid setId and eventId');
+      setConnectionStatus('disconnected');
+      return;
+    }
 
     if (subscriptionsAvailable) {
       connectSubscription();

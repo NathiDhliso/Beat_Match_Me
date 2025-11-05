@@ -64,8 +64,11 @@ export function useTracklist(eventId: string | null) {
           setError(null); // No error, just empty tracklist
         }
       } catch (err) {
-        console.warn('⚠️ Tracklist query not configured, using empty tracklist:', err);
-        // Fallback to empty tracklist until getEventTracklist resolver is configured
+        // Silently fallback to empty tracklist - this is expected until getEventTracklist resolver is configured
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ℹ️ Tracklist query not configured, using empty tracklist');
+        }
         setTracklist([]);
         setError(null); // Don't treat as error, just use empty tracklist
       } finally {
