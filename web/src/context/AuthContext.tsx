@@ -63,8 +63,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      const currentUser = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
+      
+      // Add timeout protection for Cognito calls
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+      );
+      
+      const authCheck = async () => {
+        const currentUser = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+        return { currentUser, attributes };
+      };
+      
+      const { currentUser, attributes } = await Promise.race([authCheck(), timeout]) as any;
 
       setUser({
         userId: currentUser.userId,
@@ -75,8 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         profileImage: attributes['custom:profileImage'],
         phone: attributes.phone_number,
       });
-    } catch (err) {
-      // User not authenticated
+    } catch (err: any) {
+      // User not authenticated or timeout
+      console.warn('Auth check failed:', err.message);
       setUser(null);
     } finally {
       setLoading(false);
@@ -93,18 +105,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
       };
 
-      try {
-        await signIn(signInInput);
-      } catch (signInError: any) {
-        // If user is already authenticated, sign out and try again
-        if (signInError.name === 'UserAlreadyAuthenticatedException') {
-          await signOut();
+      // Add timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Login timeout - please try again')), 15000)
+      );
+
+      const loginAttempt = async () => {
+        try {
           await signIn(signInInput);
-        } else {
-          throw signInError;
+        } catch (signInError: any) {
+          // If user is already authenticated, sign out and try again
+          if (signInError.name === 'UserAlreadyAuthenticatedException') {
+            await signOut();
+            await signIn(signInInput);
+          } else {
+            throw signInError;
+          }
         }
-      }
-      
+      };
+
+      await Promise.race([loginAttempt(), timeout]);
       await checkAuthStatus();
     } catch (err: any) {
       // User-friendly error messages
@@ -151,7 +171,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       };
 
-      await signUp(signUpInput);
+      // Add timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Signup timeout - please try again')), 15000)
+      );
+
+      await Promise.race([signUp(signUpInput), timeout]);
     } catch (err: any) {
       // User-friendly error messages
       let errorMessage = 'Failed to sign up';
@@ -180,10 +205,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      await confirmSignUp({
-        username: email,
-        confirmationCode: code,
-      });
+      // Add timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Confirmation timeout - please try again')), 15000)
+      );
+
+      await Promise.race([
+        confirmSignUp({
+          username: email,
+          confirmationCode: code,
+        }),
+        timeout
+      ]);
     } catch (err: any) {
       setError(err.message || 'Failed to confirm signup');
       throw err;
@@ -197,11 +230,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      await signOut();
+      // Add timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Logout timeout')), 10000)
+      );
+
+      await Promise.race([signOut(), timeout]);
       setUser(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to logout');
-      throw err;
+      // Even if logout times out, clear user locally
+      setUser(null);
+      console.warn('Logout timeout, cleared local session');
     } finally {
       setLoading(false);
     }
@@ -217,7 +256,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (updates.phone) attributes.phone_number = updates.phone;
       if (updates.profileImage) attributes['custom:profileImage'] = updates.profileImage;
 
-      await updateUserAttributes({ userAttributes: attributes });
+      // Add timeout protection
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile update timeout')), 15000)
+      );
+
+      await Promise.race([
+        updateUserAttributes({ userAttributes: attributes }),
+        timeout
+      ]);
       await checkAuthStatus();
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
