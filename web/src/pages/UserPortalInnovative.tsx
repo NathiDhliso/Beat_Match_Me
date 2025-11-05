@@ -189,6 +189,26 @@ export const UserPortalInnovative: React.FC = () => {
         setEventsError(null);
         console.log('🔍 Fetching active events from backend...');
         
+        // Check authentication status before making request
+        try {
+          const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+          const currentUser = await getCurrentUser();
+          const session = await fetchAuthSession();
+          
+          console.log('✅ User authenticated:', currentUser.userId);
+          console.log('✅ Session tokens present:', {
+            idToken: !!session.tokens?.idToken,
+            accessToken: !!session.tokens?.accessToken,
+          });
+          
+          if (!session.tokens?.idToken) {
+            throw new Error('No authentication token available. Please sign out and sign back in.');
+          }
+        } catch (authError: any) {
+          console.error('❌ Authentication check failed:', authError);
+          throw new Error('Not authenticated. Please sign in to view events.');
+        }
+        
         const { generateClient } = await import('aws-amplify/api');
         const client = generateClient();
         
@@ -253,12 +273,25 @@ export const UserPortalInnovative: React.FC = () => {
         // Set user-friendly error message
         let errorMessage = 'Failed to load events. ';
         
+        if (error.message?.includes('Not authenticated')) {
+          errorMessage = 'Please sign in to view events.';
+          setEventsError(errorMessage);
+          return;
+        }
+        
         if (error.errors && error.errors.length > 0) {
           const firstError = error.errors[0];
           console.error('First error message:', firstError.message);
+          console.error('First error type:', firstError.errorType);
           
-          if (firstError.message?.includes('Not Authorized') || firstError.errorType === 'Unauthorized') {
-            errorMessage = 'Authentication error. Please sign out and sign back in.';
+          if (firstError.message?.includes('Not Authorized') || 
+              firstError.message?.includes('Unauthorized') ||
+              firstError.errorType === 'Unauthorized') {
+            errorMessage = '🔐 Authentication issue detected. This usually happens when:\n\n' +
+                          '1. Your session has expired\n' +
+                          '2. You need to sign out and sign back in\n' +
+                          '3. The authentication token is not being sent correctly\n\n' +
+                          'Please try signing out and signing back in. If the problem persists, check the browser console for more details.';
           } else if (firstError.message?.includes('Cannot return null') || firstError.message?.includes('resolver')) {
             errorMessage = 'Backend API not fully configured. Using demo mode.';
             // Don't show error to user, just use empty state
@@ -275,7 +308,7 @@ export const UserPortalInnovative: React.FC = () => {
             errorMessage = `GraphQL Error: ${firstError.message}`;
           }
         } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-          errorMessage = 'Authentication error. Please sign out and sign back in.';
+          errorMessage = '🔐 Authentication error (401). Please sign out and sign back in.';
         } else if (error.message) {
           errorMessage = `Error: ${error.message}`;
         }
