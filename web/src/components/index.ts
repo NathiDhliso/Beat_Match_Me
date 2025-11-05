@@ -10,6 +10,7 @@ export { ErrorDisplay, InlineError, ErrorPage } from './ErrorDisplay';
 export { EmptyState } from './EmptyState';
 export { EventCardSkeleton, SongCardSkeleton, QueueItemSkeleton, LoadingSpinner, LoadingState } from './LoadingSkeleton';
 export { OfflineBanner, PaymentErrorModal, SuccessConfirmation } from './StatusModals';
+export { Settings } from './Settings';
 
 // Core Value Prop Features - EXISTING COMPONENTS ONLY
 export { RequestCapManager } from './RequestCapManager';

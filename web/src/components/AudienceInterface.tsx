@@ -191,6 +191,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
           {/* Event Info - Minimized */}
           <div className="h-1/3 bg-black/80 backdrop-blur-lg p-6">
             <h2 className="text-3xl font-bold text-white mb-2">{currentEvent.venueName}</h2>
+            <p className="text-purple-300 font-semibold mb-3">🎤 {currentEvent.djName}</p>
             <div className="flex items-center gap-4 text-sm text-gray-300">
               <span className="flex items-center gap-1">
                 <Music className="w-4 h-4" />
@@ -198,7 +199,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
               </span>
               <span className="flex items-center gap-1">
                 <Heart className="w-4 h-4" />
-                {currentEvent.attendees}
+                {currentEvent.attendees} {currentEvent.attendees === 1 ? 'person' : 'people'}
               </span>
             </div>
           </div>

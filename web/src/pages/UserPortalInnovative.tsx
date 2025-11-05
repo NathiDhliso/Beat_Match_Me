@@ -22,12 +22,11 @@ import { RefundConfirmation } from '../components/RefundConfirmation';
 import { RequestConfirmation } from '../components/RequestConfirmation';
 import { NotificationCenter } from '../components/Notifications';
 import { UserNowPlayingNotification } from '../components/LiveModeIndicators';
-import { UniversalHelp } from '../components/UniversalHelp';
 import { EmptyState } from '../components/EmptyState';
 import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
 import { PaymentErrorModal, SuccessConfirmation } from '../components/StatusModals';
-import { requestNotificationPermission } from '../services/notifications';
-import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music } from 'lucide-react';
+import { Settings } from '../components/Settings';
+import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
 import { submitRequest, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';
@@ -68,8 +67,7 @@ export const UserPortalInnovative: React.FC = () => {
   // Phase 3: Notification features
   const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showOptInBanner, setShowOptInBanner] = useState(false);
-  const [hasRequestedPermission, setHasRequestedPermission] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Phase 3: Real-time queue subscription
   const { queueData, connectionStatus } = useQueueSubscription(
@@ -94,39 +92,6 @@ export const UserPortalInnovative: React.FC = () => {
     lastNotificationTime.current[type] = now;
     return true;
   };
-
-  // Helper: Request notification permission
-  const handleRequestPermission = async () => {
-    if (hasRequestedPermission) return;
-    
-    try {
-      const granted = await requestNotificationPermission();
-      setHasRequestedPermission(true);
-      setShowOptInBanner(false);
-      
-      if (granted) {
-        addNotification({
-          type: 'achievement',
-          title: '🔔 Notifications Enabled',
-          message: "You'll be notified when your song is coming up!",
-        });
-      }
-    } catch (error) {
-      console.error('Failed to request permission:', error);
-    }
-  };
-
-  // Show opt-in banner when user joins event
-  useEffect(() => {
-    if (currentEventId && !hasRequestedPermission && viewState !== 'discovery') {
-      // Show banner after 2 seconds (not immediately on page load)
-      const timer = setTimeout(() => {
-        setShowOptInBanner(true);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [currentEventId, hasRequestedPermission, viewState]);
 
   // Handle real-time queue updates
   useEffect(() => {
@@ -790,6 +755,15 @@ export const UserPortalInnovative: React.FC = () => {
               )}
             </button>
 
+            {/* Settings Button */}
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              aria-label="Settings"
+            >
+              <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            </button>
+
             {/* Logout Button */}
             <button
               onClick={logout}
@@ -1248,39 +1222,6 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
 
-        {/* Phase 3: Opt-In Banner (Shows when user joins event) */}
-        {showOptInBanner && (
-          <div 
-            className="fixed bottom-20 left-4 right-4 z-40 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-4 shadow-2xl animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-3xl flex-shrink-0">🔔</span>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-white font-bold mb-1">Stay Updated!</h3>
-                <p className="text-purple-100 text-sm mb-3">
-                  Get notified when your song is coming up
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleRequestPermission}
-                    className="flex-1 py-2 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
-                  >
-                    Enable Notifications
-                  </button>
-                  <button
-                    onClick={() => setShowOptInBanner(false)}
-                    className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
-                  >
-                    Later
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* User Now Playing Notification - Shows when user's song is playing */}
         {showUserPlayingNotification && userPlayingData && (
           <UserNowPlayingNotification
@@ -1366,8 +1307,13 @@ export const UserPortalInnovative: React.FC = () => {
         />
       )}
 
-      {/* Universal Help Button - Always Available */}
-      <UniversalHelp mode="fan" />
+      {/* Settings Modal */}
+      {showSettings && (
+        <Settings
+          onClose={() => setShowSettings(false)}
+          mode="fan"
+        />
+      )}
     </div>
   );
 };
