@@ -51,6 +51,11 @@ export const getDJSet = /* GraphQL */ `
         allowDedications
         allowGroupRequests
       }
+      playlistType
+      playlistId
+      playlistName
+      playlistTracks
+      playlistAppliedAt
       createdAt
     }
   }
@@ -85,6 +90,11 @@ export const listPerformerSets = /* GraphQL */ `
       isAcceptingRequests
       revenue
       requestCount
+      playlistType
+      playlistId
+      playlistName
+      playlistTracks
+      playlistAppliedAt
       createdAt
     }
   }

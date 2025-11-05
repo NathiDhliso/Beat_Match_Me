@@ -73,6 +73,9 @@ A transparent request system where:
    - Add songs to "willing to play" list
    - Set individual song prices
    - Mark songs as available/unavailable
+   - Create event-specific playlists (preset or custom)
+   - Save and reload playlists across sessions
+   - Pause live mode during events
 
 4. **Queue Management**
    - View all incoming requests for your DJ set
@@ -271,6 +274,9 @@ A transparent request system where:
 - ✅ Error tracking and analytics
 - ✅ Real backend integration (no mock data)
 - ✅ Responsive design (mobile/tablet/desktop)
+- ✅ Event playlist management (preset and custom)
+- ✅ Playlist persistence across sessions
+- ✅ Live mode controls (GO LIVE, PAUSE)
 
 ### P1 (Should Have - First Month):
 - Revenue analytics (DJ)
@@ -374,6 +380,14 @@ A transparent request system where:
 
 ## 📝 Change Log
 
+### November 5, 2025 - Playlist Persistence & Live Mode Controls
+- Added event-specific playlist management (preset and custom playlists)
+- Added playlist persistence to backend (auto-loads saved playlists across sessions)
+- Added manual live mode controls (GO LIVE button, PAUSE LIVE MODE)
+- Added live mode warnings in playlist manager
+- Schema updated: 5 new playlist fields on DJSet type
+- P0 features complete: DJs can curate and save event-specific playlists
+
 ### November 2025 (Latest) - Features 3 & 4 Complete
 - Completed Feature 3 "Submit Song Request with Payment" (mobile + web frontend)
 - Completed Feature 4 "Track Request in Queue with Real-Time Updates" (mobile + web frontend)
@@ -409,5 +423,5 @@ A transparent request system where:
 
 ---
 
-**Last Updated:** November 4, 2025 (PM)  
-**Status:** Active - DJ Sets architecture implemented and deployed
+**Last Updated:** November 5, 2025  
+**Status:** Active - Playlist persistence and live mode controls deployed to production

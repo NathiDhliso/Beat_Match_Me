@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { generateClient } from 'aws-amplify/api';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
@@ -18,8 +19,8 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell } from 'lucide-react';
-import { EventCreator, QRCodeDisplay } from '../components';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles } from 'lucide-react';
+import { EventCreator, QRCodeDisplay, EventPlaylistManager } from '../components';
 import { AcceptRequestPanel } from '../components/AcceptRequestPanel';
 import { VetoConfirmation } from '../components/VetoConfirmation';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
@@ -27,8 +28,9 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
+import { LiveModeIndicators, LiveStatusBar } from '../components/LiveModeIndicators';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus } from '../services/graphql';
-import { updateDJSetSettings, updateDJProfile } from '../services/djSettings';
+import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
 
@@ -65,7 +67,14 @@ export const DJPortalOrbital: React.FC = () => {
   // Phase 4: DJ Portal features
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showPlaylistManager, setShowPlaylistManager] = useState(false);
   const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
+
+  // Live Mode Visual State
+  const [liveMode, setLiveMode] = useState<'idle' | 'new_request' | 'playing' | 'accepting' | 'vetoed'>('idle');
+  
+  // Live Mode Control - Manual toggle for when DJ is ready to accept requests
+  const [isLiveMode, setIsLiveMode] = useState(false);
 
   // Real-time queue subscription (rename to avoid shadowing local queue variable)
   const { queueData: liveQueueData, connectionStatus } = useQueueSubscription(
@@ -121,8 +130,12 @@ export const DJPortalOrbital: React.FC = () => {
   useEffect(() => {
     const newCount = liveQueueData?.orderedRequests?.length || 0;
 
-    // If queue grew, notify
+    // If queue grew, notify and trigger live mode visual
     if (newCount > lastQueueCountRef.current) {
+      // Trigger live mode visual
+      setLiveMode('new_request');
+      setTimeout(() => setLiveMode('idle'), 3000);
+      
       // Throttle notification events
       if (canNotify('new_request')) {
         playNotificationSound();
@@ -167,6 +180,11 @@ export const DJPortalOrbital: React.FC = () => {
                 setEndTime
                 status
                 isAcceptingRequests
+                playlistType
+                playlistId
+                playlistName
+                playlistTracks
+                playlistAppliedAt
               }
             }
           `,
@@ -263,6 +281,61 @@ export const DJPortalOrbital: React.FC = () => {
 
   const totalRevenue = queueRequests.reduce((sum: number) => sum + 20, 0);
 
+  // Load and apply saved playlist when set changes
+  useEffect(() => {
+    const loadSavedPlaylist = async () => {
+      if (!currentSetId || !user?.userId) return;
+      
+      try {
+        const client = generateClient({
+          authMode: 'userPool'
+        });
+        
+        const response: any = await client.graphql({
+          query: `
+            query GetDJSet($setId: ID!) {
+              getDJSet(setId: $setId) {
+                setId
+                playlistType
+                playlistId
+                playlistName
+                playlistTracks
+                playlistAppliedAt
+              }
+            }
+          `,
+          variables: { setId: currentSetId }
+        });
+        
+        const set = response.data.getDJSet;
+        
+        if (set && set.playlistTracks && set.playlistTracks.length > 0) {
+          console.log(`🎵 Loading saved playlist: ${set.playlistName} (${set.playlistTracks.length} songs)`);
+          
+          // Apply saved playlist to tracks
+          setTracks(prevTracks =>
+            prevTracks.map(track => ({
+              ...track,
+              isEnabled: set.playlistTracks.includes(track.id)
+            }))
+          );
+          
+          addNotification({
+            type: 'info',
+            title: '🎵 Playlist Loaded',
+            message: `${set.playlistName}: ${set.playlistTracks.length} songs`,
+          });
+        } else {
+          console.log('ℹ️ No saved playlist for this set');
+        }
+      } catch (error) {
+        console.error('❌ Failed to load saved playlist:', error);
+      }
+    };
+    
+    loadSavedPlaylist();
+  }, [currentSetId]); // Run when set changes
+
   // Update tracks when tracklist changes
   useEffect(() => {
     if (tracklist.length > 0) {
@@ -323,6 +396,10 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
+      // Trigger accepting visual
+      setLiveMode('accepting');
+      setTimeout(() => setLiveMode('idle'), 2000);
+      
       await submitAcceptRequest(selectedRequest.requestId, currentSetId);
       setShowAcceptPanel(false);
       setSelectedRequest(null);
@@ -341,6 +418,10 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
+      // Trigger veto visual
+      setLiveMode('vetoed');
+      setTimeout(() => setLiveMode('idle'), 2000);
+      
       // 1. Veto the request
       await submitVeto(selectedRequest.requestId, reason);
       
@@ -394,6 +475,9 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
+      // Trigger playing visual
+      setLiveMode('playing');
+      
       await submitMarkPlaying(selectedRequest.requestId, currentSetId);
       setShowPlayingPanel(false);
       setShowPlayingCelebration(true);
@@ -427,6 +511,9 @@ export const DJPortalOrbital: React.FC = () => {
     if (!currentlyPlaying) return;
     
     try {
+      // Reset live mode when song completes
+      setLiveMode('idle');
+      
       await submitMarkCompleted(currentlyPlaying.requestId);
       setCurrentlyPlaying(null);
       console.log('✅ Request marked as completed');
@@ -489,6 +576,42 @@ export const DJPortalOrbital: React.FC = () => {
         console.error('Failed to fetch event details:', error);
       }
     }
+  };
+
+  // Handle GO LIVE - DJ manually activates live mode
+  const handleGoLive = async () => {
+    if (!currentSetId) return;
+    
+    const confirmed = window.confirm(
+      '🔴 GO LIVE?\n\nUsers will be able to scan the QR code and submit song requests.\n\nMake sure you\'re ready!'
+    );
+    
+    if (!confirmed) return;
+    
+    setIsLiveMode(true);
+    
+    addNotification({
+      type: 'info',
+      title: '🔴 You are LIVE!',
+      message: 'Users can now scan QR code and submit requests',
+    });
+  };
+
+  // Handle PAUSE LIVE MODE - Stop accepting new requests
+  const handlePauseLive = async () => {
+    const confirmed = window.confirm(
+      '⏸️ PAUSE LIVE MODE?\n\nNew requests will be blocked, but your current queue will be preserved.\n\nYou can resume anytime.'
+    );
+    
+    if (!confirmed) return;
+    
+    setIsLiveMode(false);
+    
+    addNotification({
+      type: 'info',
+      title: '⏸️ Live Mode Paused',
+      message: 'Not accepting new requests. Current queue preserved.',
+    });
   };
 
   const handleEndSet = async () => {
@@ -630,6 +753,28 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeRight={handleSwipeRight}
     >
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden animate-vinyl-spin">
+        {/* Live Mode Visual Indicators */}
+        {currentSetId && (
+          <>
+            <LiveModeIndicators
+              mode={liveMode}
+              requestCount={queueRequests.length}
+              currentSong={currentlyPlaying ? {
+                title: currentlyPlaying.songTitle,
+                artist: currentlyPlaying.artistName,
+              } : undefined}
+            />
+            
+            <LiveStatusBar
+              isLive={isLiveMode && connectionStatus === 'connected'}
+              requestCount={queueRequests.filter((r: any) => r.status === 'PENDING').length}
+              acceptedCount={queueRequests.filter((r: any) => r.status === 'ACCEPTED').length}
+              playedCount={queueRequests.filter((r: any) => r.status === 'PLAYED').length}
+              currentlyPlaying={currentlyPlaying?.songTitle}
+            />
+          </>
+        )}
+        
         {/* Status Arc */}
         <StatusArc
           mode={mode}
@@ -779,6 +924,20 @@ export const DJPortalOrbital: React.FC = () => {
               >
                 + Create New Event
               </button>
+              
+              {/* Quick Playlist Manager Access */}
+              {currentSetId && (
+                <button
+                  onClick={() => {
+                    setShowPlaylistManager(true);
+                    setShowSetSelector(false);
+                  }}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Manage Event Playlist
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -829,11 +988,48 @@ export const DJPortalOrbital: React.FC = () => {
               ) : (
                 // Has Event, No Requests
                 <div className="text-center max-w-md">
+                  {/* GO LIVE / PAUSE Button - Most Prominent */}
+                  {!isLiveMode ? (
+                    <div className="mb-8">
+                      <button
+                        onClick={handleGoLive}
+                        className="px-16 py-8 bg-gradient-to-r from-red-600 via-pink-600 to-red-600 hover:from-red-700 hover:via-pink-700 hover:to-red-700 text-white rounded-full font-bold text-3xl transition-all shadow-2xl animate-pulse transform hover:scale-105 flex items-center gap-4 mx-auto"
+                      >
+                        <span className="text-5xl">🔴</span>
+                        <span>GO LIVE</span>
+                      </button>
+                      <p className="text-gray-400 text-sm mt-4">Start accepting song requests from users</p>
+                    </div>
+                  ) : (
+                    <div className="mb-8">
+                      <div className="mb-4 px-6 py-3 bg-green-500/20 border-2 border-green-500 rounded-full inline-block">
+                        <span className="text-green-400 font-bold text-xl flex items-center gap-2">
+                          <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                          YOU ARE LIVE
+                        </span>
+                      </div>
+                      <button
+                        onClick={handlePauseLive}
+                        className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white rounded-full font-bold text-lg transition-all shadow-lg flex items-center gap-3 mx-auto"
+                      >
+                        <span className="text-2xl">⏸️</span>
+                        <span>PAUSE LIVE MODE</span>
+                      </button>
+                      <p className="text-gray-400 text-sm mt-4">Temporarily stop accepting new requests</p>
+                    </div>
+                  )}
+                  
                   <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center animate-pulse-glow">
                     <span className="text-6xl">🎵</span>
                   </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Event Active!</h2>
-                  <p className="text-gray-400 mb-4">Requests will appear here as they come in</p>
+                  <h2 className="text-3xl font-bold text-white mb-2">
+                    {isLiveMode ? 'Waiting for Requests...' : 'Event Ready'}
+                  </h2>
+                  <p className="text-gray-400 mb-4">
+                    {isLiveMode 
+                      ? 'Requests will appear here as they come in' 
+                      : 'Go live when you\'re ready to accept requests'}
+                  </p>
                   
                   {/* Event Info */}
                   {currentEvent && currentSetId && (
@@ -870,6 +1066,24 @@ export const DJPortalOrbital: React.FC = () => {
           {currentView === 'library' && (
             <div className="h-full pt-20 pb-20 px-4 overflow-hidden">
               <div className="max-w-6xl mx-auto h-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
+                {/* Event Playlist Quick Access */}
+                {currentEventId && (
+                  <div className="p-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-purple-500/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-white font-semibold">Event-Specific Playlist</h3>
+                        <p className="text-gray-400 text-sm">Quickly curate songs for this event</p>
+                      </div>
+                      <button
+                        onClick={() => setShowPlaylistManager(true)}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        Manage Playlist
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <DJLibrary
                   tracks={tracks}
                   onAddTrack={handleAddTrack}
@@ -1118,6 +1332,51 @@ export const DJPortalOrbital: React.FC = () => {
             eventId={currentEventId}
             venueName={currentEvent.venueName}
             onClose={() => setShowQRCode(false)}
+          />
+        )}
+
+        {/* Event Playlist Manager Modal */}
+        {showPlaylistManager && (
+          <EventPlaylistManager
+            masterLibrary={tracks}
+            currentEventName={currentEvent?.venueName}
+            currentSetId={currentSetId || undefined}
+            isLive={isLiveMode}
+            onApplyPlaylist={async (trackIds, playlistInfo) => {
+              console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
+              
+              // 1. Save playlist to backend
+              if (currentSetId) {
+                try {
+                  await updateSetPlaylist(currentSetId, {
+                    playlistType: playlistInfo.type,
+                    playlistId: playlistInfo.id,
+                    playlistName: playlistInfo.name,
+                    playlistTracks: trackIds
+                  });
+                  console.log('✅ Playlist saved to backend successfully');
+                } catch (error) {
+                  console.error('❌ Failed to save playlist to backend:', error);
+                  // Continue anyway - playlist still applied locally
+                }
+              }
+              
+              // 2. Enable selected tracks, disable others (local state)
+              setTracks(prevTracks =>
+                prevTracks.map(track => ({
+                  ...track,
+                  isEnabled: trackIds.includes(track.id)
+                }))
+              );
+              
+              // 3. Show success notification
+              addNotification({
+                type: 'info',
+                title: '✅ Playlist Applied',
+                message: `${playlistInfo.name}: ${trackIds.length} songs enabled for this event`,
+              });
+            }}
+            onClose={() => setShowPlaylistManager(false)}
           />
         )}
 

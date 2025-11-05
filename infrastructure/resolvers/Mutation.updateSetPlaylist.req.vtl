@@ -1,0 +1,22 @@
+## Mutation.updateSetPlaylist Request Mapping Template
+## Updates DJ set playlist configuration for event-specific curation
+
+#set($now = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "setId": $util.dynamodb.toDynamoDBJson($ctx.args.input.setId)
+  },
+  "update": {
+    "expression": "SET playlistType = :playlistType, playlistId = :playlistId, playlistName = :playlistName, playlistTracks = :playlistTracks, playlistAppliedAt = :appliedAt",
+    "expressionValues": {
+      ":playlistType": $util.dynamodb.toDynamoDBJson($ctx.args.input.playlistType),
+      ":playlistId": $util.dynamodb.toDynamoDBJson($ctx.args.input.playlistId),
+      ":playlistName": $util.dynamodb.toDynamoDBJson($ctx.args.input.playlistName),
+      ":playlistTracks": $util.dynamodb.toDynamoDBJson($ctx.args.input.playlistTracks),
+      ":appliedAt": $util.dynamodb.toDynamoDBJson($now)
+    }
+  }
+}

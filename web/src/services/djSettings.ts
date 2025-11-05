@@ -166,3 +166,74 @@ export const updateRequestCap = async (
 ): Promise<boolean> => {
   return updateDJSetSettings(setId, { requestCapPerHour });
 };
+
+/**
+ * Update Set Playlist
+ * Persists event-specific playlist configuration to DynamoDB
+ */
+export interface SetPlaylistUpdate {
+  playlistType: 'PRESET' | 'CUSTOM';
+  playlistId: string;
+  playlistName: string;
+  playlistTracks: string[];
+}
+
+export const updateSetPlaylist = async (
+  setId: string,
+  playlist: SetPlaylistUpdate
+): Promise<any> => {
+  try {
+    const client = generateClient({
+      authMode: 'userPool'
+    });
+
+    console.log('💾 Saving playlist to backend:', { setId, playlist });
+
+    const mutation = `
+      mutation UpdateSetPlaylist($input: UpdateSetPlaylistInput!) {
+        updateSetPlaylist(input: $input) {
+          setId
+          playlistType
+          playlistId
+          playlistName
+          playlistTracks
+          playlistAppliedAt
+        }
+      }
+    `;
+
+    const response: any = await client.graphql({
+      query: mutation,
+      variables: {
+        input: {
+          setId,
+          playlistType: playlist.playlistType,
+          playlistId: playlist.playlistId,
+          playlistName: playlist.playlistName,
+          playlistTracks: playlist.playlistTracks
+        }
+      }
+    });
+
+    console.log('✅ Playlist saved to backend:', response.data.updateSetPlaylist);
+    return response.data.updateSetPlaylist;
+  } catch (error: any) {
+    console.error('❌ Failed to save playlist:', error);
+    
+    // Handle specific error cases
+    if (error.errors && error.errors.length > 0) {
+      const firstError = error.errors[0];
+      console.error('GraphQL Error:', firstError.message);
+      
+      // Check if it's a schema issue (mutation not deployed yet)
+      if (firstError.message?.includes('Cannot query field') || 
+          firstError.message?.includes('updateSetPlaylist')) {
+        console.warn('⚠️ updateSetPlaylist mutation not deployed yet');
+        console.warn('Playlist will be stored locally until backend is updated');
+        return null;
+      }
+    }
+    
+    throw error;
+  }
+};

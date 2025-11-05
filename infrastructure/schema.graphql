@@ -68,6 +68,13 @@ type DJSet {
   revenue: Float!
   requestCount: Int!
   createdAt: AWSTimestamp!
+  
+  # Event Playlist Management
+  playlistType: String
+  playlistId: String
+  playlistName: String
+  playlistTracks: [String!]
+  playlistAppliedAt: AWSTimestamp
 }
 
 type VenueLocation {
@@ -337,6 +344,14 @@ input UpdateDJSetSettingsInput {
   spotlightSlotsPerBlock: Int
 }
 
+input UpdateSetPlaylistInput {
+  setId: ID!
+  playlistType: String!
+  playlistId: String!
+  playlistName: String!
+  playlistTracks: [String!]!
+}
+
 input UpdateDJProfileInput {
   name: String
   bio: String
@@ -357,6 +372,7 @@ type Mutation {
   updateDJSetStatus(setId: ID!, status: SetStatus!): DJSet
   updateSetStatus(setId: ID!, status: String!): DJSet
   updateDJSetSettings(setId: ID!, input: UpdateDJSetSettingsInput!): DJSet
+  updateSetPlaylist(input: UpdateSetPlaylistInput!): DJSet
   toggleSetAvailability(setId: ID!, isAcceptingRequests: Boolean!): DJSet
   
   createRequest(input: CreateRequestInput!): Request

@@ -21,6 +21,7 @@ import {
 import { RefundConfirmation } from '../components/RefundConfirmation';
 import { RequestConfirmation } from '../components/RequestConfirmation';
 import { NotificationCenter } from '../components/Notifications';
+import { UserNowPlayingNotification } from '../components/LiveModeIndicators';
 import { requestNotificationPermission } from '../services/notifications';
 import { LogOut, User, Star, ArrowLeft, Bell } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
@@ -49,6 +50,8 @@ export const UserPortalInnovative: React.FC = () => {
   const [showLockedIn, setShowLockedIn] = useState(false);
   const [myRequestPosition, setMyRequestPosition] = useState<number | null>(null);
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+  const [showUserPlayingNotification, setShowUserPlayingNotification] = useState(false);
+  const [userPlayingData, setUserPlayingData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   
@@ -139,6 +142,17 @@ export const UserPortalInnovative: React.FC = () => {
 
       // Notifications with throttling
       if (position === 1 && shouldShowNotification('now_playing')) {
+        // Show user playing notification
+        setUserPlayingData({
+          userName: user.name || 'User',
+          songTitle: myRequest.songTitle || 'Your Song',
+          artistName: myRequest.artist || 'Unknown Artist',
+          djName: 'DJ',
+          venueName: currentEvent?.venueName || 'Event',
+          timestamp: Date.now(),
+        });
+        setShowUserPlayingNotification(true);
+        
         addNotification({
           type: 'now_playing',
           title: '🎶 Your Song is Playing NOW!',
@@ -1095,6 +1109,22 @@ export const UserPortalInnovative: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* User Now Playing Notification - Shows when user's song is playing */}
+        {showUserPlayingNotification && userPlayingData && (
+          <UserNowPlayingNotification
+            userName={userPlayingData.userName}
+            songTitle={userPlayingData.songTitle}
+            artistName={userPlayingData.artistName}
+            djName={userPlayingData.djName}
+            venueName={userPlayingData.venueName}
+            timestamp={userPlayingData.timestamp}
+            onDismiss={() => {
+              setShowUserPlayingNotification(false);
+              setUserPlayingData(null);
+            }}
+          />
         )}
 
         {/* Phase 3: Connection Status Indicator */}

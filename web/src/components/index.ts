@@ -20,6 +20,7 @@ export { SocialLoginButtons } from './SocialLoginButtons';
 // Event Management - EXISTING
 export { EventCreator } from './EventCreator';
 export { QRCodeDisplay } from './QRCodeDisplay';
+export { EventPlaylistManager } from './EventPlaylistManager';
 
 // Music Database Integration - EXISTING
 export { SongSearchModal } from './SongSearchModal';
@@ -33,6 +34,14 @@ export {
   ConnectionStatus,
 } from './Notifications';
 export type { Notification, NotificationType } from './Notifications';
+
+// Live Mode Indicators - NEW
+export {
+  LiveModeIndicators,
+  LiveStatusBar,
+  UserNowPlayingNotification,
+  RequestStatusPill,
+} from './LiveModeIndicators';
 
 // Payment - EXISTING
 export { YocoCardInput } from './YocoCardInput';
