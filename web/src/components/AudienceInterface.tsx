@@ -188,18 +188,17 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
             )}
           </div>
 
-          {/* Event Info */}
+          {/* Event Info - Minimized */}
           <div className="h-1/3 bg-black/80 backdrop-blur-lg p-6">
             <h2 className="text-3xl font-bold text-white mb-2">{currentEvent.venueName}</h2>
-            <p className="text-purple-300 text-lg mb-3">DJ {currentEvent.djName}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
+            <div className="flex items-center gap-4 text-sm text-gray-300">
               <span className="flex items-center gap-1">
                 <Music className="w-4 h-4" />
                 {currentEvent.genre}
               </span>
               <span className="flex items-center gap-1">
                 <Heart className="w-4 h-4" />
-                {currentEvent.attendees} here
+                {currentEvent.attendees}
               </span>
             </div>
           </div>
@@ -305,27 +304,18 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
                   </div>
                 )}
                 
-                {/* Hover Overlay */}
+                {/* Hover Overlay - Minimal */}
                 <div className={`absolute inset-0 bg-black/60 ${
                   isSelected ? 'opacity-100 bg-yellow-400/20' : 'opacity-0'
                 } group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center`}>
-                  <div className="text-center p-4">
-                    <p className="text-white font-semibold text-sm mb-1 truncate">{song.title}</p>
+                  <div className="text-center p-2">
+                    <p className="text-white font-bold text-sm truncate">{song.title}</p>
                     <p className="text-gray-300 text-xs truncate">{song.artist}</p>
                   </div>
                 </div>
-
-                {/* Genre Badge */}
-                <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
-                  {song.genre}
-                </div>
               </div>
 
-              {/* Song Info (Mobile) */}
-              <div className="mt-2 md:hidden">
-                <p className="text-white text-sm font-semibold truncate">{song.title}</p>
-                <p className="text-gray-400 text-xs truncate">{song.artist}</p>
-              </div>
+              {/* Remove Song Info on Mobile - Pure Visual */}
             </button>
           );
         })}

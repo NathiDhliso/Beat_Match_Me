@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, MapPin, Calendar, Clock, DollarSign } from 'lucide-react';
+import { X, MapPin, Calendar } from 'lucide-react';
 import { submitCreateEvent, submitDJSet } from '../services/graphql';
 
 interface EventCreatorProps {
@@ -10,20 +10,19 @@ interface EventCreatorProps {
 export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCreated }) => {
   // Event fields
   const [venueName, setVenueName] = useState('');
-  const [venueAddress, setVenueAddress] = useState('');
   const [eventStartTime, setEventStartTime] = useState('');
-  const [eventDuration, setEventDuration] = useState(8); // hours
+  const [eventDuration, setEventDuration] = useState(6); // hours
   
-  // DJ Set fields
-  const [setStartTime, setSetStartTime] = useState('');
-  const [setDuration, setSetDuration] = useState(2); // hours
+  // DJ Set fields - defaults align with event
+  const [djSetDuration, setDjSetDuration] = useState(2); // hours
   const [basePrice, setBasePrice] = useState(50);
   const [requestCapPerHour, setRequestCapPerHour] = useState(10);
   
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreate = async () => {
-    if (!venueName || !eventStartTime || !setStartTime) return;
+    if (!venueName || !eventStartTime) return;
 
     setLoading(true);
     try {
@@ -51,9 +50,9 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
         throw new Error('No eventId returned from backend');
       }
 
-      // Step 2: Create DJ Set
-      const setStartTimestamp = new Date(setStartTime).getTime();
-      const setEndTimestamp = setStartTimestamp + (setDuration * 60 * 60 * 1000);
+      // Step 2: Create DJ Set (starts same time as event)
+      const setStartTimestamp = eventStartTimestamp; // Auto-align with event
+      const setEndTimestamp = setStartTimestamp + (djSetDuration * 60 * 60 * 1000);
 
       console.log('🎵 Creating DJ set in backend:', {
         eventId: eventResult.eventId,
@@ -107,166 +106,140 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-lg z-50 flex items-center justify-center p-3 sm:p-4 md:p-6">
-      <div className="max-w-lg w-full bg-gray-900 rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8">
+      <div className="max-w-md w-full bg-gray-900 rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Create Event</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">🎉 New Event</h2>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
           </button>
         </div>
 
-        {/* Form */}
-        <div className="space-y-3 sm:space-y-4 md:space-y-5">
-          {/* Section: Event Details */}
-          <div className="bg-white/5 rounded-lg p-3 sm:p-4">
-            <h3 className="text-white font-semibold mb-3 text-sm sm:text-base">Event Details</h3>
-            
-            {/* Venue Name */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Venue Name *
-              </label>
-              <input
-                type="text"
-                value={venueName}
-                onChange={(e) => setVenueName(e.target.value)}
-                placeholder="e.g., The Blue Room"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-purple-500"
-              />
-            </div>
+        {/* Minimal Form */}
+        <div className="space-y-4">
+          {/* Venue Name - Icon only, no label */}
+          <div className="relative">
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
+            <input
+              type="text"
+              value={venueName}
+              onChange={(e) => setVenueName(e.target.value)}
+              placeholder="Venue name"
+              className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
 
-            {/* Venue Address (Optional) */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block">
-                Address (Optional)
-              </label>
-              <input
-                type="text"
-                value={venueAddress}
-                onChange={(e) => setVenueAddress(e.target.value)}
-                placeholder="e.g., 123 Main St, Johannesburg"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:border-purple-500"
-              />
-            </div>
+          {/* Event Start Time - Icon only, no label */}
+          <div className="relative">
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
+            <input
+              type="datetime-local"
+              value={eventStartTime}
+              onChange={(e) => setEventStartTime(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
 
-            {/* Event Start Time */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Event Start Time *
-              </label>
-              <input
-                type="datetime-local"
-                value={eventStartTime}
-                onChange={(e) => setEventStartTime(e.target.value)}
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            {/* Event Duration */}
+          {/* Duration Sliders - Compact inline */}
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 space-y-3">
             <div>
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Event Duration (hours)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-purple-300">🎪 Event</span>
+                <span className="text-sm font-bold text-white">{eventDuration}h</span>
+              </div>
               <input
-                type="number"
+                type="range"
                 value={eventDuration}
                 onChange={(e) => setEventDuration(Number(e.target.value))}
-                min="1"
-                max="24"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          {/* Section: Your DJ Set */}
-          <div className="bg-purple-500/10 rounded-lg p-3 sm:p-4 border border-purple-500/30">
-            <h3 className="text-purple-300 font-semibold mb-3 text-sm sm:text-base">Your DJ Set</h3>
-            
-            {/* Set Start Time */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Set Start Time *
-              </label>
-              <input
-                type="datetime-local"
-                value={setStartTime}
-                onChange={(e) => setSetStartTime(e.target.value)}
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            {/* Set Duration */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Set Duration (hours)
-              </label>
-              <input
-                type="number"
-                value={setDuration}
-                onChange={(e) => setSetDuration(Number(e.target.value))}
-                min="0.5"
+                min="2"
                 max="12"
-                step="0.5"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
+                step="1"
+                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-500"
               />
             </div>
 
-            {/* Base Price */}
-            <div className="mb-3">
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block flex items-center gap-1.5 sm:gap-2">
-                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-                Base Price (R)
-              </label>
-              <input
-                type="number"
-                value={basePrice}
-                onChange={(e) => setBasePrice(Number(e.target.value))}
-                min="10"
-                max="500"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            {/* Request Cap Per Hour */}
             <div>
-              <label className="text-gray-300 text-xs sm:text-sm mb-1.5 sm:mb-2 block">
-                Requests per Hour
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-purple-300">🎧 Your Set</span>
+                <span className="text-sm font-bold text-white">{djSetDuration}h</span>
+              </div>
               <input
-                type="number"
-                value={requestCapPerHour}
-                onChange={(e) => setRequestCapPerHour(Number(e.target.value))}
-                min="5"
-                max="50"
-                className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-3.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-500"
+                type="range"
+                value={djSetDuration}
+                onChange={(e) => setDjSetDuration(Number(e.target.value))}
+                min="0.5"
+                max="8"
+                step="0.5"
+                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-500"
               />
             </div>
           </div>
+
+          {/* Advanced Settings - Collapsible */}
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-gray-300 text-sm"
+          >
+            <span>💰 Pricing & Limits</span>
+            <span className="text-xs opacity-50">
+              {showAdvanced ? '▼' : '▶'}
+            </span>
+          </button>
+
+          {showAdvanced && (
+            <div className="space-y-3 bg-white/5 rounded-xl p-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-300">Base Price</span>
+                  <span className="text-sm font-bold text-white">R{basePrice}</span>
+                </div>
+                <input
+                  type="range"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(Number(e.target.value))}
+                  min="20"
+                  max="200"
+                  step="10"
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-300">Requests/Hour</span>
+                  <span className="text-sm font-bold text-white">{requestCapPerHour}</span>
+                </div>
+                <input
+                  type="range"
+                  value={requestCapPerHour}
+                  onChange={(e) => setRequestCapPerHour(Number(e.target.value))}
+                  min="5"
+                  max="30"
+                  step="5"
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-6">
+        <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-2 sm:py-3 md:py-3.5 bg-white/5 hover:bg-white/10 rounded-lg text-white text-sm sm:text-base transition-all"
+            className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-xl text-white font-semibold transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
-            disabled={!venueName || !eventStartTime || !setStartTime || loading}
-            className="flex-1 py-2 sm:py-3 md:py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm sm:text-base font-semibold transition-all"
+            disabled={!venueName || !eventStartTime || loading}
+            className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-bold transition-all shadow-lg shadow-purple-500/50"
           >
-            {loading ? 'Creating...' : 'Create Event + Set'}
+            {loading ? '⏳ Creating...' : '🚀 Create'}
           </button>
         </div>
       </div>

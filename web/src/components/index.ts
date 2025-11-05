@@ -53,6 +53,7 @@ export { YocoCardInput } from './YocoCardInput';
 export { PaymentPage } from './PaymentPage';
 export { PayoutDashboard } from './PayoutDashboard';
 export { PaymentAccess, QuickRequestButton } from './PaymentAccess';
+export { PaymentHistory } from './PaymentHistory';
 
 // Request Flow - Features 3 & 4 - EXISTING
 export { RequestConfirmation } from './RequestConfirmation';

@@ -22,6 +22,7 @@ import { RefundConfirmation } from '../components/RefundConfirmation';
 import { RequestConfirmation } from '../components/RequestConfirmation';
 import { NotificationCenter } from '../components/Notifications';
 import { UserNowPlayingNotification } from '../components/LiveModeIndicators';
+import { UniversalHelp } from '../components/UniversalHelp';
 import { requestNotificationPermission } from '../services/notifications';
 import { LogOut, User, Star, ArrowLeft, Bell } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
@@ -1178,6 +1179,9 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Universal Help Button - Always Available */}
+      <UniversalHelp mode="fan" />
     </div>
   );
 };

@@ -26,9 +26,9 @@ interface SongData {
   previewUrl?: string;
 }
 
-// Spotify API credentials (from .env)
-const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const SPOTIFY_CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+// Spotify API credentials
+const SPOTIFY_CLIENT_ID = '4fce2b706ca44c78b7892a3625d14fd1';
+const SPOTIFY_CLIENT_SECRET = 'e38d3deae7144a62bb3b0d9f59c37931';
 
 let accessToken: string | null = null;
 let tokenExpirationTime = 0;
@@ -40,11 +40,6 @@ async function getAccessToken(): Promise<string> {
   // Check if token is still valid
   if (accessToken && Date.now() < tokenExpirationTime) {
     return accessToken;
-  }
-
-  // If no credentials, throw error
-  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
-    throw new Error('Spotify credentials not configured. Add VITE_SPOTIFY_CLIENT_ID and VITE_SPOTIFY_CLIENT_SECRET to .env');
   }
 
   try {
@@ -65,9 +60,10 @@ async function getAccessToken(): Promise<string> {
     accessToken = data.access_token;
     tokenExpirationTime = Date.now() + (data.expires_in * 1000) - 60000; // Refresh 1 min early
 
+    console.log('✅ Spotify access token obtained');
     return accessToken!;
   } catch (error) {
-    console.error('Spotify auth error:', error);
+    console.error('❌ Spotify auth error:', error);
     throw error;
   }
 }
@@ -147,4 +143,69 @@ export async function getTrackById(trackId: string): Promise<SongData> {
     console.error('Get track error:', error);
     throw error;
   }
+}
+
+/**
+ * Get tracks from a Spotify playlist
+ */
+export async function getPlaylistTracks(playlistId: string): Promise<SongData[]> {
+  try {
+    const token = await getAccessToken();
+
+    const response = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to get playlist tracks');
+    }
+
+    const data = await response.json();
+    const tracks: SpotifyTrack[] = data.items
+      .filter((item: any) => item.track) // Filter out null tracks
+      .map((item: any) => item.track);
+
+    console.log(`✅ Retrieved ${tracks.length} tracks from playlist`);
+
+    return tracks.map(track => ({
+      title: track.name,
+      artist: track.artists[0]?.name || 'Unknown Artist',
+      album: track.album.name,
+      albumArt: track.album.images[0]?.url,
+      genre: 'Pop',
+      duration: track.duration_ms,
+      spotifyId: track.id,
+      previewUrl: track.preview_url || undefined
+    }));
+  } catch (error) {
+    console.error('Get playlist error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Extract playlist ID from Spotify URL
+ * Supports URLs like:
+ * - https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
+ * - spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
+ */
+export function extractPlaylistId(url: string): string | null {
+  const patterns = [
+    /playlist\/([a-zA-Z0-9]+)/,  // URL format
+    /playlist:([a-zA-Z0-9]+)/,   // URI format
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }

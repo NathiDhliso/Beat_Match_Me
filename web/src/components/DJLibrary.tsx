@@ -4,8 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { Music, Upload, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight, Search, Filter, Globe } from 'lucide-react';
-import { SongSearchModal } from './SongSearchModal';
+import { Music, Upload, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight, Search, Filter, Globe, X } from 'lucide-react';
+import { SpotifySearch } from './SpotifySearch';
+import { SpotifyPlaylistImport } from './SpotifyPlaylistImport';
 
 interface Track {
   id: string;
@@ -167,23 +168,92 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         />
       )}
 
-      {/* Song Search Modal */}
+      {/* Spotify Search Modal */}
       {showSongSearch && (
-        <SongSearchModal
-          onSelectSong={(song) => {
-            onAddTrack({
-              title: song.title,
-              artist: song.artist,
-              genre: song.genre,
-              basePrice: 20,
-              isEnabled: true,
-              albumArt: song.albumArt,
-              duration: song.duration
-            });
-            setShowSongSearch(false);
-          }}
-          onClose={() => setShowSongSearch(false)}
-        />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-700">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Globe className="w-8 h-8 text-white" />
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Search Spotify</h2>
+                  <p className="text-green-100 text-sm">Find and add tracks from Spotify's catalog</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSongSearch(false)}
+                className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            {/* Spotify Search Component */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
+              {/* Playlist Import Section */}
+              <SpotifyPlaylistImport
+                onImportTracks={(tracks) => {
+                  // Add all tracks from playlist
+                  tracks.forEach(track => {
+                    onAddTrack({
+                      title: track.title,
+                      artist: track.artist,
+                      genre: track.genre || 'Pop',
+                      basePrice: 20,
+                      isEnabled: true,
+                      albumArt: track.albumArt,
+                      duration: track.duration,
+                    });
+                  });
+                  console.log(`✅ Imported ${tracks.length} tracks from playlist`);
+                }}
+              />
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-gray-800 text-gray-400">OR SEARCH INDIVIDUALLY</span>
+                </div>
+              </div>
+
+              {/* Track Search */}
+              <SpotifySearch
+                onAddTrack={(track) => {
+                  onAddTrack({
+                    title: track.title,
+                    artist: track.artist,
+                    genre: track.genre || 'Pop',
+                    basePrice: 20,
+                    isEnabled: true,
+                    albumArt: track.albumArt,
+                    duration: track.duration,
+                  });
+                  // Show success notification
+                  console.log(`✅ Added: ${track.title} by ${track.artist}`);
+                }}
+                existingTrackIds={new Set(tracks.map(t => t.title + t.artist))}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-800/50 p-4 border-t border-gray-700 flex items-center justify-between">
+              <p className="text-gray-400 text-sm">
+                💡 Tip: Click ▶️ to preview tracks before adding
+              </p>
+              <button
+                onClick={() => setShowSongSearch(false)}
+                className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

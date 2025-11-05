@@ -28,7 +28,8 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
-import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus } from '../services/graphql';
+import { UniversalHelp } from '../components/UniversalHelp';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
@@ -350,22 +351,77 @@ export const DJPortalOrbital: React.FC = () => {
   const handleSwipeLeft = () => setCurrentView('revenue');
   const handleSwipeRight = () => setCurrentView('settings');
 
-  // Track Management
-  const handleAddTrack = (track: Omit<Track, 'id'>) => {
+  // Track Management with Backend Sync
+  const syncTracksToBackend = async (updatedTracks: Track[]) => {
+    if (!user?.userId || !currentEventId) return;
+    
+    try {
+      console.log('💾 Syncing tracks to backend...');
+      const songs = updatedTracks.map(t => ({
+        title: t.title,
+        artist: t.artist,
+        genre: t.genre,
+        basePrice: t.basePrice,
+        isEnabled: t.isEnabled,
+        albumArt: t.albumArt,
+        duration: t.duration
+      }));
+      
+      await submitUploadTracklist(user.userId, songs);
+      console.log('✅ Tracks synced successfully');
+    } catch (error) {
+      console.error('❌ Failed to sync tracks:', error);
+      // Don't block UI, just log the error
+    }
+  };
+
+  const handleAddTrack = async (track: Omit<Track, 'id'>) => {
     const newTrack = { ...track, id: `track-${Date.now()}` };
-    setTracks([...tracks, newTrack]);
+    const updatedTracks = [...tracks, newTrack];
+    setTracks(updatedTracks);
+    await syncTracksToBackend(updatedTracks);
+    
+    addNotification({
+      type: 'info',
+      title: '✅ Track Added',
+      message: `${track.title} by ${track.artist}`,
+    });
   };
 
-  const handleUpdateTrack = (id: string, updates: Partial<Track>) => {
-    setTracks(tracks.map(t => (t.id === id ? { ...t, ...updates } : t)));
+  const handleUpdateTrack = async (id: string, updates: Partial<Track>) => {
+    const updatedTracks = tracks.map(t => (t.id === id ? { ...t, ...updates } : t));
+    setTracks(updatedTracks);
+    await syncTracksToBackend(updatedTracks);
   };
 
-  const handleDeleteTrack = (id: string) => {
-    setTracks(tracks.filter(t => t.id !== id));
+  const handleDeleteTrack = async (id: string) => {
+    const track = tracks.find(t => t.id === id);
+    const updatedTracks = tracks.filter(t => t.id !== id);
+    setTracks(updatedTracks);
+    await syncTracksToBackend(updatedTracks);
+    
+    if (track) {
+      addNotification({
+        type: 'info',
+        title: '🗑️ Track Removed',
+        message: `${track.title} deleted`,
+      });
+    }
   };
 
-  const handleToggleTrack = (id: string) => {
-    setTracks(tracks.map(t => (t.id === id ? { ...t, isEnabled: !t.isEnabled } : t)));
+  const handleToggleTrack = async (id: string) => {
+    const updatedTracks = tracks.map(t => (t.id === id ? { ...t, isEnabled: !t.isEnabled } : t));
+    setTracks(updatedTracks);
+    await syncTracksToBackend(updatedTracks);
+    
+    const track = updatedTracks.find(t => t.id === id);
+    if (track) {
+      addNotification({
+        type: 'info',
+        title: track.isEnabled ? '✅ Track Enabled' : '⏸️ Track Disabled',
+        message: `${track.title}`,
+      });
+    }
   };
 
   const handleVeto = (requestId: string) => {
@@ -1544,6 +1600,9 @@ export const DJPortalOrbital: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Universal Help Button - DJ Mode */}
+      <UniversalHelp mode="dj" />
     </GestureHandler>
   );
 };

@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
-import { InlineError } from '../components/ErrorDisplay';
-import { Shield, Check, Lock, Mail, Sparkles } from 'lucide-react';
+import { UniversalHelp, HelpBadge } from '../components/UniversalHelp';
+import { Check, Lock, Mail, Sparkles } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, signup, confirmSignup, error, clearError } = useAuth();
+  const { login, signup, confirmSignup, error } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -85,200 +85,201 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-amber-50 to-yellow-50 dark:from-black dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
-      {/* Animated background particles */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-amber-500/10 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/10 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
       </div>
-      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10 animate-scale-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full mb-4 shadow-glow-cyan">
-            <Sparkles className="w-8 h-8 text-white" />
+      
+      <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative z-10">
+        {/* Logo & Badge Only */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-3">
+            <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-white dark:to-white bg-clip-text text-transparent mb-2">BeatMatchMe</h1>
-          <p className="text-amber-700 dark:text-blue-200">Live Music Request Platform</p>
-          {/* Certainty Cue: Fair-Play Promise Badge */}
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-green-500/20 border border-amber-400 dark:border-green-500/50 rounded-full shadow-sm shadow-amber-500/30 dark:shadow-none">
-            <Shield className="w-4 h-4 text-amber-700 dark:text-green-400" />
-            <span className="text-xs font-semibold text-amber-900 dark:text-green-300">100% Refund Guarantee</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">BeatMatchMe</h1>
+          
+          {/* Minimal Refund Badge */}
+          <div className="flex justify-center">
+            <HelpBadge title="100% Refund Guarantee" icon="💰">
+              <p className="font-semibold text-green-300 mb-2">You're Protected:</p>
+              <p>✓ DJ vetoes your song</p>
+              <p>✓ Technical issues</p>
+              <p>✓ Event cancelled</p>
+              <p className="mt-2 text-gray-400">💳 Refund in 3-5 days</p>
+            </HelpBadge>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4">
-            <InlineError error={{ message: error }} />
+          <div className="mb-4 bg-red-500/10 border border-red-500/50 rounded-xl p-3">
+            <p className="text-red-400 text-sm">{error}</p>
           </div>
         )}
 
         {showSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 shadow-2xl animate-bounce-in">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 shadow-2xl">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
                   <Check className="w-10 h-10 text-green-500" />
                 </div>
-                <p className="text-white text-xl font-bold">Welcome Back!</p>
+                <p className="text-white text-xl font-bold">Welcome!</p>
               </div>
             </div>
           </div>
         )}
 
         {mode === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-white text-sm font-medium mb-2 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email
-              </label>
+          <form onSubmit={handleLogin} className="space-y-3">
+            {/* Email - Icon Only */}
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
-                placeholder="your@email.com"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="Email"
                 required
               />
             </div>
-            <div>
-              <label className="block text-white text-sm font-medium mb-2 flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Password
-              </label>
+            
+            {/* Password - Icon Only */}
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
-                placeholder="••••••••"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="Password"
                 required
               />
             </div>
+            
+            {/* Login Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? '...' : 'Login'}
             </button>
-            <button
-              type="button"
-              onClick={() => navigate('/forgot-password')}
-              className="w-full text-blue-200 text-sm hover:text-white transition-colors"
-            >
-              Forgot Password?
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('role-select')}
-              className="w-full text-blue-200 text-sm hover:text-white transition-colors"
-            >
-              Don't have an account? Sign up
-            </button>
+            
+            {/* Minimal Links */}
+            <div className="flex justify-between text-xs pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Forgot?
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('role-select')}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Sign up
+              </button>
+            </div>
           </form>
         )}
 
+        {/* Social Login - Icons Only */}
         {mode === 'login' && (
-          <div className="mt-6">
+          <div className="mt-4">
             <SocialLoginButtons />
           </div>
         )}
 
         {mode === 'role-select' && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-white text-center mb-6">Choose Your Role</h2>
+          <div className="space-y-3">
+            {/* MASSIVE DJ Emoji Button */}
             <button
               onClick={() => {
                 setSelectedRole('PERFORMER');
                 setMode('signup');
               }}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold py-6 rounded-lg hover:from-purple-600 hover:to-pink-700 transition-all"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl"
             >
-              <div className="text-2xl mb-2">🎧</div>
-              <div className="text-lg">I'm a Performer</div>
-              <div className="text-sm opacity-80">DJ, Band, or Artist</div>
+              <div className="text-8xl mb-2">🎧</div>
+              <div className="text-3xl font-bold">DJ</div>
             </button>
+            
+            {/* MASSIVE Fan Emoji Button */}
             <button
               onClick={() => {
                 setSelectedRole('AUDIENCE');
                 setMode('signup');
               }}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold py-6 rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl"
             >
-              <div className="text-2xl mb-2">🎵</div>
-              <div className="text-lg">I'm Here to Request</div>
-              <div className="text-sm opacity-80">Music Lover & Fan</div>
+              <div className="text-8xl mb-2">🎵</div>
+              <div className="text-3xl font-bold">Fan</div>
             </button>
+            
+            {/* Minimal back link */}
             <button
               type="button"
               onClick={() => setMode('login')}
-              className="w-full text-blue-200 text-sm hover:text-white transition-colors mt-4"
+              className="w-full text-gray-400 text-xs hover:text-white transition-colors pt-2"
             >
-              Already have an account? Login
+              Back
             </button>
-            
-            {/* Social Signup Options */}
-            <div className="mt-6">
-              <SocialLoginButtons />
-            </div>
           </div>
         )}
 
         {mode === 'signup' && (
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 mb-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]">
-              <p className="text-white text-sm">
-                Signing up as: <span className="font-bold">{selectedRole}</span>
-              </p>
+          <form onSubmit={handleSignup} className="space-y-3">
+            {/* Role Badge - Minimal */}
+            <div className="bg-white/5 rounded-xl p-2 mb-3 text-center">
+              <span className="text-white text-sm">{selectedRole === 'PERFORMER' ? '🎧 DJ' : '🎵 Fan'}</span>
             </div>
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
-                placeholder="John Doe"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">Email</label>
+            
+            {/* Name Field */}
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              placeholder="Full Name"
+              required
+            />
+            
+            {/* Email Field */}
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
-                placeholder="your@email.com"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="Email"
                 required
               />
             </div>
+            
+            {/* Password Field with Strength Bar Only */}
             <div>
-              <label className="block text-white text-sm font-medium mb-2 flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                placeholder="Min 8 characters"
-                required
-                minLength={8}
-              />
-              {/* Password Strength Indicator */}
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  placeholder="Password (8+ chars)"
+                  required
+                  minLength={8}
+                />
+              </div>
+              {/* Strength Bar Only - No Text */}
               {password && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-white/70">Password Strength</span>
-                    <span className="text-xs font-semibold" style={{
-                      color: passwordStrength < 50 ? '#ef4444' : passwordStrength < 75 ? '#f59e0b' : '#10b981'
-                    }}>
-                      {passwordStrength < 50 ? 'Weak' : passwordStrength < 75 ? 'Good' : 'Strong'}
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="mt-1.5">
+                  <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
                     <div 
                       className="h-full transition-all duration-300"
                       style={{
@@ -289,58 +290,69 @@ export const Login: React.FC = () => {
                   </div>
                 </div>
               )}
-              <p className="text-xs text-blue-200 mt-1">Must include uppercase, lowercase, and numbers</p>
             </div>
+            
+            {/* Signup Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
             >
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? '...' : 'Sign Up'}
             </button>
+            
+            {/* Back Link */}
             <button
               type="button"
               onClick={() => setMode('role-select')}
-              className="w-full text-blue-200 text-sm hover:text-white transition-colors"
+              className="w-full text-gray-400 text-xs hover:text-white transition-colors pt-1"
             >
-              Back to role selection
+              Back
             </button>
           </form>
         )}
 
         {mode === 'confirm' && (
-          <form onSubmit={handleConfirm} className="space-y-4">
-            <div className="bg-blue-500/20 border border-blue-500 text-blue-100 px-4 py-3 rounded-lg mb-4">
-              <p className="text-sm">Check your email for a verification code</p>
+          <form onSubmit={handleConfirm} className="space-y-3">
+            {/* Simple Info Box */}
+            <div className="bg-blue-500/10 border border-blue-500/50 rounded-xl p-3 mb-3">
+              <p className="text-blue-200 text-sm text-center">📧 Check your email</p>
             </div>
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">Verification Code</label>
-              <input
-                type="text"
-                value={confirmCode}
-                onChange={(e) => setConfirmCode(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm rounded-lg text-white placeholder-white/40 focus:outline-none focus:bg-white/10 transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)]"
-                placeholder="123456"
-                required
-              />
-            </div>
+            
+            {/* Verification Code Input */}
+            <input
+              type="text"
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value)}
+              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white text-center text-2xl tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              placeholder="· · · · · ·"
+              required
+              maxLength={6}
+            />
+            
+            {/* Confirm Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
             >
-              {loading ? 'Confirming...' : 'Confirm Account'}
+              {loading ? '...' : 'Confirm'}
             </button>
+            
+            {/* Back Link */}
             <button
               type="button"
               onClick={() => setMode('login')}
-              className="w-full text-blue-200 text-sm hover:text-white transition-colors"
+              className="w-full text-gray-400 text-xs hover:text-white transition-colors pt-1"
             >
-              Back to login
+              Back
             </button>
           </form>
         )}
       </div>
+
+      {/* Universal Help Button */}
+      <UniversalHelp mode="both" />
     </div>
   );
 };
