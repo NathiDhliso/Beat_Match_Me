@@ -28,7 +28,7 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { NotificationCenter } from '../components/Notifications';
-import { LiveModeIndicators, LiveStatusBar } from '../components/LiveModeIndicators';
+import { LiveStatusBar } from '../components/LiveModeIndicators';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
@@ -70,9 +70,6 @@ export const DJPortalOrbital: React.FC = () => {
   const [showPlaylistManager, setShowPlaylistManager] = useState(false);
   const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
 
-  // Live Mode Visual State
-  const [liveMode, setLiveMode] = useState<'idle' | 'new_request' | 'playing' | 'accepting' | 'vetoed'>('idle');
-  
   // Live Mode Control - Manual toggle for when DJ is ready to accept requests
   const [isLiveMode, setIsLiveMode] = useState(false);
 
@@ -130,12 +127,8 @@ export const DJPortalOrbital: React.FC = () => {
   useEffect(() => {
     const newCount = liveQueueData?.orderedRequests?.length || 0;
 
-    // If queue grew, notify and trigger live mode visual
+    // If queue grew, notify
     if (newCount > lastQueueCountRef.current) {
-      // Trigger live mode visual
-      setLiveMode('new_request');
-      setTimeout(() => setLiveMode('idle'), 3000);
-      
       // Throttle notification events
       if (canNotify('new_request')) {
         playNotificationSound();
@@ -396,10 +389,6 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Trigger accepting visual
-      setLiveMode('accepting');
-      setTimeout(() => setLiveMode('idle'), 2000);
-      
       await submitAcceptRequest(selectedRequest.requestId, currentSetId);
       setShowAcceptPanel(false);
       setSelectedRequest(null);
@@ -418,10 +407,6 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Trigger veto visual
-      setLiveMode('vetoed');
-      setTimeout(() => setLiveMode('idle'), 2000);
-      
       // 1. Veto the request
       await submitVeto(selectedRequest.requestId, reason);
       
@@ -475,9 +460,6 @@ export const DJPortalOrbital: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Trigger playing visual
-      setLiveMode('playing');
-      
       await submitMarkPlaying(selectedRequest.requestId, currentSetId);
       setShowPlayingPanel(false);
       setShowPlayingCelebration(true);
@@ -511,9 +493,6 @@ export const DJPortalOrbital: React.FC = () => {
     if (!currentlyPlaying) return;
     
     try {
-      // Reset live mode when song completes
-      setLiveMode('idle');
-      
       await submitMarkCompleted(currentlyPlaying.requestId);
       setCurrentlyPlaying(null);
       console.log('✅ Request marked as completed');
@@ -753,26 +732,16 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeRight={handleSwipeRight}
     >
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden animate-vinyl-spin">
-        {/* Live Mode Visual Indicators */}
+        {/* Compact Live Status Indicator - Top Right Only */}
         {currentSetId && (
-          <>
-            <LiveModeIndicators
-              mode={liveMode}
-              requestCount={queueRequests.length}
-              currentSong={currentlyPlaying ? {
-                title: currentlyPlaying.songTitle,
-                artist: currentlyPlaying.artistName,
-              } : undefined}
-            />
-            
-            <LiveStatusBar
-              isLive={isLiveMode && connectionStatus === 'connected'}
-              requestCount={queueRequests.filter((r: any) => r.status === 'PENDING').length}
-              acceptedCount={queueRequests.filter((r: any) => r.status === 'ACCEPTED').length}
-              playedCount={queueRequests.filter((r: any) => r.status === 'PLAYED').length}
-              currentlyPlaying={currentlyPlaying?.songTitle}
-            />
-          </>
+          <LiveStatusBar
+            isLive={isLiveMode && connectionStatus === 'connected'}
+            requestCount={queueRequests.filter((r: any) => r.status === 'PENDING').length}
+            acceptedCount={queueRequests.filter((r: any) => r.status === 'ACCEPTED').length}
+            playedCount={queueRequests.filter((r: any) => r.status === 'PLAYED').length}
+            currentlyPlaying={currentlyPlaying?.songTitle}
+            onToggleLive={isLiveMode ? handlePauseLive : handleGoLive}
+          />
         )}
         
         {/* Status Arc */}
@@ -986,77 +955,79 @@ export const DJPortalOrbital: React.FC = () => {
                   )}
                 </div>
               ) : (
-                // Has Event, No Requests
-                <div className="text-center max-w-md">
-                  {/* GO LIVE / PAUSE Button - Most Prominent */}
-                  {!isLiveMode ? (
-                    <div className="mb-8">
-                      <button
-                        onClick={handleGoLive}
-                        className="px-16 py-8 bg-gradient-to-r from-red-600 via-pink-600 to-red-600 hover:from-red-700 hover:via-pink-700 hover:to-red-700 text-white rounded-full font-bold text-3xl transition-all shadow-2xl animate-pulse transform hover:scale-105 flex items-center gap-4 mx-auto"
-                      >
-                        <span className="text-5xl">🔴</span>
-                        <span>GO LIVE</span>
-                      </button>
-                      <p className="text-gray-400 text-sm mt-4">Start accepting song requests from users</p>
+                // Has Event, No Requests - SIMPLIFIED CLEAN UI
+                <div className="text-center max-w-lg mx-auto space-y-8">
+                  
+                  {/* Main Status Display */}
+                  <div className="relative">
+                    {/* Large Icon */}
+                    <div className="w-48 h-48 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center border-4 border-purple-500/30">
+                      <span className="text-8xl">🎵</span>
                     </div>
-                  ) : (
-                    <div className="mb-8">
-                      <div className="mb-4 px-6 py-3 bg-green-500/20 border-2 border-green-500 rounded-full inline-block">
-                        <span className="text-green-400 font-bold text-xl flex items-center gap-2">
-                          <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                          YOU ARE LIVE
-                        </span>
+                    
+                    {/* Event Info - Compact */}
+                    {currentEvent && (
+                      <div className="text-sm text-gray-400 mb-6">
+                        <div className="font-semibold text-white text-base">{currentEvent.venueName}</div>
+                        <div className="mt-1">Set: {currentSetId?.slice(-8)}</div>
                       </div>
+                    )}
+                    
+                    {/* Status Text */}
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                      {isLiveMode ? 'Ready for Requests' : 'Set Up Complete'}
+                    </h2>
+                    <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                      {isLiveMode 
+                        ? 'Share your QR code with patrons to receive song requests' 
+                        : 'Activate live mode to start accepting requests'}
+                    </p>
+                  </div>
+                  
+                  {/* Primary Action - GO LIVE Toggle */}
+                  {!isLiveMode ? (
+                    <button
+                      onClick={handleGoLive}
+                      className="w-full max-w-sm mx-auto py-6 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-2xl font-bold text-xl transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3"
+                    >
+                      <span className="text-3xl">🔴</span>
+                      <span>GO LIVE</span>
+                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Live Status Badge */}
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500 rounded-full">
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span className="text-green-400 font-semibold text-sm">LIVE</span>
+                      </div>
+                      
+                      {/* Pause Button - Secondary */}
                       <button
                         onClick={handlePauseLive}
-                        className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white rounded-full font-bold text-lg transition-all shadow-lg flex items-center gap-3 mx-auto"
+                        className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 mx-auto"
                       >
-                        <span className="text-2xl">⏸️</span>
-                        <span>PAUSE LIVE MODE</span>
+                        <span>⏸️</span>
+                        <span>Pause</span>
                       </button>
-                      <p className="text-gray-400 text-sm mt-4">Temporarily stop accepting new requests</p>
                     </div>
                   )}
                   
-                  <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center animate-pulse-glow">
-                    <span className="text-6xl">🎵</span>
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
-                    {isLiveMode ? 'Waiting for Requests...' : 'Event Ready'}
-                  </h2>
-                  <p className="text-gray-400 mb-4">
-                    {isLiveMode 
-                      ? 'Requests will appear here as they come in' 
-                      : 'Go live when you\'re ready to accept requests'}
-                  </p>
-                  
-                  {/* Event Info */}
-                  {currentEvent && currentSetId && (
-                    <div className="bg-white/5 rounded-xl p-4 mb-6">
-                      <p className="text-white font-semibold text-lg">{currentEvent.venueName}</p>
-                      <p className="text-gray-400 text-sm">Set ID: {currentSetId.slice(0, 8)}...</p>
-                    </div>
-                  )}
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 justify-center">
+                  {/* Secondary Actions - Minimal */}
+                  <div className="flex gap-3 justify-center pt-4">
                     <button
                       onClick={() => setShowQRCode(true)}
-                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-all flex items-center gap-2"
+                      className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all flex items-center gap-2 text-sm"
                     >
-                      <QrCode className="w-5 h-5" />
-                      Show QR Code
+                      <QrCode className="w-4 h-4" />
+                      <span>QR Code</span>
                     </button>
                     <button
                       onClick={handleEndSet}
-                      className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white transition-all"
+                      className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-xl text-gray-400 hover:text-red-400 transition-all text-sm"
                     >
                       End Set
                     </button>
                   </div>
-                  
-                  <p className="text-sm text-gray-500 mt-6">Swipe down to manage your library</p>
                 </div>
               )}
             </div>

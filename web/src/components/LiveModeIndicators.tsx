@@ -152,53 +152,63 @@ interface LiveStatusBarProps {
   acceptedCount: number;
   playedCount: number;
   currentlyPlaying?: string;
+  onToggleLive?: () => void;
 }
 
 export const LiveStatusBar: React.FC<LiveStatusBarProps> = ({
   isLive,
   requestCount,
-  acceptedCount,
-  playedCount,
-  currentlyPlaying,
+  acceptedCount: _acceptedCount,
+  playedCount: _playedCount,
+  currentlyPlaying: _currentlyPlaying,
+  onToggleLive,
 }) => {
-  if (!isLive) return null;
-
+  // Always show - allow toggling live mode on/off
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
-      <div className="bg-gradient-to-r from-red-600 via-pink-600 to-red-600 px-4 py-2 shadow-lg">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Live Indicator */}
+    <button
+      onClick={onToggleLive}
+      className="fixed top-4 right-4 z-40 group hover:scale-105 transition-transform"
+      title={isLive ? "Click to pause live mode" : "Click to go live"}
+    >
+      <div className={`${
+        isLive 
+          ? 'bg-black/60 border-green-500/30' 
+          : 'bg-black/40 border-gray-500/30'
+        } backdrop-blur-lg border rounded-full px-4 py-2 shadow-2xl hover:shadow-green-500/20`}>
+        <div className="flex items-center gap-3">
+          {/* Live Indicator - Clickable */}
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-            <span className="text-white font-bold text-sm">🔴 LIVE</span>
+            <div className={`w-2 h-2 rounded-full ${
+              isLive 
+                ? 'bg-green-500 animate-pulse' 
+                : 'bg-gray-500'
+            }`} />
+            <span className={`font-semibold text-xs uppercase tracking-wide ${
+              isLive 
+                ? 'text-green-400' 
+                : 'text-gray-400 group-hover:text-green-400'
+            }`}>
+              {isLive ? 'Live' : 'Offline'}
+            </span>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 sm:gap-6 text-white text-xs sm:text-sm">
-            <div>
-              <span className="font-semibold">{requestCount}</span>
-              <span className="ml-1 opacity-80">Pending</span>
+          {/* Request Count Badge */}
+          {isLive && requestCount > 0 && (
+            <div className="text-white text-sm">
+              <span className="font-bold">{requestCount}</span>
+              <span className="ml-1 text-gray-400 text-xs">new</span>
             </div>
-            <div>
-              <span className="font-semibold">{acceptedCount}</span>
-              <span className="ml-1 opacity-80">Accepted</span>
-            </div>
-            <div>
-              <span className="font-semibold">{playedCount}</span>
-              <span className="ml-1 opacity-80">Played</span>
-            </div>
-          </div>
-
-          {/* Currently Playing */}
-          {currentlyPlaying && (
-            <div className="hidden md:block text-white text-sm">
-              <span className="opacity-80">Now: </span>
-              <span className="font-semibold">{currentlyPlaying}</span>
-            </div>
+          )}
+          
+          {/* Hover hint when offline */}
+          {!isLive && (
+            <span className="text-gray-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+              Click to go live
+            </span>
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
