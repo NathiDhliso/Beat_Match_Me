@@ -353,6 +353,7 @@ done
 
 ### Test Environment (Current) ✅
 
+<<<<<<< HEAD
 **Configuration**: Get test credentials from [Yoco Developer Portal](https://developer.yoco.com)
 
 **Keys in .env.test**:
@@ -362,6 +363,15 @@ YOCO_PUBLIC_KEY=pk_test_XXXXXXXXXXXXXXXXXXXXX (from Yoco dashboard)
 ```
 
 **Test Card** (Yoco sandbox):
+=======
+**Keys in .env.test**:
+```bash
+YOCO_SECRET_KEY=sk_test_867460e0J1G4zymb24749b0b73f3
+YOCO_PUBLIC_KEY=pk_test_55442acfyW53Xb9e1e64
+```
+
+**Test Card**:
+>>>>>>> 829f4e006433f6859c13349c47140907636d7e7b
 - Number: `4111 1111 1111 1111`
 - Expiry: `12/25`
 - CVV: `123`
