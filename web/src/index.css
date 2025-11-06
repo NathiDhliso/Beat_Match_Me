@@ -1,9 +1,9 @@
+/* Import centralized animation library - Phase 3: CSS Modularization */
+@import './styles/animations.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import centralized animation library - Phase 3: CSS Modularization */
-@import './styles/animations.css';
 
 :root {
   font-family: 'Inter', system-ui, sans-serif;
