@@ -251,7 +251,7 @@ export const DJPortalOrbital: React.FC = () => {
   // Fetch real data
   const { event: currentEvent } = useEvent(currentEventId);
   const { queue: queueData } = useQueue(currentSetId);
-  const { tracklist } = useTracklist(currentEventId);
+  const { tracklist, reload: reloadTracklist } = useTracklist(currentEventId);
 
   // Transform data
   const queueRequests = queueData?.orderedRequests?.map((req: any, index: number) => ({
@@ -376,6 +376,12 @@ export const DJPortalOrbital: React.FC = () => {
       const songIds = updatedTracks.map(t => t.id);
       const linkResult = await submitSetEventTracklist(currentEventId, songIds);
       console.log('✅ Tracks linked to event:', linkResult);
+      
+      // Step 3: Reset tracksLoaded and reload tracklist from backend
+      setTracksLoaded(false);
+      if (reloadTracklist) {
+        reloadTracklist();
+      }
       
       addNotification({
         type: 'info',

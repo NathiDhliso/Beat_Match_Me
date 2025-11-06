@@ -25,6 +25,12 @@ export function useTracklist(eventId: string | null) {
   const [tracklist, setTracklist] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Expose reload function
+  const reload = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   useEffect(() => {
     if (!eventId) {
@@ -77,7 +83,7 @@ export function useTracklist(eventId: string | null) {
     };
 
     loadTracklist();
-  }, [eventId, queue?.orderedRequests]);
+  }, [eventId, queue?.orderedRequests, refreshTrigger]);
 
   // Extract unique genres from tracklist
   const genres = useMemo(() => {
@@ -90,5 +96,6 @@ export function useTracklist(eventId: string | null) {
     genres,
     loading, 
     error,
+    reload,
   };
 }
