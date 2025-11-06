@@ -3,6 +3,10 @@
  * Handles payment processing, verification, and refunds
  */
 
+import { generateClient } from 'aws-amplify/api';
+
+const client = generateClient();
+
 interface PaymentIntentData {
   amount: number;
   songId: string;
@@ -20,6 +24,7 @@ interface PaymentIntent {
 
 interface YocoPaymentResult {
   transactionId: string;
+  chargeId: string;           // NEW: Yoco charge ID for server-side verification
   status: 'succeeded' | 'failed';
   amount: number;
   currency: string;
@@ -94,8 +99,11 @@ export async function processYocoPayment(intent: PaymentIntent): Promise<YocoPay
     // For development, simulate successful payment
     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
     
+    const chargeId = `ch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
     const result: YocoPaymentResult = {
       transactionId: `txn_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      chargeId: chargeId,  // NEW: Yoco charge ID (in production, from Yoco SDK)
       status: 'succeeded',
       amount: intent.amount,
       currency: intent.currency,
@@ -216,4 +224,101 @@ export function isRetryableError(error: any): boolean {
   
   const errorMessage = error.message?.toLowerCase() || '';
   return retryableMessages.some(msg => errorMessage.includes(msg.toLowerCase()));
+}
+
+/**
+ * CRITICAL FIX: Poll payment status with exponential backoff
+ * Handles network delays and async payment processing
+ * 
+ * @param transactionId - The transaction ID to poll
+ * @param maxAttempts - Maximum polling attempts (default: 10)
+ * @returns Payment status or throws after max attempts
+ */
+export async function verifyPaymentStatus(
+  transactionId: string,
+  maxAttempts: number = 10
+): Promise<'succeeded' | 'failed' | 'pending'> {
+  console.log(`🔄 Starting payment verification polling for ${transactionId}`);
+  
+  const getTransactionQuery = /* GraphQL */ `
+    query GetTransaction($transactionId: ID!) {
+      getTransaction(transactionId: $transactionId) {
+        transactionId
+        amount
+        status
+        paymentMethod
+        providerTransactionId
+        failureReason
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+  
+  let attempt = 0;
+  let delay = 1000; // Start with 1 second
+  
+  while (attempt < maxAttempts) {
+    attempt++;
+    
+    try {
+      console.log(`📡 Payment status poll attempt ${attempt}/${maxAttempts} (delay: ${delay}ms)`);
+      
+      // Query Transactions table via AppSync
+      const response: any = await client.graphql({
+        query: getTransactionQuery,
+        variables: { transactionId }
+      });
+      
+      const transaction = response.data?.getTransaction;
+      
+      if (!transaction) {
+        console.warn(`⚠️ Transaction ${transactionId} not found (attempt ${attempt})`);
+        
+        // If transaction not found after 5 attempts, it likely doesn't exist
+        if (attempt >= 5) {
+          throw new Error('Transaction not found in database');
+        }
+      } else {
+        const status = transaction.status;
+        console.log(`📊 Transaction status: ${status} (attempt ${attempt})`);
+        
+        // Terminal states - return immediately
+        if (status === 'succeeded' || status === 'completed') {
+          console.log(`✅ Payment verified as succeeded after ${attempt} attempts`);
+          return 'succeeded';
+        }
+        
+        if (status === 'failed' || status === 'refunded') {
+          console.error(`❌ Payment failed/refunded: ${transaction.failureReason || 'Unknown reason'}`);
+          return 'failed';
+        }
+        
+        // Still processing
+        console.log(`⏳ Payment still processing (status: ${status})`);
+      }
+      
+      // Wait before next attempt (exponential backoff: 1s → 2s → 4s → 8s → 16s → 30s cap)
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay = Math.min(delay * 2, 30000); // Cap at 30 seconds
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error polling payment status (attempt ${attempt}):`, error);
+      
+      // If final attempt, rethrow error
+      if (attempt >= maxAttempts) {
+        throw new Error(`Payment verification failed after ${maxAttempts} attempts: ${error}`);
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay = Math.min(delay * 2, 30000);
+    }
+  }
+  
+  // Max attempts reached without terminal status
+  console.error(`⏱️ Payment verification timed out after ${maxAttempts} attempts`);
+  return 'pending'; // Return pending instead of throwing (graceful degradation)
 }

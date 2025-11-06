@@ -36,6 +36,99 @@ export function useQueueSubscription(setId: string, eventId: string) {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
+  
+  // CRITICAL FIX: Track last message timestamp for missed message recovery
+  const lastMessageTimestampRef = useRef<number>(0);
+  const missedMessagesRef = useRef<Set<string>>(new Set());
+  
+  // NEW: Health check for detecting stale WebSocket connections
+  const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastHealthCheckResponseRef = useRef<number>(Date.now());
+  const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
+  const HEALTH_CHECK_TIMEOUT = 60000;  // 60 seconds - no response = stale connection
+
+  // NEW: Recover missed messages after reconnection
+  const recoverMissedMessages = useCallback(async () => {
+    if (!eventId || !lastMessageTimestampRef.current) return;
+
+    console.log('🔍 Recovering missed messages since:', new Date(lastMessageTimestampRef.current).toISOString());
+
+    try {
+      const client = generateClient({
+        authMode: 'userPool'
+      });
+
+      // Query for requests updated after last message timestamp
+      const recoveryQuery = `
+        query RecoverMissedUpdates($eventId: ID!, $since: AWSTimestamp!) {
+          listRequestsByEvent(
+            eventId: $eventId,
+            filter: { updatedAt: { gt: $since } }
+            limit: 100
+          ) {
+            items {
+              requestId
+              queuePosition
+              status
+              songTitle
+              artistName
+              updatedAt
+            }
+          }
+        }
+      `;
+
+      const response: any = await client.graphql({
+        query: recoveryQuery,
+        variables: {
+          eventId,
+          since: lastMessageTimestampRef.current
+        }
+      });
+
+      if (response.data?.listRequestsByEvent?.items?.length > 0) {
+        const recoveredMessages = response.data.listRequestsByEvent.items;
+        console.log(`✅ Recovered ${recoveredMessages.length} missed updates`);
+
+        // Merge recovered messages with current queue data
+        setQueueData(prev => {
+          if (!prev) return prev;
+
+          // Create map of current requests
+          const requestMap = new Map(
+            prev.orderedRequests.map(r => [r.requestId, r])
+          );
+
+          // Update with recovered data
+          recoveredMessages.forEach((msg: any) => {
+            requestMap.set(msg.requestId, {
+              requestId: msg.requestId,
+              queuePosition: msg.queuePosition,
+              status: msg.status,
+              songTitle: msg.songTitle,
+              artist: msg.artistName,
+            });
+            missedMessagesRef.current.add(msg.requestId);
+          });
+
+          // Rebuild ordered array sorted by queue position
+          const updatedRequests = Array.from(requestMap.values())
+            .sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0));
+
+          return {
+            ...prev,
+            orderedRequests: updatedRequests,
+            lastUpdated: Date.now(),
+          };
+        });
+      } else {
+        console.log('✅ No missed messages to recover');
+      }
+    } catch (err) {
+      console.error('❌ Failed to recover missed messages:', err);
+      // Don't throw - continue with normal operation
+    }
+  }, [eventId]);
 
   // Polling fallback
   const startPolling = useCallback(() => {
@@ -86,7 +179,16 @@ export function useQueueSubscription(setId: string, eventId: string) {
         });
 
         if (response.data?.getQueue) {
-          setQueueData(response.data.getQueue);
+          const queueUpdate = response.data.getQueue;
+          
+          // Track timestamp for polling updates too
+          if (queueUpdate.lastUpdated) {
+            lastMessageTimestampRef.current = queueUpdate.lastUpdated;
+          } else {
+            lastMessageTimestampRef.current = Date.now();
+          }
+          
+          setQueueData(queueUpdate);
           setError(null);
         } else {
           console.log('⚠️ Polling returned no queue data');
@@ -135,10 +237,60 @@ export function useQueueSubscription(setId: string, eventId: string) {
 
     console.log(`Reconnecting... (${reconnectAttemptsRef.current}/${maxReconnectAttempts}) - delay: ${delay}ms`);
     
-    setTimeout(() => {
+    setTimeout(async () => {
+      // CRITICAL FIX: Recover missed messages before reconnecting
+      await recoverMissedMessages();
       connectSubscription();
     }, delay);
-  }, [startPolling]);
+  }, [startPolling, recoverMissedMessages]);
+
+  // NEW: Start health check monitoring for WebSocket connection
+  const startHealthCheck = useCallback(() => {
+    // Clear any existing health check
+    if (healthCheckIntervalRef.current) {
+      clearInterval(healthCheckIntervalRef.current);
+    }
+
+    console.log('🏥 Starting WebSocket health check monitoring');
+    lastHealthCheckResponseRef.current = Date.now();
+
+    healthCheckIntervalRef.current = setInterval(() => {
+      const timeSinceLastMessage = Date.now() - lastHealthCheckResponseRef.current;
+
+      // Check if connection is stale (no messages for HEALTH_CHECK_TIMEOUT)
+      if (timeSinceLastMessage > HEALTH_CHECK_TIMEOUT) {
+        console.warn('⚠️ Stale WebSocket connection detected (no messages for 60s)');
+        console.log('🔄 Triggering reconnection due to health check failure');
+        
+        // Stop health check
+        if (healthCheckIntervalRef.current) {
+          clearInterval(healthCheckIntervalRef.current);
+          healthCheckIntervalRef.current = null;
+        }
+        
+        // Unsubscribe current connection
+        if (subscriptionRef.current && subscriptionRef.current.unsubscribe) {
+          subscriptionRef.current.unsubscribe();
+          subscriptionRef.current = null;
+        }
+        
+        // Trigger reconnection
+        setConnectionStatus('error');
+        reconnect();
+      } else {
+        console.log(`✓ Health check passed (last message: ${Math.round(timeSinceLastMessage / 1000)}s ago)`);
+      }
+    }, HEALTH_CHECK_INTERVAL);
+  }, [reconnect, HEALTH_CHECK_INTERVAL, HEALTH_CHECK_TIMEOUT]);
+
+  // NEW: Stop health check monitoring
+  const stopHealthCheck = useCallback(() => {
+    if (healthCheckIntervalRef.current) {
+      clearInterval(healthCheckIntervalRef.current);
+      healthCheckIntervalRef.current = null;
+      console.log('🛑 Stopped health check monitoring');
+    }
+  }, []);
 
   // Real-time subscription
   const connectSubscription = useCallback(async () => {
@@ -182,7 +334,22 @@ export function useQueueSubscription(setId: string, eventId: string) {
       if (subscription.subscribe) {
         subscriptionRef.current = subscription.subscribe({
           next: ({ data }: any) => {
-            setQueueData(data.onQueueUpdate);
+            const update = data.onQueueUpdate;
+            
+            // CRITICAL FIX: Track timestamp of received message
+            if (update.lastUpdated) {
+              lastMessageTimestampRef.current = update.lastUpdated;
+            } else {
+              lastMessageTimestampRef.current = Date.now();
+            }
+            
+            // NEW: Update health check timestamp on every message
+            lastHealthCheckResponseRef.current = Date.now();
+            
+            // Clear missed messages tracker on successful update
+            missedMessagesRef.current.clear();
+            
+            setQueueData(update);
             setConnectionStatus('connected');
             reconnectAttemptsRef.current = 0;
             setError(null);
@@ -192,9 +359,16 @@ export function useQueueSubscription(setId: string, eventId: string) {
             console.error('Subscription error:', err);
             setError(err);
             setConnectionStatus('error');
+            
+            // Stop health check on error
+            stopHealthCheck();
             reconnect();
           }
         });
+        
+        // NEW: Start health check after successful subscription
+        startHealthCheck();
+        
       } else {
         console.warn('Subscription not available, falling back to polling');
         startPolling();
@@ -207,7 +381,7 @@ export function useQueueSubscription(setId: string, eventId: string) {
       setConnectionStatus('error');
       reconnect();
     }
-  }, [setId, eventId, subscriptionsAvailable, reconnect, startPolling]);
+  }, [setId, eventId, subscriptionsAvailable, reconnect, startPolling, startHealthCheck, stopHealthCheck]);
 
   useEffect(() => {
     return () => {
@@ -217,8 +391,10 @@ export function useQueueSubscription(setId: string, eventId: string) {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
+      // NEW: Clean up health check on unmount
+      stopHealthCheck();
     };
-  }, []);
+  }, [stopHealthCheck]);
 
   useEffect(() => {
     // Guard: Don't attempt connection without valid IDs (check for empty strings too)
@@ -244,8 +420,10 @@ export function useQueueSubscription(setId: string, eventId: string) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       }
+      // NEW: Clean up health check
+      stopHealthCheck();
     };
-  }, [setId, eventId, subscriptionsAvailable, connectSubscription, startPolling]);
+  }, [setId, eventId, subscriptionsAvailable, connectSubscription, startPolling, stopHealthCheck]);
 
   return { queueData, connectionStatus, error };
 }

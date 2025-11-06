@@ -223,6 +223,41 @@ export const createRequest = /* GraphQL */ `
   }
 `;
 
+// NEW: Secure mutation with integrated payment verification
+export const submitRequestWithPayment = /* GraphQL */ `
+  mutation SubmitRequestWithPayment($input: SubmitRequestWithPaymentInput!) {
+    submitRequestWithPayment(input: $input) {
+      success
+      request {
+        requestId
+        eventId
+        userId
+        songTitle
+        artistName
+        requestType
+        price
+        queuePosition
+        status
+        dedication
+        shoutout
+        submittedAt
+      }
+      transaction {
+        transactionId
+        amount
+        platformFee
+        performerEarnings
+        status
+        paymentProvider
+        providerTransactionId
+        createdAt
+      }
+      errorCode
+      errorMessage
+    }
+  }
+`;
+
 export const upvoteRequest = /* GraphQL */ `
   mutation UpvoteRequest($requestId: ID!) {
     upvoteRequest(requestId: $requestId) {
@@ -423,6 +458,26 @@ export async function submitDJSet(input: any) {
 export async function submitRequest(input: any) {
   const response: any = await client.graphql({ query: createRequest, variables: { input } });
   return response.data.createRequest;
+}
+
+// NEW: Secure request submission with payment verification
+export async function submitRequestWithPaymentVerification(input: any) {
+  const response: any = await client.graphql({ 
+    query: submitRequestWithPayment, 
+    variables: { input } 
+  });
+  
+  const result = response.data.submitRequestWithPayment;
+  
+  // Handle errors from backend
+  if (!result.success) {
+    const error: any = new Error(result.errorMessage || 'Request submission failed');
+    error.code = result.errorCode;
+    error.details = result;
+    throw error;
+  }
+  
+  return result;
 }
 
 export async function submitUpvote(requestId: string) {

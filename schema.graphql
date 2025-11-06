@@ -18,6 +18,25 @@ enum RequestStatus {
   PLAYING
   PLAYED
   VETOED
+  UNPAID
+  PAYMENT_FAILED
+  CANCELLED
+  ROLLED_BACK
+}
+
+# NEW: Error codes for request submission
+enum RequestErrorCode {
+  PAYMENT_FAILED
+  PAYMENT_VERIFICATION_FAILED
+  PAYMENT_AMOUNT_MISMATCH
+  PAYMENT_ALREADY_USED
+  DUPLICATE_SONG
+  CAPACITY_EXCEEDED
+  RATE_LIMIT_EXCEEDED
+  EVENT_NOT_FOUND
+  EVENT_NOT_ACTIVE
+  QUEUE_UPDATE_FAILED
+  REQUEST_CREATION_ERROR
 }
 
 enum RequestType {
@@ -174,6 +193,48 @@ input CreateRequestInput {
   songId: ID!
   requestType: RequestType!
   dedication: String
+  transactionId: String  # Optional: For linking to existing payment
+}
+
+# NEW: Secure request submission with integrated payment
+input SubmitRequestWithPaymentInput {
+  eventId: ID!
+  songTitle: String!
+  artistName: String!
+  genre: String
+  requestType: RequestType!
+  dedication: String
+  shoutout: String
+  yocoChargeId: String!      # Charge ID from Yoco SDK (client-created)
+  idempotencyKey: String!    # Unique key for duplicate prevention
+}
+
+# NEW: Result type for secure request submission
+type SubmitRequestResult {
+  success: Boolean!
+  request: Request
+  transaction: Transaction
+  errorCode: RequestErrorCode
+  errorMessage: String
+}
+
+# NEW: Transaction type for payment tracking
+type Transaction {
+  transactionId: ID!
+  requestId: ID
+  eventId: ID!
+  userId: ID!
+  performerId: ID!
+  amount: Float!
+  platformFee: Float!
+  performerEarnings: Float!
+  status: String!
+  paymentProvider: String!
+  providerTransactionId: String!
+  createdAt: AWSTimestamp!
+  completedAt: AWSTimestamp
+  failedAt: AWSTimestamp
+  idempotencyKey: String
 }
 
 # Queries
@@ -212,6 +273,7 @@ type Mutation {
   
   # Request mutations
   createRequest(input: CreateRequestInput!): Request
+  submitRequestWithPayment(input: SubmitRequestWithPaymentInput!): SubmitRequestResult
   vetoRequest(requestId: ID!, reason: String): VetoResponse
   reorderQueue(eventId: ID!, orderedRequestIds: [ID!]!): Queue
   updateSetStatus(setId: ID!, status: String!): DJSet
@@ -221,11 +283,11 @@ type Mutation {
 type Subscription {
   # Queue updates
   onQueueUpdate(eventId: ID!): Queue
-    @aws_subscribe(mutations: ["reorderQueue", "createRequest", "vetoRequest"])
+    @aws_subscribe(mutations: ["reorderQueue", "createRequest", "vetoRequest", "submitRequestWithPayment"])
   
   # New requests
   onNewRequest(eventId: ID!): Request
-    @aws_subscribe(mutations: ["createRequest"])
+    @aws_subscribe(mutations: ["createRequest", "submitRequestWithPayment"])
   
   # Request status changes
   onRequestStatusChange(requestId: ID!): Request

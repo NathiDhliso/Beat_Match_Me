@@ -30,6 +30,7 @@ interface RequestData {
   songId: string;
   requestType: 'standard' | 'spotlight';
   dedication?: string;
+  shoutout?: string;  // NEW: Optional shoutout message
   totalAmount: number;
 }
 

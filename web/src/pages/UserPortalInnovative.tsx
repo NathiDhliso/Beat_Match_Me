@@ -27,8 +27,8 @@ import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components
 import { PaymentErrorModal, SuccessConfirmation } from '../components/StatusModals';
 import { Settings } from '../components/Settings';
 import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon } from 'lucide-react';
-import { createPaymentIntent, processYocoPayment, verifyPayment, isRetryableError } from '../services/payment';
-import { submitRequest, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
+import { createPaymentIntent, processYocoPayment, isRetryableError } from '../services/payment';
+import { submitRequestWithPaymentVerification, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';
 import { BusinessMetrics } from '../services/analytics';
 
@@ -1020,11 +1020,12 @@ export const UserPortalInnovative: React.FC = () => {
                 setPaymentError(null);
                 
                 try {
-                  // Generate idempotency key to prevent double charges (will be used in production)
-                  // const idempotencyKey = `${user?.userId}-${selectedSong.id}-${Date.now()}`;
+                  // CRITICAL FIX: Generate idempotency key to prevent double charges
+                  const idempotencyKey = crypto.randomUUID();
+                  console.log('🔑 Generated idempotency key:', idempotencyKey);
                   
                   // 1. Create payment intent
-                  console.log('Creating payment intent...');
+                  console.log('💳 Creating payment intent...');
                   const paymentIntent = await createPaymentIntent({
                     amount: selectedSong.basePrice,
                     songId: selectedSong.id,
@@ -1032,80 +1033,105 @@ export const UserPortalInnovative: React.FC = () => {
                     userId: user?.userId,
                   });
                   
-                  // 2. Process payment via Yoco
-                  console.log('Processing payment...');
+                  // 2. Process payment via Yoco and get charge ID
+                  console.log('⚡ Processing payment...');
                   const payment = await processYocoPayment(paymentIntent);
                   
-                  if (payment.status !== 'succeeded') {
-                    throw new Error('Payment failed');
+                  if (payment.status !== 'succeeded' || !payment.chargeId) {
+                    throw new Error('Payment failed or charge ID not received');
                   }
                   
-                  // 3. Verify payment
-                  console.log('Verifying payment...');
-                  const verified = await verifyPayment(payment.transactionId);
-                  if (!verified) {
-                    throw new Error('Payment verification failed');
-                  }
+                  console.log('✅ Payment succeeded, charge ID:', payment.chargeId);
                   
-                  // 4. Submit request to backend with payment proof
-                  console.log('Submitting request to backend...');
+                  // 3. Submit request with payment verification (NEW SECURE FLOW)
+                  console.log('📤 Submitting request with payment verification...');
                   
                   if (!user?.userId) {
                     throw new Error('User ID not found');
                   }
                   
-                  const request = await submitRequest({
+                  const result = await submitRequestWithPaymentVerification({
                     eventId: currentEventId!,
-                    setId: currentSetId!,
-                    userId: user.userId,
-                    songId: selectedSong.id,
                     songTitle: selectedSong.title,
                     artistName: selectedSong.artist,
-                    paymentTransactionId: payment.transactionId,
-                    amount: selectedSong.basePrice,
+                    genre: selectedSong.genre || 'Unknown',
+                    requestType: requestData.requestType || 'STANDARD',
                     dedication: requestData.dedication,
-                    requestType: requestData.requestType || 'standard',
+                    shoutout: requestData.shoutout,
+                    yocoChargeId: payment.chargeId,      // Server will verify this charge
+                    idempotencyKey: idempotencyKey,      // Prevents duplicate processing
                   });
                   
-                  // 5. Track successful request
+                  console.log('✅ Request submitted successfully:', result);
+                  
+                  // 4. Track successful request
                   BusinessMetrics.requestSubmitted(
                     selectedSong.title,
                     selectedSong.basePrice,
                     currentEventId!
                   );
                   BusinessMetrics.paymentProcessed(
-                    selectedSong.basePrice,
-                    payment.transactionId
+                    result.transaction.amount,
+                    result.transaction.transactionId
                   );
                   
-                  // 6. Show success modal with queue position
-                  setSuccessQueuePosition(request.queuePosition || 1);
+                  // 5. Show success modal with queue position
+                  setSuccessQueuePosition(result.request.queuePosition || 1);
                   setShowSuccessModal(true);
-                  setMyRequestPosition(request.queuePosition || null);
+                  setMyRequestPosition(result.request.queuePosition || null);
                   
-                  // 7. Add notification
+                  // 6. Add notification
                   addNotification({
                     type: 'info',
                     title: '🎵 Request Submitted!',
-                    message: `${selectedSong.title} added to the queue`,
+                    message: `${selectedSong.title} added to queue at position ${result.request.queuePosition}`,
                   });
                   
                 } catch (error: any) {
-                  console.error('Request submission failed:', error);
+                  console.error('❌ Request submission failed:', error);
                   
-                  // Retry logic for network errors
+                  // Handle specific error codes from backend
+                  let userMessage = error.message || 'Request failed. Please try again.';
+                  
+                  if (error.code) {
+                    switch (error.code) {
+                      case 'PAYMENT_VERIFICATION_FAILED':
+                        userMessage = 'Payment verification failed. Your payment will be refunded automatically.';
+                        break;
+                      case 'PAYMENT_ALREADY_USED':
+                        userMessage = 'This payment has already been used for another request.';
+                        break;
+                      case 'DUPLICATE_SONG':
+                        userMessage = 'You have already requested this song for this event.';
+                        break;
+                      case 'RATE_LIMIT_EXCEEDED':
+                        userMessage = 'You can only submit 3 requests per hour. Please try again later.';
+                        break;
+                      case 'CAPACITY_EXCEEDED':
+                        userMessage = 'This event has reached maximum capacity for requests.';
+                        break;
+                      case 'EVENT_NOT_ACTIVE':
+                        userMessage = 'This event is no longer accepting requests.';
+                        break;
+                      case 'QUEUE_UPDATE_FAILED':
+                        userMessage = 'Failed to add to queue. Your payment will be refunded.';
+                        break;
+                    }
+                  }
+                  
+                  // Retry logic for network errors only
                   if (retryCount < MAX_RETRIES && isRetryableError(error)) {
-                    console.log(`Retrying payment (${retryCount + 1}/${MAX_RETRIES})...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                    console.log(`🔄 Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
                     return handleConfirmRequest(retryCount + 1);
                   }
                   
                   // Show error to user
-                  setPaymentError(error.message || 'Request failed. Please try again.');
+                  setPaymentError(userMessage);
                   addNotification({
                     type: 'error',
                     title: '❌ Request Failed',
-                    message: error.message || 'Failed to submit your request. Please try again.',
+                    message: userMessage,
                   });
                 } finally {
                   setIsProcessing(false);

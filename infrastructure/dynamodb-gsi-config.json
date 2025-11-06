@@ -1,0 +1,88 @@
+{
+  "description": "DynamoDB Global Secondary Indexes for idempotency and payment deduplication",
+  "tables": {
+    "beatmatchme-transactions": {
+      "tableName": "beatmatchme-transactions",
+      "primaryKey": {
+        "partitionKey": "transactionId",
+        "sortKey": null
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "idempotencyKey-index",
+          "partitionKey": "idempotencyKey",
+          "sortKey": null,
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Fast duplicate payment detection via idempotency keys. Prevents double-click submissions."
+        },
+        {
+          "indexName": "providerTransactionId-index",
+          "partitionKey": "providerTransactionId",
+          "sortKey": null,
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query transactions by Yoco charge ID. Prevents reuse of same charge for multiple requests."
+        },
+        {
+          "indexName": "userId-createdAt-index",
+          "partitionKey": "userId",
+          "sortKey": "createdAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query user transaction history sorted by date. Supports payment status pages."
+        }
+      ]
+    },
+    "beatmatchme-requests": {
+      "tableName": "beatmatchme-requests",
+      "primaryKey": {
+        "partitionKey": "requestId",
+        "sortKey": null
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "userId-submittedAt-index",
+          "partitionKey": "userId",
+          "sortKey": "submittedAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Rate limiting queries. Prevents spam requests from single user."
+        },
+        {
+          "indexName": "eventId-userId-index",
+          "partitionKey": "eventId",
+          "sortKey": "userId",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Duplicate song detection within events. Prevents same user requesting same song twice."
+        },
+        {
+          "indexName": "eventId-submittedAt-index",
+          "partitionKey": "eventId",
+          "sortKey": "submittedAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 10,
+          "writeCapacityUnits": 10,
+          "description": "Event queue queries. Supports message recovery and queue position calculation."
+        }
+      ]
+    }
+  },
+  "awsRegion": "us-east-1",
+  "billingMode": "PROVISIONED",
+  "notes": [
+    "These GSIs support the production readiness fixes implemented in P0-P1 tasks",
+    "idempotencyKey-index: Required for P0-1 (Payment Verification)",
+    "providerTransactionId-index: Required for P0-1 (Payment Verification)",
+    "userId-submittedAt-index: Used in P0-3 (Pre-Creation Validation) for rate limiting",
+    "eventId-userId-index: Used in P1-4 (Request Deduplication)",
+    "Adjust capacity units based on traffic patterns after deployment",
+    "Consider switching to PAY_PER_REQUEST billing mode for cost optimization"
+  ]
+}

@@ -352,9 +352,10 @@ export const DJPortalOrbital: React.FC = () => {
   const syncTracksToBackend = async (updatedTracks: Track[]) => {
     if (!user?.userId || !currentEventId) {
       console.warn('⚠️ Cannot sync tracks: missing userId or eventId');
-      return;
+      throw new Error('Missing userId or eventId');
     }
     
+    // CRITICAL FIX: Wrapped in try-catch for error handling
     try {
       console.log('💾 Syncing tracks to backend...');
       const songs = updatedTracks.map(t => ({
@@ -393,56 +394,126 @@ export const DJPortalOrbital: React.FC = () => {
       addNotification({
         type: 'error',
         title: '❌ Sync Failed',
-        message: 'Could not sync tracks to backend',
+        message: 'Could not sync tracks to backend. Changes have been rolled back.',
       });
+      // Rethrow error so calling functions can handle rollback
+      throw error;
     }
   };
 
   const handleAddTrack = async (track: Omit<Track, 'id'>) => {
-    const newTrack = { ...track, id: `track-${Date.now()}` };
-    const updatedTracks = [...tracks, newTrack];
-    setTracks(updatedTracks);
-    await syncTracksToBackend(updatedTracks);
+    // CRITICAL FIX: Capture state snapshot before optimistic update
+    const previousTracks = [...tracks];
     
-    addNotification({
-      type: 'info',
-      title: '✅ Track Added',
-      message: `${track.title} by ${track.artist}`,
-    });
+    try {
+      // Optimistic update
+      const newTrack = { ...track, id: `track-${Date.now()}` };
+      const updatedTracks = [...tracks, newTrack];
+      setTracks(updatedTracks);
+      
+      // Sync to backend (will throw on failure)
+      await syncTracksToBackend(updatedTracks);
+      
+      addNotification({
+        type: 'info',
+        title: '✅ Track Added',
+        message: `${track.title} by ${track.artist}`,
+      });
+    } catch (error) {
+      // ROLLBACK: Restore previous state
+      console.error('❌ Track add failed, rolling back:', error);
+      setTracks(previousTracks);
+      addNotification({
+        type: 'error',
+        title: '❌ Failed to Add Track',
+        message: `Could not add ${track.title}. Please try again.`,
+      });
+    }
   };
 
   const handleUpdateTrack = async (id: string, updates: Partial<Track>) => {
-    const updatedTracks = tracks.map(t => (t.id === id ? { ...t, ...updates } : t));
-    setTracks(updatedTracks);
-    await syncTracksToBackend(updatedTracks);
+    // CRITICAL FIX: Capture state snapshot before optimistic update
+    const previousTracks = [...tracks];
+    
+    try {
+      // Optimistic update
+      const updatedTracks = tracks.map(t => (t.id === id ? { ...t, ...updates } : t));
+      setTracks(updatedTracks);
+      
+      // Sync to backend (will throw on failure)
+      await syncTracksToBackend(updatedTracks);
+    } catch (error) {
+      // ROLLBACK: Restore previous state
+      console.error('❌ Track update failed, rolling back:', error);
+      setTracks(previousTracks);
+      addNotification({
+        type: 'error',
+        title: '❌ Failed to Update Track',
+        message: 'Changes have been rolled back. Please try again.',
+      });
+    }
   };
 
   const handleDeleteTrack = async (id: string) => {
+    // CRITICAL FIX: Capture state snapshot before optimistic update
+    const previousTracks = [...tracks];
     const track = tracks.find(t => t.id === id);
-    const updatedTracks = tracks.filter(t => t.id !== id);
-    setTracks(updatedTracks);
-    await syncTracksToBackend(updatedTracks);
     
-    if (track) {
+    try {
+      // Optimistic update
+      const updatedTracks = tracks.filter(t => t.id !== id);
+      setTracks(updatedTracks);
+      
+      // Sync to backend (will throw on failure)
+      await syncTracksToBackend(updatedTracks);
+      
+      if (track) {
+        addNotification({
+          type: 'info',
+          title: '🗑️ Track Removed',
+          message: `${track.title} deleted`,
+        });
+      }
+    } catch (error) {
+      // ROLLBACK: Restore previous state
+      console.error('❌ Track delete failed, rolling back:', error);
+      setTracks(previousTracks);
       addNotification({
-        type: 'info',
-        title: '🗑️ Track Removed',
-        message: `${track.title} deleted`,
+        type: 'error',
+        title: '❌ Failed to Delete Track',
+        message: track ? `Could not delete ${track.title}. Please try again.` : 'Failed to delete track.',
       });
     }
   };
 
   const handleToggleTrack = async (id: string) => {
-    const updatedTracks = tracks.map(t => (t.id === id ? { ...t, isEnabled: !t.isEnabled } : t));
-    setTracks(updatedTracks);
-    await syncTracksToBackend(updatedTracks);
+    // CRITICAL FIX: Capture state snapshot before optimistic update
+    const previousTracks = [...tracks];
     
-    const track = updatedTracks.find(t => t.id === id);
-    if (track) {
+    try {
+      // Optimistic update
+      const updatedTracks = tracks.map(t => (t.id === id ? { ...t, isEnabled: !t.isEnabled } : t));
+      setTracks(updatedTracks);
+      
+      // Sync to backend (will throw on failure)
+      await syncTracksToBackend(updatedTracks);
+      
+      const track = updatedTracks.find(t => t.id === id);
+      if (track) {
+        addNotification({
+          type: 'info',
+          title: track.isEnabled ? '✅ Track Enabled' : '⏸️ Track Disabled',
+          message: `${track.title}`,
+        });
+      }
+    } catch (error) {
+      // ROLLBACK: Restore previous state
+      console.error('❌ Track toggle failed, rolling back:', error);
+      setTracks(previousTracks);
       addNotification({
-        type: 'info',
-        title: track.isEnabled ? '✅ Track Enabled' : '⏸️ Track Disabled',
-        message: `${track.title}`,
+        type: 'error',
+        title: '❌ Failed to Toggle Track',
+        message: 'Changes have been rolled back. Please try again.',
       });
     }
   };
