@@ -6,6 +6,10 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+// Environment configuration - allows override for testing
+const EVENTS_TABLE = process.env.EVENTS_TABLE || 'beatmatchme-events';
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+
 exports.handler = async (event) => {
   console.log('Updating event status:', JSON.stringify(event, null, 2));
 
@@ -16,7 +20,7 @@ exports.handler = async (event) => {
     // Verify performer owns this event
     const eventResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId },
       })
       .promise();
@@ -45,7 +49,7 @@ exports.handler = async (event) => {
     // Update status
     const result = await dynamodb
       .update({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId },
         UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt',
         ExpressionAttributeNames: {
@@ -64,7 +68,7 @@ exports.handler = async (event) => {
       // Get all pending requests
       const requestsResult = await dynamodb
         .query({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           IndexName: 'eventId-submittedAt-index',
           KeyConditionExpression: 'eventId = :eventId',
           FilterExpression: '#status = :pending',

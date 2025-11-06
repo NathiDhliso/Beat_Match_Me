@@ -1,0 +1,250 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'BeatMatchMe Test Environment - Isolated AWS resources for integration testing'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: test
+    Description: Environment name
+
+Resources:
+  # DynamoDB Tables for Testing
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'beatmatchme-${Environment}-events'
+      BillingMode: PAY_PER_REQUEST  # No provisioned capacity - only pay for what you use
+      AttributeDefinitions:
+        - AttributeName: eventId
+          AttributeType: S
+        - AttributeName: performerId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: eventId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: performerId-createdAt-index
+          KeySchema:
+            - AttributeName: performerId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: IntegrationTesting
+
+  RequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'beatmatchme-${Environment}-requests'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: eventId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: submittedAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: eventId-submittedAt-index
+          KeySchema:
+            - AttributeName: eventId
+              KeyType: HASH
+            - AttributeName: submittedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: userId-submittedAt-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: submittedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: eventId-userId-index
+          KeySchema:
+            - AttributeName: eventId
+              KeyType: HASH
+            - AttributeName: userId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: IntegrationTesting
+
+  TransactionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'beatmatchme-${Environment}-transactions'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: transactionId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+        - AttributeName: idempotencyKey
+          AttributeType: S
+        - AttributeName: providerTransactionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: transactionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: userId-createdAt-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: idempotencyKey-index
+          KeySchema:
+            - AttributeName: idempotencyKey
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: providerTransactionId-index
+          KeySchema:
+            - AttributeName: providerTransactionId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: IntegrationTesting
+
+  # IAM Role for Lambda Functions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'beatmatchme-${Environment}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt EventsTable.Arn
+                  - !GetAtt RequestsTable.Arn
+                  - !GetAtt TransactionsTable.Arn
+                  - !Sub '${EventsTable.Arn}/index/*'
+                  - !Sub '${RequestsTable.Arn}/index/*'
+                  - !Sub '${TransactionsTable.Arn}/index/*'
+        - PolicyName: LambdaInvokeAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: '*'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # CloudWatch Log Groups
+  ProcessPaymentLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/beatmatchme-${Environment}-processPayment'
+      RetentionInDays: 7  # Keep logs for 1 week only (saves money)
+
+  CreateRequestLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/beatmatchme-${Environment}-createRequest'
+      RetentionInDays: 7
+
+  # SNS Topic for Test Alerts (optional)
+  TestAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'beatmatchme-${Environment}-alerts'
+      DisplayName: BeatMatchMe Test Environment Alerts
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  EventsTableName:
+    Description: Events DynamoDB Table Name
+    Value: !Ref EventsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-EventsTable'
+
+  RequestsTableName:
+    Description: Requests DynamoDB Table Name
+    Value: !Ref RequestsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-RequestsTable'
+
+  TransactionsTableName:
+    Description: Transactions DynamoDB Table Name
+    Value: !Ref TransactionsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-TransactionsTable'
+
+  LambdaRoleArn:
+    Description: Lambda Execution Role ARN
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaRole'
+
+  ProcessPaymentLogGroup:
+    Description: Process Payment Log Group
+    Value: !Ref ProcessPaymentLogGroup
+
+  CreateRequestLogGroup:
+    Description: Create Request Log Group
+    Value: !Ref CreateRequestLogGroup
+
+  TestAlertsTopicArn:
+    Description: SNS Topic for Test Alerts
+    Value: !Ref TestAlertsTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-AlertsTopic'
+
+  StackInfo:
+    Description: Stack Information
+    Value: !Sub |
+      Environment: ${Environment}
+      Region: ${AWS::Region}
+      Created: ${AWS::StackName}
+      Estimated Monthly Cost: $0.50-2 (pay-per-request DynamoDB + minimal Lambda usage)

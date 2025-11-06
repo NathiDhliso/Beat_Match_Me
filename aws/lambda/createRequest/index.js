@@ -6,8 +6,31 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const https = require('https');
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// Environment configuration - allows override for testing
+const EVENTS_TABLE = process.env.EVENTS_TABLE || 'beatmatchme-events';
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+const TRANSACTIONS_TABLE = process.env.TRANSACTIONS_TABLE || 'beatmatchme-transactions';
+const QUEUES_TABLE = process.env.QUEUES_TABLE || 'beatmatchme-queues';
+
+// OPT-1: DynamoDB connection pooling with optimized configuration
+const dynamodb = new AWS.DynamoDB.DocumentClient({
+  maxRetries: 3,
+  httpOptions: {
+    timeout: 5000,           // 5 second timeout
+    connectTimeout: 3000,    // 3 second connection timeout
+    agent: new https.Agent({
+      keepAlive: true,       // CRITICAL: Reuse connections
+      maxSockets: 50,        // Max concurrent connections
+      keepAliveMsecs: 60000, // Keep connections alive for 60s
+    }),
+  },
+  // Enable exponential backoff for retries
+  retryDelayOptions: {
+    base: 100, // Start with 100ms delay
+  },
+});
 
 /**
  * CRITICAL FIX: Structured CloudWatch logging helper
@@ -62,7 +85,7 @@ async function calculateQueuePosition(eventId, requestType) {
   // Get current queue
   const queueResult = await dynamodb
     .get({
-      TableName: 'beatmatchme-queues',
+      TableName: QUEUES_TABLE,
       Key: { eventId },
     })
     .promise();
@@ -105,7 +128,7 @@ exports.handler = async (event) => {
     
     const eventResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId: input.eventId },
       })
       .promise();
@@ -144,7 +167,7 @@ exports.handler = async (event) => {
     const oneHourAgo = now - (60 * 60 * 1000);
     const recentRequestsResult = await dynamodb
       .query({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         IndexName: 'userId-submittedAt-index',
         KeyConditionExpression: 'userId = :userId AND submittedAt > :oneHourAgo',
         ExpressionAttributeValues: {
@@ -164,7 +187,7 @@ exports.handler = async (event) => {
     const fiveMinutesAgo = now - (5 * 60 * 1000);
     const recentDuplicateResult = await dynamodb
       .query({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         IndexName: 'userId-submittedAt-index',
         KeyConditionExpression: 'userId = :userId AND submittedAt > :fiveMinutesAgo',
         FilterExpression: 'eventId = :eventId AND songTitle = :songTitle AND artistName = :artistName AND #status <> :cancelled',
@@ -214,10 +237,10 @@ exports.handler = async (event) => {
     // Second check: Same title+artist anywhere in event (prevents duplicate songs in queue)
     const duplicateCheckResult = await dynamodb
       .query({
-        TableName: 'beatmatchme-requests',
-        IndexName: 'eventId-userId-index',
-        KeyConditionExpression: 'eventId = :eventId AND userId = :userId',
-        FilterExpression: 'songTitle = :songTitle AND artistName = :artistName AND #status <> :cancelled',
+        TableName: REQUESTS_TABLE,
+        IndexName: 'eventId-submittedAt-index', // Query by eventId, filter by userId
+        KeyConditionExpression: 'eventId = :eventId',
+        FilterExpression: 'userId = :userId AND songTitle = :songTitle AND artistName = :artistName AND #status <> :cancelled',
         ExpressionAttributeNames: {
           '#status': 'status',
         },
@@ -239,7 +262,7 @@ exports.handler = async (event) => {
     const maxRequestsPerEvent = eventData.settings?.maxRequests || 100;
     const currentRequestsResult = await dynamodb
       .query({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         IndexName: 'eventId-submittedAt-index',
         KeyConditionExpression: 'eventId = :eventId',
         FilterExpression: '#status <> :cancelled AND #status <> :rejected',
@@ -263,7 +286,7 @@ exports.handler = async (event) => {
     if (input.transactionId) {
       const transactionResult = await dynamodb
         .get({
-          TableName: 'beatmatchme-transactions',
+          TableName: TRANSACTIONS_TABLE,
           Key: { transactionId: input.transactionId },
         })
         .promise();
@@ -285,7 +308,7 @@ exports.handler = async (event) => {
       // Check if transaction already used for another request
       const transactionUsageResult = await dynamodb
         .query({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           IndexName: 'transactionId-index',
           KeyConditionExpression: 'transactionId = :transactionId',
           ExpressionAttributeValues: {
@@ -329,7 +352,7 @@ exports.handler = async (event) => {
 
     await dynamodb
       .put({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         Item: request,
         // Prevent accidental overwrites
         ConditionExpression: 'attribute_not_exists(requestId)',
@@ -346,7 +369,7 @@ exports.handler = async (event) => {
         // Use atomic list prepend operation
         const updateResult = await dynamodb
           .update({
-            TableName: 'beatmatchme-queues',
+            TableName: QUEUES_TABLE,
             Key: { eventId: input.eventId },
             UpdateExpression: `
               SET orderedRequestIds = list_append(:newRequest, if_not_exists(orderedRequestIds, :emptyList)),
@@ -371,7 +394,7 @@ exports.handler = async (event) => {
         // Use atomic list append operation
         const updateResult = await dynamodb
           .update({
-            TableName: 'beatmatchme-queues',
+            TableName: QUEUES_TABLE,
             Key: { eventId: input.eventId },
             UpdateExpression: `
               SET orderedRequestIds = list_append(if_not_exists(orderedRequestIds, :emptyList), :newRequest),
@@ -397,7 +420,7 @@ exports.handler = async (event) => {
       // Update request with final queue position (atomic update)
       await dynamodb
         .update({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           Key: { requestId },
           UpdateExpression: 'SET queuePosition = :position, updatedAt = :timestamp',
           ExpressionAttributeValues: {
@@ -418,7 +441,7 @@ exports.handler = async (event) => {
       try {
         await dynamodb
           .delete({
-            TableName: 'beatmatchme-requests',
+            TableName: REQUESTS_TABLE,
             Key: { requestId },
           })
           .promise();
@@ -432,7 +455,7 @@ exports.handler = async (event) => {
     // Update event stats atomically (safe for concurrent updates)
     await dynamodb
       .update({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId: input.eventId },
         UpdateExpression: 'ADD totalRequests :inc SET updatedAt = :timestamp',
         ExpressionAttributeValues: {

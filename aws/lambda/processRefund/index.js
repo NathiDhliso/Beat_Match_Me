@@ -10,6 +10,11 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const secretsManager = new AWS.SecretsManager();
 const sns = new AWS.SNS();
 
+// Environment configuration - allows override for testing
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+const TRANSACTIONS_TABLE = process.env.TRANSACTIONS_TABLE || 'beatmatchme-transactions';
+const FAILED_REFUNDS_TABLE = process.env.FAILED_REFUNDS_TABLE || 'beatmatchme-failed-refunds';
+
 // Get Yoco API key from Secrets Manager
 async function getYocoApiKey() {
   const secret = await secretsManager
@@ -66,7 +71,7 @@ exports.handler = async (event) => {
       // Get original transaction
       const requestResult = await dynamodb
         .get({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           Key: { requestId },
         })
         .promise();
@@ -81,7 +86,7 @@ exports.handler = async (event) => {
       // Get transaction details
       const transactionResult = await dynamodb
         .get({
-          TableName: 'beatmatchme-transactions',
+          TableName: TRANSACTIONS_TABLE,
           Key: { transactionId },
         })
         .promise();
@@ -135,7 +140,7 @@ exports.handler = async (event) => {
 
       await dynamodb
         .put({
-          TableName: 'beatmatchme-transactions',
+          TableName: TRANSACTIONS_TABLE,
           Item: refundTransaction,
         })
         .promise();
@@ -143,7 +148,7 @@ exports.handler = async (event) => {
       // Update original transaction status
       await dynamodb
         .update({
-          TableName: 'beatmatchme-transactions',
+          TableName: TRANSACTIONS_TABLE,
           Key: { transactionId },
           UpdateExpression: 'SET #status = :status, refundedAt = :refundedAt',
           ExpressionAttributeNames: {
@@ -159,7 +164,7 @@ exports.handler = async (event) => {
       // Update request status
       await dynamodb
         .update({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           Key: { requestId },
           UpdateExpression: 'SET #status = :status, vetoedAt = :vetoedAt, vetoReason = :reason',
           ExpressionAttributeNames: {
@@ -204,7 +209,7 @@ exports.handler = async (event) => {
         // Log failed refund for manual processing
         await dynamodb
           .put({
-            TableName: 'beatmatchme-failed-refunds',
+            TableName: FAILED_REFUNDS_TABLE,
             Item: {
               requestId,
               attempts: retryCount,

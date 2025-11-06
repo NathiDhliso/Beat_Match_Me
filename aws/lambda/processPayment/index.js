@@ -8,7 +8,23 @@ const AWS = require('aws-sdk');
 const https = require('https');
 const crypto = require('crypto');
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// OPT-1: DynamoDB connection pooling with optimized configuration
+const dynamodb = new AWS.DynamoDB.DocumentClient({
+  maxRetries: 3,
+  httpOptions: {
+    timeout: 5000,           // 5 second timeout
+    connectTimeout: 3000,    // 3 second connection timeout
+    agent: new https.Agent({
+      keepAlive: true,       // CRITICAL: Reuse connections
+      maxSockets: 50,        // Max concurrent connections
+      keepAliveMsecs: 60000, // Keep connections alive for 60s
+    }),
+  },
+  // Enable exponential backoff for retries
+  retryDelayOptions: {
+    base: 100, // Start with 100ms delay
+  },
+});
 
 // Commission configuration
 const PLATFORM_COMMISSION_RATE = 0.15; // 15%
