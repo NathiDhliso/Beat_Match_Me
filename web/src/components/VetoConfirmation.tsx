@@ -5,6 +5,8 @@
 
 import React, { useState } from 'react';
 import { X, AlertCircle, DollarSign, Music, Info } from 'lucide-react';
+import type { UserTier } from '../theme/tokens';
+import { getTierColor } from '../theme/tokens';
 
 export interface VetoRequest {
   requestId: string;
@@ -14,7 +16,7 @@ export interface VetoRequest {
   duration?: string;
   genre?: string;
   userName: string;
-  userTier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+  userTier: UserTier;
   price: number;
   dedication?: string;
 }
@@ -33,13 +35,6 @@ const QUICK_REASONS = [
   "Inappropriate request",
 ];
 
-const TIER_COLORS = {
-  BRONZE: 'bg-amber-700 text-amber-100',
-  SILVER: 'bg-gray-400 text-gray-900',
-  GOLD: 'bg-yellow-400 text-yellow-900',
-  PLATINUM: 'bg-slate-300 text-slate-900',
-};
-
 export const VetoConfirmation: React.FC<VetoConfirmationProps> = ({
   request,
   onConfirm,
@@ -49,6 +44,9 @@ export const VetoConfirmation: React.FC<VetoConfirmationProps> = ({
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
   const [showWarning, setShowWarning] = useState(false);
+  
+  // Use centralized tier color system
+  const tierColor = getTierColor(request.userTier);
 
   const handleQuickSelect = (reason: string) => {
     setSelectedReason(reason);
@@ -134,7 +132,7 @@ export const VetoConfirmation: React.FC<VetoConfirmationProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 text-sm">Requested by:</span>
                 <span className="text-white font-medium">{request.userName}</span>
-                <span className={`text-xs px-2 py-1 rounded-full font-bold ${TIER_COLORS[request.userTier]}`}>
+                <span className={`text-xs px-2 py-1 rounded-full font-bold ${tierColor.tailwind}`}>
                   {request.userTier}
                 </span>
               </div>

@@ -1,0 +1,717 @@
+{
+  "timestamp": "2025-11-06T13:14:34.586Z",
+  "summary": {
+    "totalFiles": 45,
+    "filesChecked": 8,
+    "totalIssues": 18,
+    "criticalIssues": 0,
+    "warnings": 18,
+    "passed": 4
+  },
+  "ariaLabels": {
+    "issues": [],
+    "findings": [
+      {
+        "file": "components\\AcceptRequestPanel.tsx",
+        "ariaLabels": 1,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 1,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "components\\AudienceInterface.tsx",
+        "ariaLabels": 2,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 0,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "components\\DJLibrary.tsx",
+        "ariaLabels": 1,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 0,
+        "unlabeledElements": 8
+      },
+      {
+        "file": "components\\MarkPlayingPanel.tsx",
+        "ariaLabels": 1,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 1,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "components\\RefundConfirmation.tsx",
+        "ariaLabels": 1,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 1,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "components\\UniversalHelp.tsx",
+        "ariaLabels": 3,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 0,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "components\\VetoConfirmation.tsx",
+        "ariaLabels": 1,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 1,
+        "unlabeledElements": 0
+      },
+      {
+        "file": "pages\\UserPortalInnovative.tsx",
+        "ariaLabels": 4,
+        "ariaLive": 0,
+        "ariaHidden": 0,
+        "labeledElements": 1,
+        "unlabeledElements": 0
+      }
+    ]
+  },
+  "semanticHTML": {
+    "issues": [
+      {
+        "file": "components\\AcceptRequestPanel.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\DJLibrary.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\EventCreator.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\EventPlaylistManager.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\MarkPlayingPanel.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\Notifications.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\PaymentAccess.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\PayoutDashboard.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\QRCodeDisplay.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\QueueTracker.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\RefundConfirmation.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\RequestConfirmation.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\Settings.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\SongSearchModal.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\UniversalHelp.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "components\\VetoConfirmation.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "pages\\DJPortalOrbital.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      },
+      {
+        "file": "pages\\UserPortalInnovative.tsx",
+        "severity": "warning",
+        "message": "Has <h2> but no <h1> (heading hierarchy issue)"
+      }
+    ],
+    "findings": [
+      {
+        "file": "components\\AcceptRequestPanel.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\AnalyticsCard.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\AudienceInterface.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 3,
+        "h3": 1,
+        "total": 5
+      },
+      {
+        "file": "components\\DarkModeTheme.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\DJLibrary.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 2,
+        "h3": 3,
+        "total": 5
+      },
+      {
+        "file": "components\\EmptyState.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\ErrorDisplay.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 0,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\EventCreator.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\EventPlaylistManager.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 4,
+        "total": 5
+      },
+      {
+        "file": "components\\MarkPlayingPanel.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 2,
+        "h3": 1,
+        "total": 3
+      },
+      {
+        "file": "components\\Notifications.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\NowPlayingCard.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\PaymentAccess.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 4,
+        "total": 5
+      },
+      {
+        "file": "components\\PaymentHistory.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\PaymentPage.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 1,
+        "h3": 0,
+        "total": 2
+      },
+      {
+        "file": "components\\PayoutDashboard.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 3,
+        "total": 4
+      },
+      {
+        "file": "components\\ProfileManagement.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 2,
+        "h2": 2,
+        "h3": 2,
+        "total": 6
+      },
+      {
+        "file": "components\\QRCodeDisplay.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\QueueTracker.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\RefundConfirmation.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\RequestCapManager.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 2,
+        "total": 2
+      },
+      {
+        "file": "components\\RequestConfirmation.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\Settings.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 3,
+        "total": 4
+      },
+      {
+        "file": "components\\SongSearchModal.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\SpotifyPlaylistImport.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "components\\StatusModals.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 2,
+        "total": 2
+      },
+      {
+        "file": "components\\UniversalHelp.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\VetoConfirmation.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 1,
+        "h3": 1,
+        "total": 2
+      },
+      {
+        "file": "components\\YocoCardInput.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 0,
+        "h3": 1,
+        "total": 1
+      },
+      {
+        "file": "pages\\DJPortalOrbital.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 3,
+        "h3": 6,
+        "total": 9
+      },
+      {
+        "file": "pages\\ForgotPassword.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 1,
+        "h3": 0,
+        "total": 2
+      },
+      {
+        "file": "pages\\Login.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 0,
+        "h3": 0,
+        "total": 1
+      },
+      {
+        "file": "pages\\UserPortalInnovative.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 0,
+        "h2": 2,
+        "h3": 0,
+        "total": 2
+      },
+      {
+        "file": "pages\\YocoTestPage.tsx",
+        "header": 0,
+        "nav": 0,
+        "main": 0,
+        "article": 0,
+        "section": 0,
+        "footer": 0,
+        "h1": 1,
+        "h2": 1,
+        "h3": 4,
+        "total": 6
+      }
+    ]
+  },
+  "focusManagement": {
+    "issues": [],
+    "findings": [
+      {
+        "file": "components\\DJLibrary.tsx",
+        "tabIndex": 0,
+        "autoFocus": 1,
+        "focusRef": 0,
+        "focusMethod": 0,
+        "focusTrap": 0,
+        "skipLink": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\EventPlaylistManager.tsx",
+        "tabIndex": 0,
+        "autoFocus": 1,
+        "focusRef": 0,
+        "focusMethod": 0,
+        "focusTrap": 0,
+        "skipLink": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\SongSearchModal.tsx",
+        "tabIndex": 0,
+        "autoFocus": 1,
+        "focusRef": 0,
+        "focusMethod": 0,
+        "focusTrap": 0,
+        "skipLink": 0,
+        "total": 1
+      }
+    ]
+  },
+  "keyboardNavigation": {
+    "issues": [],
+    "findings": [
+      {
+        "file": "components\\AudienceInterface.tsx",
+        "onKeyDown": 0,
+        "onKeyUp": 0,
+        "onKeyPress": 0,
+        "enterKey": 0,
+        "escapeKey": 0,
+        "arrowKeys": 2,
+        "spaceKey": 0,
+        "total": 2
+      },
+      {
+        "file": "components\\DJLibrary.tsx",
+        "onKeyDown": 1,
+        "onKeyUp": 0,
+        "onKeyPress": 0,
+        "enterKey": 1,
+        "escapeKey": 0,
+        "arrowKeys": 0,
+        "spaceKey": 0,
+        "total": 2
+      },
+      {
+        "file": "components\\SongSearchModal.tsx",
+        "onKeyDown": 0,
+        "onKeyUp": 0,
+        "onKeyPress": 1,
+        "enterKey": 1,
+        "escapeKey": 0,
+        "arrowKeys": 0,
+        "spaceKey": 0,
+        "total": 2
+      },
+      {
+        "file": "components\\QRCodeDisplay.tsx",
+        "onKeyDown": 0,
+        "onKeyUp": 0,
+        "onKeyPress": 0,
+        "enterKey": 0,
+        "escapeKey": 1,
+        "arrowKeys": 0,
+        "spaceKey": 0,
+        "total": 1
+      },
+      {
+        "file": "components\\Settings.tsx",
+        "onKeyDown": 0,
+        "onKeyUp": 0,
+        "onKeyPress": 0,
+        "enterKey": 0,
+        "escapeKey": 1,
+        "arrowKeys": 0,
+        "spaceKey": 0,
+        "total": 1
+      }
+    ]
+  },
+  "screenReaderText": {
+    "issues": [],
+    "findings": []
+  }
+}

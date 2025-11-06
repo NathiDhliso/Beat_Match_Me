@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-11-06T10:57:18.707Z",
+  "buildTime": "12.06",
+  "bundleSize": {
+    "total": 0,
+    "formatted": "0 Bytes",
+    "files": [],
+    "withinTarget": true
+  },
+  "issues": [
+    "Duplicate dependencies found. Run `npm dedupe`.",
+    "Consider adding service worker for offline support"
+  ]
+}

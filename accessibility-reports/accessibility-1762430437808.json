@@ -1,0 +1,165 @@
+{
+  "timestamp": "2025-11-06T12:00:37.807Z",
+  "summary": {
+    "totalIssues": 1,
+    "contrastIssues": 0,
+    "ariaIssues": 0,
+    "semanticIssues": 1,
+    "keyboardIssues": 0
+  },
+  "contrast": {
+    "issues": [],
+    "results": []
+  },
+  "aria": {
+    "issues": [],
+    "findings": {
+      "missing": [
+        {
+          "file": "components\\QueueTracker.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        },
+        {
+          "file": "components\\SocialLoginButtons.tsx",
+          "type": "SVG icon",
+          "recommendation": "Add aria-hidden=\"true\" for decorative icons, or aria-label for meaningful icons"
+        }
+      ],
+      "present": []
+    }
+  },
+  "semantic": {
+    "issues": [
+      {
+        "file": "App.tsx",
+        "severity": "warning",
+        "message": "No heading elements found. Consider adding headings for structure."
+      }
+    ],
+    "findings": {
+      "headingStructure": [],
+      "landmarks": [
+        {
+          "file": "App.tsx",
+          "landmarks": {
+            "nav": false,
+            "main": true,
+            "header": true,
+            "footer": false
+          }
+        }
+      ]
+    }
+  },
+  "keyboard": {
+    "issues": [],
+    "findings": [
+      {
+        "file": "AcceptRequestPanel.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "AudienceInterface.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "DarkModeTheme.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "DJLibrary.tsx",
+        "hasKeyboardHandlers": true,
+        "hasInteractive": true
+      },
+      {
+        "file": "EmptyState.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "ErrorDisplay.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "EventCreator.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "EventPlaylistManager.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "LiveModeIndicators.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "MarkPlayingPanel.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "Notifications.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "NowPlayingCard.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "OrbitalInterface.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "PaymentAccess.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "PaymentHistory.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      },
+      {
+        "file": "PaymentPage.tsx",
+        "hasKeyboardHandlers": false,
+        "hasInteractive": true
+      }
+    ]
+  }
+}

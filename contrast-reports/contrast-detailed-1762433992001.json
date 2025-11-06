@@ -1,0 +1,183 @@
+{
+  "timestamp": "2025-11-06T12:59:52.001Z",
+  "summary": {
+    "totalTests": 9,
+    "totalIssues": 3,
+    "passing": 6,
+    "passRate": "66.7%"
+  },
+  "wcagStandards": {
+    "normalText": 4.5,
+    "largeText": 3,
+    "uiComponents": 3
+  },
+  "backgrounds": {
+    "darkBackground": "#111827",
+    "cardBackground": "#1F2937",
+    "black": "#000000",
+    "white": "#FFFFFF",
+    "inputBackground": "#374151"
+  },
+  "themes": [
+    {
+      "id": "beatByMe",
+      "name": "BeatByMe Original",
+      "colors": {
+        "primary": "#8B5CF6",
+        "primaryDark": "#7C3AED",
+        "primaryLight": "#A78BFA",
+        "secondary": "#EC4899",
+        "secondaryDark": "#DB2777",
+        "secondaryLight": "#F472B6",
+        "accent": "#A78BFA",
+        "accentMuted": "#6B7280"
+      }
+    },
+    {
+      "id": "gold",
+      "name": "Gold Luxury",
+      "colors": {
+        "primary": "#D4AF37",
+        "primaryDark": "#B8860B",
+        "primaryLight": "#FFD700",
+        "secondary": "#F59E0B",
+        "secondaryDark": "#D97706",
+        "secondaryLight": "#FBBF24",
+        "accent": "#FBBF24",
+        "accentMuted": "#78350F"
+      }
+    },
+    {
+      "id": "platinum",
+      "name": "Platinum Elite",
+      "colors": {
+        "primary": "#E5E4E2",
+        "primaryDark": "#C0C0C0",
+        "primaryLight": "#F5F5F5",
+        "secondary": "#94A3B8",
+        "secondaryDark": "#64748B",
+        "secondaryLight": "#CBD5E1",
+        "accent": "#CBD5E1",
+        "accentMuted": "#475569"
+      }
+    }
+  ],
+  "results": [
+    {
+      "theme": "BeatByMe Original",
+      "element": "Primary on darkBackground",
+      "foreground": "#8B5CF6",
+      "background": "#111827",
+      "ratio": "4.19",
+      "normalPass": false,
+      "largePass": true
+    },
+    {
+      "theme": "BeatByMe Original",
+      "element": "Primary on cardBackground",
+      "foreground": "#8B5CF6",
+      "background": "#1F2937",
+      "ratio": "3.47",
+      "normalPass": false,
+      "largePass": true
+    },
+    {
+      "theme": "BeatByMe Original",
+      "element": "Primary on black",
+      "foreground": "#8B5CF6",
+      "background": "#000000",
+      "ratio": "4.96",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Gold Luxury",
+      "element": "Primary on darkBackground",
+      "foreground": "#D4AF37",
+      "background": "#111827",
+      "ratio": "8.44",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Gold Luxury",
+      "element": "Primary on cardBackground",
+      "foreground": "#D4AF37",
+      "background": "#1F2937",
+      "ratio": "6.98",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Gold Luxury",
+      "element": "Primary on black",
+      "foreground": "#D4AF37",
+      "background": "#000000",
+      "ratio": "9.99",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Platinum Elite",
+      "element": "Primary on darkBackground",
+      "foreground": "#E5E4E2",
+      "background": "#111827",
+      "ratio": "13.96",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Platinum Elite",
+      "element": "Primary on cardBackground",
+      "foreground": "#E5E4E2",
+      "background": "#1F2937",
+      "ratio": "11.55",
+      "normalPass": true,
+      "largePass": true
+    },
+    {
+      "theme": "Platinum Elite",
+      "element": "Primary on black",
+      "foreground": "#E5E4E2",
+      "background": "#000000",
+      "ratio": "16.53",
+      "normalPass": true,
+      "largePass": true
+    }
+  ],
+  "issues": [
+    {
+      "theme": "BeatByMe Original",
+      "element": "Primary color on darkBackground",
+      "foreground": "#8B5CF6",
+      "background": "#111827",
+      "ratio": "4.19",
+      "required": "4.5:1",
+      "actual": "LARGE TEXT ONLY"
+    },
+    {
+      "theme": "BeatByMe Original",
+      "element": "Primary color on cardBackground",
+      "foreground": "#8B5CF6",
+      "background": "#1F2937",
+      "ratio": "3.47",
+      "required": "4.5:1",
+      "actual": "LARGE TEXT ONLY"
+    },
+    {
+      "theme": "BeatByMe Original",
+      "element": "Secondary color on cardBackground",
+      "foreground": "#EC4899",
+      "background": "#1F2937",
+      "ratio": "4.16",
+      "required": "4.5:1",
+      "actual": "LARGE TEXT ONLY"
+    }
+  ],
+  "recommendations": [
+    "Use large text (18px+ or 14px+ bold) for colors that only pass at 3:1",
+    "Consider using darker variants (primaryDark, secondaryDark) for better contrast",
+    "Test actual implementation with browser DevTools contrast checker",
+    "Ensure focus indicators have 3:1 contrast minimum"
+  ]
+}

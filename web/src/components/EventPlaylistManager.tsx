@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Music, Copy, Save, Search, Check, X, Sparkles, Calendar } from 'lucide-react';
+import { List } from 'react-window';
 
 interface Track {
   id: string;
@@ -378,42 +379,57 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
                 </div>
               </div>
 
-              {/* Track List */}
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {filteredTracks.map(track => (
-                  <button
-                    key={track.id}
-                    onClick={() => toggleTrack(track.id)}
-                    className={`w-full p-3 rounded-lg border transition-all text-left ${
-                      selectedTracks.has(track.id)
-                        ? 'bg-purple-600/30 border-purple-500'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
+              {/* Track List - Phase 8: Virtual scrolling for performance */}
+              <div className="h-96 overflow-hidden">
+                {filteredTracks.length > 0 ? (
+                  <List
+                    height={384} // 96 * 4 = 384px (max-h-96)
+                    itemCount={filteredTracks.length}
+                    itemSize={76} // Approximate height of each track item
+                    width="100%"
+                    itemData={{ tracks: filteredTracks, selectedTracks, toggleTrack }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                        selectedTracks.has(track.id)
-                          ? 'bg-purple-600 border-purple-600'
-                          : 'border-gray-400'
-                      }`}>
-                        {selectedTracks.has(track.id) && (
-                          <Check className="w-4 h-4 text-white" />
-                        )}
-                      </div>
+                    {/* @ts-expect-error - react-window v2 children render function type mismatch */}
+                    {({ data, index, style }: { data: any; index: number; style: React.CSSProperties }) => {
+                      const track = data.tracks[index];
+                      const isSelected = data.selectedTracks.has(track.id);
                       
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-white font-medium truncate">{track.title}</h4>
-                        <p className="text-gray-400 text-sm truncate">{track.artist}</p>
-                      </div>
-                      
-                      <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full flex-shrink-0">
-                        {track.genre}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-
-                {filteredTracks.length === 0 && (
+                      return (
+                        <div style={style} className="pb-2">
+                          <button
+                            onClick={() => data.toggleTrack(track.id)}
+                            className={`w-full p-3 rounded-lg border transition-all text-left ${
+                              isSelected
+                                ? 'bg-purple-600/30 border-purple-500'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                isSelected
+                                  ? 'bg-purple-600 border-purple-600'
+                                  : 'border-gray-400'
+                              }`}>
+                                {isSelected && (
+                                  <Check className="w-4 h-4 text-white" />
+                                )}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-white font-medium truncate">{track.title}</h4>
+                                <p className="text-gray-400 text-sm truncate">{track.artist}</p>
+                              </div>
+                              
+                              <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full flex-shrink-0">
+                                {track.genre}
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+                      );
+                    }}
+                  </List>
+                ) : (
                   <div className="text-center py-8 text-gray-400">
                     <Music className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>No songs match your filters</p>

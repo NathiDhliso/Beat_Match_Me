@@ -1,11 +1,15 @@
 /**
  * Settings Component
  * User preferences and configuration
+ * Phase 3: CSS Modularization - Using CSS Modules
  */
 
 import React, { useState, useEffect } from 'react';
 import { Bell, HelpCircle, X, ChevronRight } from 'lucide-react';
 import { requestNotificationPermission } from '../services/notifications';
+import { useTheme } from '../context/ThemeContext';
+import ThemeSwitcher from './ThemeSwitcher';
+import styles from './Settings.module.css';
 
 interface SettingsProps {
   onClose: () => void;
@@ -15,6 +19,14 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
+  const { currentTheme, isDark, toggleDarkMode } = useTheme();
+
+  // Phase 7: Swipe gesture state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Minimum swipe distance (in px) to trigger close
+  const minSwipeDistance = 50;
 
   // Check current notification permission status
   useEffect(() => {
@@ -22,6 +34,39 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
       setNotificationsEnabled(Notification.permission === 'granted');
     }
   }, []);
+
+  // Phase 4: Add ESC key listener for dismissing the panel
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [onClose]);
+
+  // Phase 7: Swipe gesture handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isRightSwipe = distance < -minSwipeDistance; // Swipe right to close
+    
+    if (isRightSwipe) {
+      onClose();
+    }
+  };
 
   const handleToggleNotifications = async () => {
     if (notificationsEnabled) {
@@ -51,32 +96,69 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 w-full sm:max-w-md sm:rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">Settings</h2>
+    <div 
+      className={styles.overlay}
+      onClick={onClose}
+    >
+      <div 
+        className={styles.panel}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Header - Now theme-aware! */}
+        <div 
+          className={styles.header}
+          style={{ background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})` }}
+        >
+          <h2 className={styles.headerTitle}>Settings</h2>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+            className={styles.closeButton}
           >
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
 
         {/* Settings List */}
-        <div className="p-6 space-y-4">
+        <div className={styles.content}>
+          
+          {/* Theme Switcher Section */}
+          <div className={styles.settingCard}>
+            <ThemeSwitcher />
+          </div>
+
+          {/* Dark/Light Mode Toggle */}
+          <div className={styles.settingCard}>
+            <div className={styles.settingRow}>
+              <div>
+                <h3 className={styles.settingTitle}>Dark Mode</h3>
+                <p className={styles.settingDescription}>Switch between dark and light interface</p>
+              </div>
+              <button
+                onClick={toggleDarkMode}
+                className={`${styles.darkModeToggle} ${isDark ? '' : styles.darkModeToggleOff}`}
+                style={isDark ? { background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})` } : {}}
+              >
+                <span className={`${styles.darkModeKnob} ${isDark ? styles.darkModeKnobOn : ''}`} />
+              </button>
+            </div>
+          </div>
           
           {/* Notifications Toggle */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 flex-1">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bell className="w-5 h-5 text-purple-400" />
+          <div className={styles.settingCard}>
+            <div className={styles.settingRowStart}>
+              <div className={styles.settingInfo}>
+                <div 
+                  className={styles.settingIcon}
+                  style={{ backgroundColor: `${currentTheme.primary}33` }}
+                >
+                  <Bell className="w-5 h-5" style={{ color: currentTheme.accent }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold mb-1">Push Notifications</h3>
-                  <p className="text-gray-400 text-sm">
+                <div className={styles.settingText}>
+                  <h3 className={styles.settingTitle}>Push Notifications</h3>
+                  <p className={styles.settingDescription}>
                     {mode === 'fan' 
                       ? 'Get notified when your song is coming up in the queue'
                       : 'Get notified about new requests and queue updates'}
@@ -84,55 +166,53 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
                 </div>
               </div>
               
-              {/* Toggle Switch */}
+              {/* Toggle Switch - Theme-aware */}
               <button
                 onClick={handleToggleNotifications}
                 disabled={isRequesting}
-                className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                  notificationsEnabled ? 'bg-purple-600' : 'bg-gray-700'
-                } ${isRequesting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`${styles.toggleSwitch} ${notificationsEnabled ? '' : styles.toggleSwitchOff}`}
+                style={notificationsEnabled ? {
+                  backgroundColor: currentTheme.primary,
+                  ['--theme-primary' as string]: currentTheme.primary,
+                } : {}}
               >
-                <span
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    notificationsEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
+                <span className={`${styles.toggleKnob} ${notificationsEnabled ? styles.toggleKnobOn : ''}`} />
               </button>
             </div>
             
             {notificationsEnabled && (
-              <div className="mt-3 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <p className="text-green-400 text-xs">✓ You'll be notified about important updates</p>
+              <div className={styles.successBadge}>
+                <p className={styles.successText}>✓ You'll be notified about important updates</p>
               </div>
             )}
           </div>
 
           {/* Help & Support */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+          <div className={styles.settingCard}>
             <button 
               onClick={() => {
                 // Open help in new window or show help modal
                 window.open('mailto:support@beatmatchme.com', '_blank');
               }}
-              className="flex items-center justify-between w-full group"
+              className={styles.helpButton}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+              <div className={styles.settingInfo}>
+                <div className={styles.settingIcon} style={{ backgroundColor: 'rgb(59 130 246 / 0.2)' }}>
                   <HelpCircle className="w-5 h-5 text-blue-400" />
                 </div>
-                <div className="text-left">
-                  <h3 className="text-white font-semibold">Help & Support</h3>
-                  <p className="text-gray-400 text-sm">Get help or contact support</p>
+                <div className={styles.settingText}>
+                  <h3 className={styles.settingTitle}>Help & Support</h3>
+                  <p className={styles.settingDescription}>Get help or contact support</p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+              <ChevronRight className={styles.chevronIcon} />
             </button>
           </div>
 
           {/* App Version */}
-          <div className="text-center pt-4 border-t border-white/10">
-            <p className="text-gray-500 text-xs">BeatMatchMe v1.0.0</p>
-            <p className="text-gray-600 text-xs mt-1">© 2025 All rights reserved</p>
+          <div className={styles.footer}>
+            <p className={styles.versionText}>BeatMatchMe v1.0.0</p>
+            <p className={styles.copyrightText}>© 2025 All rights reserved</p>
           </div>
         </div>
 
@@ -140,7 +220,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
         <div className="p-6 pt-0">
           <button
             onClick={onClose}
-            className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all"
+            className={styles.actionButton}
           >
             Close
           </button>

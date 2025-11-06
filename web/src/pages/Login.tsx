@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
 import { Check, Lock, Mail, Sparkles } from 'lucide-react';
+import { useTheme, useThemeClasses } from '../context/ThemeContext';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, signup, confirmSignup, error } = useAuth();
+  const { currentTheme } = useTheme();
+  const themeClasses = useThemeClasses();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -84,17 +87,31 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+      }}
+    >
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+        <div 
+          className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl animate-pulse-slow"
+          style={{ backgroundColor: `${currentTheme.secondary}1A` }}
+        ></div>
+        <div 
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow" 
+          style={{ 
+            backgroundColor: `${currentTheme.primary}1A`,
+            animationDelay: '1s'
+          }}
+        ></div>
       </div>
       
       <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative z-10">
         {/* Logo & Badge Only */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-3">
+          <div className={`inline-flex items-center justify-center w-20 h-20 ${themeClasses.gradientPrimary} rounded-full mb-3`}>
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">BeatMatchMe</h1>
@@ -128,7 +145,10 @@ export const Login: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                style={{
+                  '--tw-ring-color': currentTheme.primary,
+                } as React.CSSProperties}
                 placeholder="Email"
                 required
               />
@@ -141,7 +161,10 @@ export const Login: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                style={{
+                  '--tw-ring-color': currentTheme.primary,
+                } as React.CSSProperties}
                 placeholder="Password"
                 required
               />
@@ -151,7 +174,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
+              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4`}
             >
               {loading ? '...' : 'Login'}
             </button>
@@ -191,7 +214,7 @@ export const Login: React.FC = () => {
                 setSelectedRole('PERFORMER');
                 setMode('signup');
               }}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl"
+              className={`w-full ${themeClasses.gradientPrimary} hover:opacity-90 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl`}
             >
               <div className="text-8xl mb-2">🎧</div>
               <div className="text-3xl font-bold">DJ</div>
@@ -232,7 +255,10 @@ export const Login: React.FC = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+              style={{
+                '--tw-ring-color': currentTheme.primary,
+              } as React.CSSProperties}
               placeholder="Full Name"
               required
             />
@@ -244,7 +270,10 @@ export const Login: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                style={{
+                  '--tw-ring-color': currentTheme.primary,
+                } as React.CSSProperties}
                 placeholder="Email"
                 required
               />
@@ -258,7 +287,10 @@ export const Login: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    '--tw-ring-color': currentTheme.primary,
+                  } as React.CSSProperties}
                   placeholder="Password (8+ chars)"
                   required
                   minLength={8}
@@ -284,7 +316,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
+              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4`}
             >
               {loading ? '...' : 'Sign Up'}
             </button>
@@ -312,7 +344,10 @@ export const Login: React.FC = () => {
               type="text"
               value={confirmCode}
               onChange={(e) => setConfirmCode(e.target.value)}
-              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white text-center text-2xl tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+              className="w-full px-4 py-3.5 bg-white/5 rounded-xl text-white text-center text-2xl tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+              style={{
+                '--tw-ring-color': currentTheme.primary,
+              } as React.CSSProperties}
               placeholder="· · · · · ·"
               required
               maxLength={6}
@@ -322,7 +357,7 @@ export const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4"
+              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4`}
             >
               {loading ? '...' : 'Confirm'}
             </button>

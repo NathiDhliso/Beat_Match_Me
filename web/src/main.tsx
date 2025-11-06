@@ -7,15 +7,18 @@ import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { BackendProvider } from './context/BackendContext'
 import { NotificationProvider } from './context/NotificationContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <BackendProvider>
-        <NotificationProvider>
-          <App />
-        </NotificationProvider>
-      </BackendProvider>
+      <ThemeProvider defaultThemeMode="beatbyme" defaultDarkMode={true}>
+        <BackendProvider>
+          <NotificationProvider>
+            <App />
+          </NotificationProvider>
+        </BackendProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

@@ -1,10 +1,15 @@
 /**
  * Accept Request Panel - DJ Side (Feature 10)
  * Expanded details panel when DJ taps a request to accept or skip
+ * Phase 3: CSS Modularization - Using CSS Modules
+ * Phase 8: Performance - Lazy loaded images
  */
 
 import React from 'react';
 import { X, CheckCircle, Music, Clock, Users, Heart, SkipForward } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import styles from './AcceptRequestPanel.module.css';
 
 export interface RequestDetails {
   requestId: string;
@@ -37,11 +42,15 @@ interface AcceptRequestPanelProps {
   isProcessing?: boolean;
 }
 
-const TIER_COLORS = {
-  BRONZE: 'from-amber-700 to-amber-800',
-  SILVER: 'from-gray-400 to-gray-500',
-  GOLD: 'from-yellow-400 to-yellow-500',
-  PLATINUM: 'from-slate-300 to-slate-400',
+// Helper function to get tier gradient colors
+const getTierGradient = (tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'): string => {
+  const gradients = {
+    BRONZE: 'rgb(180 83 9), rgb(146 64 14)', // amber-700 to amber-800
+    SILVER: 'rgb(156 163 175), rgb(107 114 128)', // gray-400 to gray-500
+    GOLD: 'rgb(250 204 21), rgb(234 179 8)', // yellow-400 to yellow-500
+    PLATINUM: 'rgb(203 213 225), rgb(148 163 184)', // slate-300 to slate-400
+  };
+  return gradients[tier];
 };
 
 const TIER_BADGES = {
@@ -62,18 +71,21 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
   const waitTimeStr = waitTime < 1 ? 'Just now' : `${waitTime} min${waitTime > 1 ? 's' : ''} ago`;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center z-50 animate-slide-up">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-2xl border-t sm:border border-purple-500/30 max-h-[90vh] overflow-y-auto">
+    <div className={styles.overlay}>
+      <div className={styles.panel}>
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 p-6 flex items-center justify-between z-10">
-          <div>
-            <h2 className="text-2xl font-bold text-white">Ready to Accept?</h2>
-            <p className="text-purple-100 text-sm">Review request details</p>
+        <div 
+          className={styles.header}
+          style={{ background: 'linear-gradient(to right, rgb(147 51 234), rgb(236 72 153))' }}
+        >
+          <div className={styles.headerContent}>
+            <h2 className={styles.headerTitle}>Ready to Accept?</h2>
+            <p className={styles.headerSubtitle}>Review request details</p>
           </div>
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
+            className={styles.closeButton}
             aria-label="Close"
           >
             <X className="w-6 h-6 text-white" />
@@ -81,73 +93,79 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className={styles.content}>
           {/* Song Details */}
-          <div className="flex items-start gap-4">
+          <div className={styles.songSection}>
             {request.albumArt ? (
-              <img
+              <LazyLoadImage
                 src={request.albumArt}
                 alt={request.songTitle}
-                className="w-32 h-32 rounded-2xl object-cover shadow-2xl flex-shrink-0"
+                className={styles.albumArt}
+                effect="blur"
+                width={200}
+                height={200}
               />
             ) : (
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl flex-shrink-0">
+              <div className={styles.albumArtPlaceholder}>
                 <Music className="w-16 h-16 text-white" />
               </div>
             )}
 
-            <div className="flex-1 min-w-0">
-              <h3 className="text-2xl font-bold text-white mb-1">{request.songTitle}</h3>
-              <p className="text-xl text-gray-300 mb-2">{request.artistName}</p>
+            <div className={styles.songInfo}>
+              <h3 className={styles.songTitle}>{request.songTitle}</h3>
+              <p className={styles.artistName}>{request.artistName}</p>
               
               {request.albumName && (
-                <p className="text-sm text-gray-400 mb-2">{request.albumName}</p>
+                <p className={styles.albumName}>{request.albumName}</p>
               )}
 
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className={styles.metadata}>
                 {request.genre && (
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-sm font-medium rounded-full">
+                  <span className={styles.genreBadge}>
                     {request.genre}
                   </span>
                 )}
                 {request.duration && (
-                  <span className="flex items-center gap-1 text-gray-400 text-sm">
+                  <span className={styles.duration}>
                     <Clock className="w-4 h-4" />
                     {request.duration}
                   </span>
                 )}
                 {request.releaseYear && (
-                  <span className="text-gray-500 text-sm">{request.releaseYear}</span>
+                  <span className={styles.year}>{request.releaseYear}</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* User Information */}
-          <div className="bg-gray-800/50 rounded-2xl p-4">
-            <p className="text-gray-400 text-sm mb-3">Requested by:</p>
+          <div className={styles.userCard}>
+            <p className={styles.userLabel}>Requested by:</p>
             
-            <div className="flex items-center gap-3">
+            <div className={styles.userInfo}>
               {request.userPhoto ? (
                 <img
                   src={request.userPhoto}
                   alt={request.userName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className={styles.userPhoto}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
+                <div className={styles.userPhotoPlaceholder}>
                   {request.userName.charAt(0).toUpperCase()}
                 </div>
               )}
 
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-lg">{request.userName}</span>
-                  <span className={`px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r ${TIER_COLORS[request.userTier]} text-white`}>
+              <div className={styles.userDetails}>
+                <div className={styles.userNameRow}>
+                  <span className={styles.userName}>{request.userName}</span>
+                  <span 
+                    className={styles.tierBadge}
+                    style={{ background: `linear-gradient(to right, ${getTierGradient(request.userTier)})` }}
+                  >
                     {TIER_BADGES[request.userTier]} {request.userTier}
                   </span>
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className={styles.requestCountText}>
                   {request.requestCount === 1 ? 'First request' : `${request.requestCount}${request.requestCount === 2 ? 'nd' : request.requestCount === 3 ? 'rd' : 'th'} request`} at this event
                 </p>
               </div>
@@ -155,16 +173,16 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
           </div>
 
           {/* Financial Info */}
-          <div className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-yellow-400 font-bold text-lg">Price Paid:</span>
-              <span className="text-3xl font-bold text-yellow-400">R{request.price.toFixed(2)}</span>
+          <div className={styles.priceCard}>
+            <div className={styles.priceRow}>
+              <span className={styles.priceLabel}>Price Paid:</span>
+              <span className={styles.priceAmount}>R{request.price.toFixed(2)}</span>
             </div>
 
             {request.paymentMethod && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Payment method:</span>
-                <span className="text-white">
+              <div className={styles.paymentRow}>
+                <span className={styles.paymentLabel}>Payment method:</span>
+                <span className={styles.paymentValue}>
                   {request.paymentMethod} {request.paymentLast4 && `****${request.paymentLast4}`}
                 </span>
               </div>
@@ -173,25 +191,25 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
 
           {/* Request Type & Special Info */}
           {request.requestType === 'SPOTLIGHT' && (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">⭐</span>
+            <div className={styles.spotlightCard}>
+              <div className={styles.spotlightIcon}>
+                <span>⭐</span>
               </div>
               <div>
-                <p className="text-yellow-400 font-bold">Priority Request</p>
-                <p className="text-sm text-gray-400">User paid for spotlight slot</p>
+                <p className={styles.spotlightTitle}>Priority Request</p>
+                <p className={styles.spotlightDescription}>User paid for spotlight slot</p>
               </div>
             </div>
           )}
 
           {request.requestType === 'GROUP' && request.groupContributors && (
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <div className={styles.groupCard}>
+              <div className={styles.groupIcon}>
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <div className="flex-1">
-                <p className="text-blue-400 font-bold">Group Request</p>
-                <p className="text-sm text-gray-400">
+              <div className={styles.groupContent}>
+                <p className={styles.groupTitle}>Group Request</p>
+                <p className={styles.groupDescription}>
                   {request.groupContributors} {request.groupContributors === 1 ? 'person' : 'people'} contributed
                   {request.groupContributions && ` • R${request.groupContributions.toFixed(2)} each`}
                 </p>
@@ -201,38 +219,38 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
 
           {/* Dedication */}
           {request.dedication && (
-            <div className="bg-pink-500/10 border border-pink-500/30 rounded-2xl p-4">
-              <div className="flex items-start gap-2 mb-2">
+            <div className={styles.dedicationCard}>
+              <div className={styles.dedicationHeader}>
                 <Heart className="w-5 h-5 text-pink-400 mt-0.5 flex-shrink-0" />
-                <p className="text-pink-400 font-bold">Dedication:</p>
+                <p className={styles.dedicationLabel}>Dedication:</p>
               </div>
-              <p className="text-white italic pl-7">"{request.dedication}"</p>
+              <p className={styles.dedicationText}>"{request.dedication}"</p>
             </div>
           )}
 
           {/* Metadata */}
-          <div className="bg-gray-800/30 rounded-xl p-3 flex items-center justify-between text-sm">
-            <span className="text-gray-400">Submitted:</span>
-            <div className="flex items-center gap-2">
+          <div className={styles.metadataRow}>
+            <span className={styles.metadataLabel}>Submitted:</span>
+            <div className={styles.metadataValue}>
               <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-white font-medium">{waitTimeStr}</span>
+              <span className={styles.metadataTime}>{waitTimeStr}</span>
             </div>
           </div>
 
           {/* Action Hint */}
-          <div className="text-center space-y-2">
-            <p className="text-green-400 text-sm font-medium">↑ Swipe up to accept</p>
-            <p className="text-red-400 text-sm font-medium">↓ Swipe down to veto</p>
+          <div className={styles.actionHint}>
+            <p className={styles.hintAccept}>↑ Swipe up to accept</p>
+            <p className={styles.hintVeto}>↓ Swipe down to veto</p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-gray-900/90 backdrop-blur-lg border-t border-gray-700 p-4">
-          <div className="flex gap-3">
+        <div className={styles.footer}>
+          <div className={styles.actions}>
             <button
               onClick={onAccept}
               disabled={isProcessing}
-              className="flex-1 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              className={styles.acceptButton}
             >
               <CheckCircle className="w-6 h-6" />
               <span>Accept</span>
@@ -242,7 +260,7 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
               <button
                 onClick={onSkip}
                 disabled={isProcessing}
-                className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                className={styles.skipButton}
               >
                 <SkipForward className="w-5 h-5" />
                 <span>Skip</span>

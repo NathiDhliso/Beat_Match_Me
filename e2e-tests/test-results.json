@@ -1,0 +1,1225 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\playwright.config.ts",
+    "rootDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/Users/dhlisob/Downloads/BeatMatchMe-main/e2e-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "cd ../web && npm run dev",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "user-portal-working.spec.ts",
+      "file": "user-portal-working.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "User Portal - Authentication",
+          "file": "user-portal-working.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "User can login successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3444,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:32:19",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 19,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 30 |\u001b[39m     }\n \u001b[90m 31 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     expect(found)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ User Portal loaded successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 19,
+                            "line": 32
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 30 |\u001b[39m     }\n \u001b[90m 31 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     expect(found)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ User Portal loaded successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:32:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:48:47.042Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 19,
+                        "line": 32
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3731,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:32:19",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 19,
+                          "line": 32
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 30 |\u001b[39m     }\n \u001b[90m 31 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     expect(found)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ User Portal loaded successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 19,
+                            "line": 32
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 30 |\u001b[39m     }\n \u001b[90m 31 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     expect(found)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ User Portal loaded successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 35 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:32:19\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-06T12:48:51.862Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-c5d0e-User-can-login-successfully-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 19,
+                        "line": 32
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-5bb572aea9e470c842af",
+              "file": "user-portal-working.spec.ts",
+              "line": 10,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Event Discovery",
+          "file": "user-portal-working.spec.ts",
+          "line": 37,
+          "column": 6,
+          "specs": [
+            {
+              "title": "User can browse available events",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6384,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ No events section visible - may be no active events\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:48:57.202Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-58c0a5133ea1cba49d08",
+              "file": "user-portal-working.spec.ts",
+              "line": 43,
+              "column": 7
+            },
+            {
+              "title": "User can search for events",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5340,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Search input not found\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:03.777Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-b7fa5829ea7b3173d8cd",
+              "file": "user-portal-working.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "User can view event details",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6214,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ No events available to view\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:09.135Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-b1accfd1e0b7e704e3c0",
+              "file": "user-portal-working.spec.ts",
+              "line": 84,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Song Requests",
+          "file": "user-portal-working.spec.ts",
+          "line": 105,
+          "column": 6,
+          "specs": [
+            {
+              "title": "User can access song request interface",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5154,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:131:47",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 47,
+                          "line": 131
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 129 |\u001b[39m     }\n \u001b[90m 130 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     expect(hasRequestButton \u001b[33m||\u001b[39m hasSongSearch)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m\n \u001b[90m 134 |\u001b[39m   test(\u001b[32m'User can search for songs'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 47,
+                            "line": 131
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 129 |\u001b[39m     }\n \u001b[90m 130 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     expect(hasRequestButton \u001b[33m||\u001b[39m hasSongSearch)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m\n \u001b[90m 134 |\u001b[39m   test(\u001b[32m'User can search for songs'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:131:47\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:15.367Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 47,
+                        "line": 131
+                      }
+                    },
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5565,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:131:47",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 47,
+                          "line": 131
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 129 |\u001b[39m     }\n \u001b[90m 130 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     expect(hasRequestButton \u001b[33m||\u001b[39m hasSongSearch)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m\n \u001b[90m 134 |\u001b[39m   test(\u001b[32m'User can search for songs'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 47,
+                            "line": 131
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 129 |\u001b[39m     }\n \u001b[90m 130 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     expect(hasRequestButton \u001b[33m||\u001b[39m hasSongSearch)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 133 |\u001b[39m\n \u001b[90m 134 |\u001b[39m   test(\u001b[32m'User can search for songs'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:131:47\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-06T12:49:21.935Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-09abb-cess-song-request-interface-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 47,
+                        "line": 131
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-ce40c551234993f4219a",
+              "file": "user-portal-working.spec.ts",
+              "line": 111,
+              "column": 7
+            },
+            {
+              "title": "User can search for songs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5151,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Song search not accessible - may need to join event first\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:29.319Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-88a6d77c9b03e8e25a48",
+              "file": "user-portal-working.spec.ts",
+              "line": 134,
+              "column": 7
+            },
+            {
+              "title": "User can see song request pricing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5208,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Pricing not visible - may not be in request flow\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:34.654Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-008b1d30d9346dc4f363",
+              "file": "user-portal-working.spec.ts",
+              "line": 155,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Queue Tracker",
+          "file": "user-portal-working.spec.ts",
+          "line": 173,
+          "column": 6,
+          "specs": [
+            {
+              "title": "User can view request queue",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5228,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Queue not visible - no pending requests\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:39.882Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-a735b1ba3b595afc3cef",
+              "file": "user-portal-working.spec.ts",
+              "line": 179,
+              "column": 7
+            },
+            {
+              "title": "User can see wait time estimate",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5186,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Wait time not visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:45.127Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-408e7cc8f6f0acde3f10",
+              "file": "user-portal-working.spec.ts",
+              "line": 201,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Theme System",
+          "file": "user-portal-working.spec.ts",
+          "line": 216,
+          "column": 6,
+          "specs": [
+            {
+              "title": "User can access theme switcher",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4997,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "✅ Settings opened\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:50.329Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-9d254e281c224b6a6658",
+              "file": "user-portal-working.spec.ts",
+              "line": 222,
+              "column": 7
+            },
+            {
+              "title": "User can switch themes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4024,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:55.345Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-483896161647ec504eec",
+              "file": "user-portal-working.spec.ts",
+              "line": 246,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Mobile Experience",
+          "file": "user-portal-working.spec.ts",
+          "line": 274,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Mobile bottom navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4901,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Bottom navigation not visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:49:59.386Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-84d98a16725c04ce8da6",
+              "file": "user-portal-working.spec.ts",
+              "line": 282,
+              "column": 7
+            },
+            {
+              "title": "Touch targets are adequate",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5263,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:326:27",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 27,
+                          "line": 326
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 324 |\u001b[39m     \n \u001b[90m 325 |\u001b[39m     \u001b[90m// Most buttons should be large enough\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 326 |\u001b[39m     expect(tooSmallCount)\u001b[33m.\u001b[39mtoBeLessThan(totalChecked \u001b[33m*\u001b[39m \u001b[35m0.3\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Less than 30% should be small\u001b[39m\n \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 327 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 328 |\u001b[39m\n \u001b[90m 329 |\u001b[39m   test(\u001b[32m'Mobile layout is responsive'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 27,
+                            "line": 326
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\n\u001b[0m \u001b[90m 324 |\u001b[39m     \n \u001b[90m 325 |\u001b[39m     \u001b[90m// Most buttons should be large enough\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 326 |\u001b[39m     expect(tooSmallCount)\u001b[33m.\u001b[39mtoBeLessThan(totalChecked \u001b[33m*\u001b[39m \u001b[35m0.3\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Less than 30% should be small\u001b[39m\n \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 327 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 328 |\u001b[39m\n \u001b[90m 329 |\u001b[39m   test(\u001b[32m'Mobile layout is responsive'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:326:27\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "📏 Checked 9 buttons: 3 too small\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:50:04.305Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 27,
+                        "line": 326
+                      }
+                    },
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5665,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:326:27",
+                        "location": {
+                          "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                          "column": 27,
+                          "line": 326
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 324 |\u001b[39m     \n \u001b[90m 325 |\u001b[39m     \u001b[90m// Most buttons should be large enough\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 326 |\u001b[39m     expect(tooSmallCount)\u001b[33m.\u001b[39mtoBeLessThan(totalChecked \u001b[33m*\u001b[39m \u001b[35m0.3\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Less than 30% should be small\u001b[39m\n \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 327 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 328 |\u001b[39m\n \u001b[90m 329 |\u001b[39m   test(\u001b[32m'Mobile layout is responsive'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                            "column": 27,
+                            "line": 326
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m2.6999999999999997\u001b[39m\nReceived:   \u001b[31m3\u001b[39m\n\n\u001b[0m \u001b[90m 324 |\u001b[39m     \n \u001b[90m 325 |\u001b[39m     \u001b[90m// Most buttons should be large enough\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 326 |\u001b[39m     expect(tooSmallCount)\u001b[33m.\u001b[39mtoBeLessThan(totalChecked \u001b[33m*\u001b[39m \u001b[35m0.3\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Less than 30% should be small\u001b[39m\n \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 327 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 328 |\u001b[39m\n \u001b[90m 329 |\u001b[39m   test(\u001b[32m'Mobile layout is responsive'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts:326:27\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "📏 Checked 9 buttons: 3 too small\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-06T12:50:10.814Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\test-results\\user-portal-working-User-P-ca78b--Touch-targets-are-adequate-chromium-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\dhlisob\\Downloads\\BeatMatchMe-main\\e2e-tests\\tests\\user-portal-working.spec.ts",
+                        "column": 27,
+                        "line": 326
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-8f1102a5db451103cfee",
+              "file": "user-portal-working.spec.ts",
+              "line": 301,
+              "column": 7
+            },
+            {
+              "title": "Mobile layout is responsive",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4988,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "📱 Body width: 375px, Window width: 375px\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:50:18.211Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-9d9bebf0443370c0e37c",
+              "file": "user-portal-working.spec.ts",
+              "line": 329,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Portal - Offline Support",
+          "file": "user-portal-working.spec.ts",
+          "line": 347,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Offline indicator shows when offline",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5181,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🎵 Logging in as Audience: nkosimano@gmail.com\n"
+                        },
+                        {
+                          "text": "✅ User login successful\n"
+                        },
+                        {
+                          "text": "✅ Page fully loaded\n"
+                        },
+                        {
+                          "text": "⚠️ Offline indicator not found\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-06T12:50:23.384Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c3573d2aaa7ac62cbefd-6f792ebf60004c0cc482",
+              "file": "user-portal-working.spec.ts",
+              "line": 353,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-06T12:48:43.479Z",
+    "duration": 105420.56199999999,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

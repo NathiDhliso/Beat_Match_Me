@@ -20,7 +20,8 @@ interface FloatingBubbleProps {
   menuOptions?: MenuOption[];
 }
 
-export const FloatingActionBubble: React.FC<FloatingBubbleProps> = ({ onMenuToggle, isExpanded, menuOptions }) => {
+// Phase 8: Memoized for performance - prevents unnecessary re-renders
+export const FloatingActionBubble: React.FC<FloatingBubbleProps> = React.memo(({ onMenuToggle, isExpanded, menuOptions }) => {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 100 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -103,7 +104,7 @@ export const FloatingActionBubble: React.FC<FloatingBubbleProps> = ({ onMenuTogg
       </div>
     </>
   );
-};
+});
 
 interface RadialMenuItemProps {
   icon: React.ReactNode;
@@ -153,7 +154,8 @@ interface StatusArcProps {
   requestCount: number;
 }
 
-export const StatusArc: React.FC<StatusArcProps> = ({ mode, revenue, requestCount }) => {
+// Phase 8: Memoized StatusArc - only re-renders when mode, revenue, or requestCount change
+export const StatusArc: React.FC<StatusArcProps> = React.memo(({ mode, revenue, requestCount }) => {
   const colors = {
     browsing: 'from-blue-500 via-blue-600 to-blue-500',
     active: 'from-green-500 via-green-600 to-green-500',
@@ -196,7 +198,7 @@ export const StatusArc: React.FC<StatusArcProps> = ({ mode, revenue, requestCoun
       </div>
     </>
   );
-};
+});
 
 /**
  * Circular Queue Visualizer - Center of screen
@@ -219,7 +221,8 @@ interface QueueVisualizerProps {
   onVeto: (id: string) => void;
 }
 
-export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({ 
+// Phase 8: Memoized CircularQueueVisualizer - only updates when requests array changes
+export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = React.memo(({ 
   requests, 
   onRequestTap,
   onAccept,
@@ -227,6 +230,18 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
 }) => {
   const [dragState, setDragState] = useState<{ id: string; startY: number; currentY: number } | null>(null);
   const nextRequests = requests.slice(0, 5);
+
+  // Phase 7: Responsive orbital sizing - adapts to screen size
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handlePointerDown = (e: React.PointerEvent, request: any) => {
     e.preventDefault();
@@ -276,11 +291,20 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-30">
-      <div className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] pointer-events-auto">
+      {/* Phase 7: Responsive orbital container - scales down on mobile */}
+      <div className={`relative pointer-events-auto ${
+        isMobile 
+          ? 'w-[280px] h-[280px]' // Mobile: smaller, fits in portrait
+          : 'w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem]'
+      }`}>
         {/* Center Circle */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl">
-            <Music className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white" />
+          <div className={`rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl ${
+            isMobile 
+              ? 'w-20 h-20' // Mobile: smaller center
+              : 'w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40'
+          }`}>
+            <Music className={isMobile ? 'w-10 h-10 text-white' : 'w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white'} />
           </div>
         </div>
 
@@ -288,7 +312,8 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
         {nextRequests.map((request, index) => {
           const angle = (index * 360) / 5;
           const radians = (angle * Math.PI) / 180;
-          const distance = 140;
+          // Phase 7: Dynamic orbital distance based on screen size
+          const distance = isMobile ? 110 : 140; // Tighter orbit on mobile
           const x = Math.cos(radians) * distance;
           const y = Math.sin(radians) * distance;
 
@@ -320,8 +345,11 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
                 transition: isDragging ? 'none' : 'transform 0.3s ease',
               }}
             >
+              {/* Phase 7: Responsive card sizing */}
               <div
-                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group relative ${
+                className={`rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group relative ${
+                  isMobile ? 'w-14 h-14' : 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24'
+                } ${
                   isDragging && dragOffset < -50 ? 'ring-4 ring-green-500' : ''
                 } ${
                   isDragging && dragOffset > 50 ? 'ring-4 ring-red-500' : ''
@@ -332,8 +360,10 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
                 }}
               >
                 {/* Position Badge */}
-                <span className="text-white text-xs sm:text-sm font-bold">#{request.position}</span>
-                <Music className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white mt-1" />
+                <span className={`text-white font-bold ${isMobile ? 'text-xs' : 'text-xs sm:text-sm'}`}>
+                  #{request.position}
+                </span>
+                <Music className={`text-white mt-1 ${isMobile ? 'w-4 h-4' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'}`} />
                 
                 {/* Drag Indicators */}
                 {isDragging && dragOffset < -50 && (
@@ -366,7 +396,7 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = ({
       </div>
     </div>
   );
-};
+});
 
 /**
  * Gesture Handler Component

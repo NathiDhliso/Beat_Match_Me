@@ -1,36 +1,41 @@
 /**
  * User Portal - Innovative Event Companion
  * Revolutionary audience experience with gesture-first design
+ * Phase 8: Performance - Added lazy loading for non-critical components
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
 import { useTracklist } from '../hooks/useTracklist';
 import { useNotifications } from '../context/NotificationContext';
 import { useQueueSubscription } from '../hooks/useQueueSubscription';
+import { useTheme, useThemeClasses } from '../context/ThemeContext';
 import {
   EventDiscovery,
   AlbumArtGrid,
   MassiveRequestButton,
   LockedInAnimation,
-  EnergyBeam,
   NowPlayingCelebration,
 } from '../components/AudienceInterface';
-import { RefundConfirmation } from '../components/RefundConfirmation';
-import { RequestConfirmation } from '../components/RequestConfirmation';
-import { NotificationCenter } from '../components/Notifications';
-import { UserNowPlayingNotification } from '../components/LiveModeIndicators';
+import { QueueTracker } from '../components/QueueTracker';
 import { EmptyState } from '../components/EmptyState';
 import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
-import { PaymentErrorModal, SuccessConfirmation } from '../components/StatusModals';
-import { Settings } from '../components/Settings';
 import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, isRetryableError } from '../services/payment';
 import { submitRequestWithPaymentVerification, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';
 import { BusinessMetrics } from '../services/analytics';
+
+// Phase 8: Lazy-loaded components (modals, heavy UI)
+const RefundConfirmation = lazy(() => import('../components/RefundConfirmation').then(m => ({ default: m.RefundConfirmation })));
+const RequestConfirmation = lazy(() => import('../components/RequestConfirmation').then(m => ({ default: m.RequestConfirmation })));
+const NotificationCenter = lazy(() => import('../components/Notifications').then(m => ({ default: m.NotificationCenter })));
+const UserNowPlayingNotification = lazy(() => import('../components/LiveModeIndicators').then(m => ({ default: m.UserNowPlayingNotification })));
+const PaymentErrorModal = lazy(() => import('../components/StatusModals').then(m => ({ default: m.PaymentErrorModal })));
+const SuccessConfirmation = lazy(() => import('../components/StatusModals').then(m => ({ default: m.SuccessConfirmation })));
+const Settings = lazy(() => import('../components/Settings').then(m => ({ default: m.Settings })));
 
 interface Song {
   id: string;
@@ -45,6 +50,8 @@ type ViewState = 'discovery' | 'lineup' | 'browsing' | 'requesting' | 'waiting' 
 
 export const UserPortalInnovative: React.FC = () => {
   const { user, logout } = useAuth();
+  const { currentTheme } = useTheme();
+  const themeClasses = useThemeClasses();
   const [viewState, setViewState] = useState<ViewState>('discovery');
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
@@ -725,12 +732,17 @@ export const UserPortalInnovative: React.FC = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+    <div 
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+      }}
+    >
       {/* Top Bar - Minimal */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg border-b border-white/10 safe-area-top">
         <div className="max-w-7xl mx-auto px-4 py-2 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center flex-shrink-0`}>
               <User className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="min-w-0">
@@ -778,8 +790,8 @@ export const UserPortalInnovative: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="pt-16 h-screen">
+      {/* Main Content - Phase 7: Added bottom padding for mobile nav */}
+      <div className="pt-16 h-screen pb-0 sm:pb-0" style={{ paddingBottom: 'max(80px, env(safe-area-inset-bottom))' }}>
         {/* Event Discovery */}
         {viewState === 'discovery' && (
           <>
@@ -836,7 +848,7 @@ export const UserPortalInnovative: React.FC = () => {
                   <h2 className="text-2xl sm:text-3xl font-bold text-white">
                     {currentEvent?.venueName || 'Event Lineup'}
                   </h2>
-                  <p className="text-purple-300">Select a DJ to browse their library</p>
+                  <p style={{ color: currentTheme.accent }}>Select a DJ to browse their library</p>
                 </div>
               </div>
 
@@ -857,9 +869,23 @@ export const UserPortalInnovative: React.FC = () => {
                         disabled={!isAccepting}
                         className={`relative overflow-hidden rounded-2xl p-6 text-left transition-all transform hover:scale-105 ${
                           isAccepting
-                            ? 'bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-2 border-purple-500/50 hover:border-purple-400 cursor-pointer'
+                            ? 'border-2 cursor-pointer'
                             : 'bg-gray-800/30 border-2 border-gray-700/50 cursor-not-allowed opacity-60'
                         }`}
+                        style={isAccepting ? {
+                          background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                          borderColor: `${currentTheme.primary}80`,
+                        } : undefined}
+                        onMouseEnter={(e) => {
+                          if (isAccepting) {
+                            e.currentTarget.style.borderColor = `${currentTheme.primary}CC`;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isAccepting) {
+                            e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
+                          }
+                        }}
                       >
                         {/* Status Badge */}
                         {isActive && (
@@ -873,7 +899,7 @@ export const UserPortalInnovative: React.FC = () => {
 
                         {/* Set Times */}
                         <div className="mb-4">
-                          <div className="text-purple-300 text-sm mb-1">Set Time</div>
+                          <div className="text-sm mb-1" style={{ color: currentTheme.accent }}>Set Time</div>
                           <div className="text-white text-2xl font-bold">
                             {startTime} - {endTime}
                           </div>
@@ -952,7 +978,7 @@ export const UserPortalInnovative: React.FC = () => {
                   </button>
                   <div className="min-w-0">
                     <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{currentEvent.venueName}</h2>
-                    <p className="text-purple-300 text-sm sm:text-base">
+                    <p className="text-sm sm:text-base" style={{ color: currentTheme.accent }}>
                       {selectedSong ? `Selected: ${selectedSong.title}` : 'Tap a song to request'}
                     </p>
                   </div>
@@ -1006,14 +1032,15 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
 
-        {/* Request Confirmation - Enhanced Component */}
+        {/* Request Confirmation - Enhanced Component - Phase 8: Lazy loaded */}
         {viewState === 'requesting' && selectedSong && (
-          <RequestConfirmation
-            song={selectedSong}
-            userTier={user?.tier as 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'}
-            estimatedQueuePosition={myRequestPosition || 8}
-            estimatedWaitTime={myRequestPosition ? `~${myRequestPosition * 3} minutes` : '~25 minutes'}
-            onConfirm={async (requestData) => {
+          <Suspense fallback={<LoadingState message="Loading payment form..." />}>
+            <RequestConfirmation
+              song={selectedSong}
+              userTier={user?.tier as 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'}
+              estimatedQueuePosition={myRequestPosition || 8}
+              estimatedWaitTime={myRequestPosition ? `~${myRequestPosition * 3} minutes` : '~25 minutes'}
+              onConfirm={async (requestData) => {
               const handleConfirmRequest = async (retryCount = 0): Promise<void> => {
                 const MAX_RETRIES = 3;
                 setIsProcessing(true);
@@ -1142,36 +1169,19 @@ export const UserPortalInnovative: React.FC = () => {
             }}
             onCancel={handleCancelRequest}
           />
+          </Suspense>
         )}
 
-        {/* Waiting in Queue */}
+        {/* Waiting in Queue - Enhanced Tracker */}
         {viewState === 'waiting' && selectedSong && myRequestPosition && (
-          <div className="h-full relative">
-            <EnergyBeam
-              position={myRequestPosition}
-              totalInQueue={10}
-              songTitle={selectedSong.title}
-            />
-
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center z-10">
-                <h2 className="text-4xl font-bold text-white mb-4">Your Song is in the Queue!</h2>
-                <p className="text-xl text-gray-300 mb-8">{selectedSong.title}</p>
-                
-                <div className="bg-black/50 backdrop-blur-lg rounded-2xl p-6 inline-block">
-                  <p className="text-gray-400 text-sm mb-2">Position in Queue</p>
-                  <p className="text-6xl font-bold text-yellow-400">#{myRequestPosition}</p>
-                </div>
-
-                <button
-                  onClick={() => setViewState('browsing')}
-                  className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
-                >
-                  Browse More Songs
-                </button>
-              </div>
-            </div>
-          </div>
+          <QueueTracker
+            position={myRequestPosition}
+            totalInQueue={queue?.orderedRequests?.length || 10}
+            songTitle={selectedSong.title}
+            artistName={selectedSong.artist}
+            avgSongDuration={180} // 3 minutes average
+            onBrowseMore={() => setViewState('browsing')}
+          />
         )}
 
         {/* Now Playing Celebration */}
@@ -1196,50 +1206,54 @@ export const UserPortalInnovative: React.FC = () => {
           />
         )}
 
-        {/* Feature 6: Refund Confirmation Modal */}
+        {/* Feature 6: Refund Confirmation Modal - Phase 8: Lazy loaded */}
         {showRefundModal && refundData && (
-          <RefundConfirmation
-            refund={{
-              requestId: refundData.requestId || '',
-              songTitle: refundData.songTitle || 'Unknown Song',
-              artistName: refundData.artistName || 'Unknown Artist',
-              albumArt: refundData.albumArt,
-              venueName: currentEvent?.venueName || 'Event',
-              eventDate: currentEvent?.startTime ? new Date(currentEvent.startTime).toLocaleDateString() : 'Today',
-              originalAmount: refundData.refundAmount || 0,
-              refundAmount: refundData.refundAmount || 0,
-              paymentMethod: 'Card',
-              paymentLast4: undefined,
-              vetoReason: refundData.vetoReason,
-              refundReferenceId: refundData.refundTransactionId || 'N/A',
-              refundedAt: Date.now(),
-              estimatedDays: '3-5 business days',
-            }}
-            onDismiss={() => {
-              setShowRefundModal(false);
-              setRefundData(null);
-            }}
-          />
+          <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+            <RefundConfirmation
+              refund={{
+                requestId: refundData.requestId || '',
+                songTitle: refundData.songTitle || 'Unknown Song',
+                artistName: refundData.artistName || 'Unknown Artist',
+                albumArt: refundData.albumArt,
+                venueName: currentEvent?.venueName || 'Event',
+                eventDate: currentEvent?.startTime ? new Date(currentEvent.startTime).toLocaleDateString() : 'Today',
+                originalAmount: refundData.refundAmount || 0,
+                refundAmount: refundData.refundAmount || 0,
+                paymentMethod: 'Card',
+                paymentLast4: undefined,
+                vetoReason: refundData.vetoReason,
+                refundReferenceId: refundData.refundTransactionId || 'N/A',
+                refundedAt: Date.now(),
+                estimatedDays: '3-5 business days',
+              }}
+              onDismiss={() => {
+                setShowRefundModal(false);
+                setRefundData(null);
+              }}
+            />
+          </Suspense>
         )}
 
-        {/* Phase 3: Notification Center Modal */}
+        {/* Phase 3: Notification Center Modal - Phase 8: Lazy loaded */}
         {showNotifications && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="max-w-2xl w-full max-h-[90vh]">
-              <NotificationCenter
-                notifications={notifications}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
-                onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
-                onNotificationClick={(notification) => {
-                  markAsRead(notification.id);
-                  // Handle navigation if needed
-                  if (notification.metadata?.requestId) {
-                    console.log('Navigate to request:', notification.metadata.requestId);
-                  }
-                }}
-                className="w-full"
-              />
+              <Suspense fallback={<LoadingState message="Loading notifications..." />}>
+                <NotificationCenter
+                  notifications={notifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
+                  onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
+                  onNotificationClick={(notification) => {
+                    markAsRead(notification.id);
+                    // Handle navigation if needed
+                    if (notification.metadata?.requestId) {
+                      console.log('Navigate to request:', notification.metadata.requestId);
+                    }
+                  }}
+                  className="w-full"
+                />
+              </Suspense>
               <button
                 onClick={() => setShowNotifications(false)}
                 className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
@@ -1250,20 +1264,22 @@ export const UserPortalInnovative: React.FC = () => {
           </div>
         )}
 
-        {/* User Now Playing Notification - Shows when user's song is playing */}
+        {/* User Now Playing Notification - Phase 8: Lazy loaded */}
         {showUserPlayingNotification && userPlayingData && (
-          <UserNowPlayingNotification
-            userName={userPlayingData.userName}
-            songTitle={userPlayingData.songTitle}
-            artistName={userPlayingData.artistName}
-            djName={userPlayingData.djName}
-            venueName={userPlayingData.venueName}
-            timestamp={userPlayingData.timestamp}
-            onDismiss={() => {
-              setShowUserPlayingNotification(false);
-              setUserPlayingData(null);
-            }}
-          />
+          <Suspense fallback={null}>
+            <UserNowPlayingNotification
+              userName={userPlayingData.userName}
+              songTitle={userPlayingData.songTitle}
+              artistName={userPlayingData.artistName}
+              djName={userPlayingData.djName}
+              venueName={userPlayingData.venueName}
+              timestamp={userPlayingData.timestamp}
+              onDismiss={() => {
+                setShowUserPlayingNotification(false);
+                setUserPlayingData(null);
+              }}
+            />
+          </Suspense>
         )}
 
         {/* Phase 3: Connection Status Indicator */}
@@ -1302,46 +1318,114 @@ export const UserPortalInnovative: React.FC = () => {
         )}
       </div>
 
-      {/* Payment Error Modal */}
+      {/* Payment Error Modal - Phase 8: Lazy loaded */}
       {paymentError && (
-        <PaymentErrorModal
-          error={paymentError}
-          onRetry={() => {
-            setPaymentError(null);
-            // Re-trigger the request confirmation
-            if (selectedSong) {
-              setViewState('requesting');
-            }
-          }}
-          onCancel={() => {
-            setPaymentError(null);
-            setViewState('browsing');
-          }}
-          isRetrying={isProcessing}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+          <PaymentErrorModal
+            error={paymentError}
+            onRetry={() => {
+              setPaymentError(null);
+              // Re-trigger the request confirmation
+              if (selectedSong) {
+                setViewState('requesting');
+              }
+            }}
+            onCancel={() => {
+              setPaymentError(null);
+              setViewState('browsing');
+            }}
+            isRetrying={isProcessing}
+          />
+        </Suspense>
       )}
 
-      {/* Success Confirmation Modal */}
+      {/* Success Confirmation Modal - Phase 8: Lazy loaded */}
       {showSuccessModal && selectedSong && successQueuePosition !== null && (
-        <SuccessConfirmation
-          songTitle={selectedSong.title}
-          artist={selectedSong.artist}
-          queuePosition={successQueuePosition}
-          onClose={() => {
-            setShowSuccessModal(false);
-            setSuccessQueuePosition(null);
-            setViewState('waiting');
-          }}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+          <SuccessConfirmation
+            songTitle={selectedSong.title}
+            artist={selectedSong.artist}
+            queuePosition={successQueuePosition}
+            onClose={() => {
+              setShowSuccessModal(false);
+              setSuccessQueuePosition(null);
+              setViewState('waiting');
+            }}
+          />
+        </Suspense>
       )}
 
-      {/* Settings Modal */}
+      {/* Settings Modal - Phase 8: Lazy loaded */}
       {showSettings && (
-        <Settings
-          onClose={() => setShowSettings(false)}
-          mode="fan"
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+          <Settings
+            onClose={() => setShowSettings(false)}
+            mode="fan"
+          />
+        </Suspense>
       )}
+
+      {/* Mobile Bottom Navigation - Phase 7 */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-t border-white/10 pb-safe sm:hidden">
+        <div className="grid grid-cols-4 gap-1 px-2 py-2">
+          {/* Discover Events */}
+          <button
+            onClick={() => {
+              setViewState('discovery');
+              setCurrentEventId(null);
+            }}
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all min-h-[60px] ${
+              viewState === 'discovery'
+                ? `${themeClasses.gradientPrimary} text-white shadow-lg`
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Calendar className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Events</span>
+          </button>
+
+          {/* Browse Songs */}
+          <button
+            onClick={() => {
+              if (currentEventId) setViewState('browsing');
+            }}
+            disabled={!currentEventId}
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all min-h-[60px] ${
+              viewState === 'browsing' || viewState === 'requesting'
+                ? `${themeClasses.gradientPrimary} text-white shadow-lg`
+                : currentEventId
+                ? 'text-gray-400 hover:text-white hover:bg-white/10'
+                : 'text-gray-600 opacity-50 cursor-not-allowed'
+            }`}
+          >
+            <Music className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Browse</span>
+          </button>
+
+          {/* Notifications */}
+          <button
+            onClick={() => setShowNotifications(true)}
+            className="flex flex-col items-center justify-center py-2 px-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all min-h-[60px] relative"
+          >
+            <Bell className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Alerts</span>
+            {unreadCount > 0 && (
+              <div className="absolute top-1 right-2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-[8px] text-white font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              </div>
+            )}
+          </button>
+
+          {/* Settings */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="flex flex-col items-center justify-center py-2 px-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all min-h-[60px]"
+          >
+            <SettingsIcon className="w-5 h-5 mb-1" />
+            <span className="text-[10px] font-medium">Settings</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

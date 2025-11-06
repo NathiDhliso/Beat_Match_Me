@@ -1,0 +1,352 @@
+/**
+ * BeatMatchMe Animation Library
+ * Phase 3: CSS Modularization
+ * 
+ * Extracted from theme.css for better organization and reusability
+ * All animations used across the DJ/audience platform
+ */
+
+/* ============================================
+   ENTRANCE & EXIT ANIMATIONS
+   ============================================ */
+
+/* Vinyl Spin-In - Signature DJ animation */
+@keyframes vinyl-spin-in {
+  0% {
+    transform: rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: rotate(180deg) scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-vinyl-spin {
+  animation: vinyl-spin-in 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Scale In - Bouncy entrance */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Dissolve Effect - Smooth exit */
+@keyframes dissolve {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+}
+
+.animate-dissolve {
+  animation: dissolve 0.5s ease-out forwards;
+}
+
+/* ============================================
+   PANEL & MODAL ANIMATIONS
+   ============================================ */
+
+/* Slide In from Right - For side panels */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Slide Down - For toast notifications */
+@keyframes slide-down {
+  0% {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Slide Up - For bottom sheets on mobile */
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ============================================
+   SWIPE & GESTURE ANIMATIONS
+   ============================================ */
+
+/* Swipe Left - For dismissing/vetoing */
+@keyframes swipe-left {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-swipe-left {
+  animation: swipe-left 0.3s ease-out forwards;
+}
+
+/* Swipe Right - For accepting */
+@keyframes swipe-right {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+.animate-swipe-right {
+  animation: swipe-right 0.3s ease-out forwards;
+}
+
+/* ============================================
+   INTERACTIVE FEEDBACK ANIMATIONS
+   ============================================ */
+
+/* Pulse Glow - For attention-grabbing elements */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px currentColor;
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 40px currentColor;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Heartbeat - For live indicators */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* Bass Drop Bounce - For button presses */
+@keyframes bass-drop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.btn-bounce:active {
+  animation: bass-drop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Vinyl Scratch - Micro-interaction */
+@keyframes vinyl-scratch {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.vinyl-scratch {
+  animation: vinyl-scratch 0.2s ease-in-out;
+}
+
+/* ============================================
+   ORBITAL & SPATIAL ANIMATIONS
+   ============================================ */
+
+/* Orbit - For DJ queue orbital interface */
+@keyframes orbit {
+  0% {
+    transform: translate(calc(-50% + var(--orbit-x, 0px)), calc(-50% + var(--orbit-y, 0px))) rotate(0deg);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--orbit-x, 0px)), calc(-50% + var(--orbit-y, 0px))) rotate(360deg);
+  }
+}
+
+.animate-orbit {
+  animation: orbit 10s linear infinite;
+}
+
+/* Tumble - For slot machine effects */
+@keyframes tumble {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-tumble {
+  animation: tumble 0.5s ease-out;
+}
+
+/* Liquid Morph - For dynamic backgrounds */
+@keyframes liquid-morph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  50% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+}
+
+.animate-liquid {
+  animation: liquid-morph 8s ease-in-out infinite;
+}
+
+/* ============================================
+   CELEBRATION ANIMATIONS
+   ============================================ */
+
+/* Confetti Burst - For request acceptance */
+@keyframes confetti-burst {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti-burst 1s ease-out forwards;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Disable specific animations entirely */
+  .animate-pulse-glow,
+  .animate-heartbeat,
+  .animate-orbit,
+  .animate-liquid {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Force GPU acceleration for smooth animations */
+.animate-vinyl-spin,
+.animate-scale-in,
+.animate-slide-in-right,
+.animate-slide-down,
+.animate-slide-up,
+.animate-swipe-left,
+.animate-swipe-right,
+.animate-orbit {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Clean up after animation completes */
+.animate-dissolve,
+.animate-swipe-left,
+.animate-swipe-right,
+.animate-confetti {
+  animation-fill-mode: forwards;
+}

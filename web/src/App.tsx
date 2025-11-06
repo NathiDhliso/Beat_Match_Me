@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ApolloProvider } from '@apollo/client';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -7,10 +7,12 @@ import { useBackend } from './context/BackendContext';
 import { apolloClient } from './services/api';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
-import { DJPortalOrbital as DJPortal } from './pages/DJPortalOrbital';
-import { UserPortalInnovative as UserPortal } from './pages/UserPortalInnovative';
 import { YocoTestPage } from './pages/YocoTestPage';
 import { OfflineBanner } from './components/StatusModals';
+
+// Phase 8: Lazy load route components for massive bundle size reduction
+const DJPortal = lazy(() => import('./pages/DJPortalOrbital').then(m => ({ default: m.DJPortalOrbital })));
+const UserPortal = lazy(() => import('./pages/UserPortalInnovative').then(m => ({ default: m.UserPortalInnovative })));
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFORMER' | 'AUDIENCE' }> = ({
@@ -127,33 +129,42 @@ function App() {
       <ApolloProvider client={apolloClient}>
         <AuthProvider>
           {/* Offline mode banner */}
-          {isOffline && <OfflineBanner />}
+          <header role="banner">
+            {isOffline && <OfflineBanner />}
+          </header>
           
           <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/yoco-test" element={<YocoTestPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route
-                path="/dj-portal"
-                element={
-                  <ProtectedRoute allowedRole="PERFORMER">
-                    <DJPortal />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/user-portal"
-                element={
-                  <ProtectedRoute allowedRole="AUDIENCE">
-                    <UserPortal />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+            <main role="main">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/yoco-test" element={<YocoTestPage />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                {/* Phase 8: Lazy loaded routes with Suspense for code splitting */}
+                <Route
+                  path="/dj-portal"
+                  element={
+                    <ProtectedRoute allowedRole="PERFORMER">
+                      <Suspense fallback={<LoadingScreen message="Loading DJ Portal..." />}>
+                        <DJPortal />
+                      </Suspense>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-portal"
+                  element={
+                    <ProtectedRoute allowedRole="AUDIENCE">
+                      <Suspense fallback={<LoadingScreen message="Loading User Portal..." />}>
+                        <UserPortal />
+                      </Suspense>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </main>
           </Router>
         </AuthProvider>
       </ApolloProvider>

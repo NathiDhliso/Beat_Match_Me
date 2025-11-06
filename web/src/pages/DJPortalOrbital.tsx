@@ -3,13 +3,14 @@
  * Revolutionary gesture-first design with floating controls
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
 import { useTracklist } from '../hooks/useTracklist';
 import { useNotifications } from '../context/NotificationContext';
+import { useTheme, useThemeClasses } from '../context/ThemeContext';
 import { useQueueSubscription } from '../hooks/useQueueSubscription';
 import {
   FloatingActionBubble,
@@ -20,24 +21,29 @@ import {
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
 import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles } from 'lucide-react';
-import { EventCreator, QRCodeDisplay, EventPlaylistManager } from '../components';
-import { AcceptRequestPanel } from '../components/AcceptRequestPanel';
-import { VetoConfirmation } from '../components/VetoConfirmation';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
-import { NotificationCenter } from '../components/Notifications';
-import { Settings as SettingsModal } from '../components/Settings';
+import { showUndoToast } from '../components/UndoToast';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
 
+// Phase 8: Lazy load large modals for better performance
+const EventCreator = lazy(() => import('../components').then(m => ({ default: m.EventCreator })));
+const EventPlaylistManager = lazy(() => import('../components').then(m => ({ default: m.EventPlaylistManager })));
+const QRCodeDisplay = lazy(() => import('../components').then(m => ({ default: m.QRCodeDisplay })));
+const NotificationCenter = lazy(() => import('../components/Notifications').then(m => ({ default: m.NotificationCenter })));
+const SettingsModal = lazy(() => import('../components/Settings').then(m => ({ default: m.Settings })));
+
 type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
 
 export const DJPortalOrbital: React.FC = () => {
   const { user, logout } = useAuth();
+  const { currentTheme } = useTheme();
+  const themeClasses = useThemeClasses();
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
@@ -51,14 +57,12 @@ export const DJPortalOrbital: React.FC = () => {
   
   // DJ Set management state
   const [showEventCreator, setShowEventCreator] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false); // Converted to slide-out panel
   const [mySets, setMySets] = useState<any[]>([]);
   const [showSetSelector, setShowSetSelector] = useState(false);
 
   // Features 6, 10, 12 - Accept/Veto/Playing state
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [showAcceptPanel, setShowAcceptPanel] = useState(false);
-  const [showVetoModal, setShowVetoModal] = useState(false);
   const [showPlayingPanel, setShowPlayingPanel] = useState(false);
   const [showPlayingCelebration, setShowPlayingCelebration] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<any>(null);
@@ -68,7 +72,7 @@ export const DJPortalOrbital: React.FC = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showPlaylistManager, setShowPlaylistManager] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // Converted to slide-out panel
   const { notifications, unreadCount, addNotification, markAsRead, clearNotification } = useNotifications();
 
   // Live Mode Control - Manual toggle for when DJ is ready to accept requests
@@ -518,82 +522,181 @@ export const DJPortalOrbital: React.FC = () => {
     }
   };
 
+  // Track vetoed requests for optimistic UI
+  const [vetoedRequestIds, setVetoedRequestIds] = useState<Set<string>>(new Set());
+  // Track accepted requests for optimistic UI
+  const [acceptedRequestIds, setAcceptedRequestIds] = useState<Set<string>>(new Set());
+
   const handleVeto = (requestId: string) => {
-    console.log('Veto request:', requestId);
+    console.log('Veto request (optimistic):', requestId);
     const request = queueRequests.find((r: any) => r.requestId === requestId);
-    if (request) {
-      setSelectedRequest(request);
-      setShowVetoModal(true);
-    }
+    if (!request) return;
+
+    let vetoTimerId: NodeJS.Timeout | null = null;
+    let isVetoed = false;
+
+    // Optimistically hide from UI
+    setVetoedRequestIds(prev => new Set(prev).add(requestId));
+
+    // Show undo toast
+    showUndoToast({
+      message: `Vetoing "${request.songTitle}" - R${request.price} will be refunded`,
+      duration: 5000,
+      onUndo: () => {
+        // Cancel the veto
+        if (vetoTimerId) {
+          clearTimeout(vetoTimerId);
+          vetoTimerId = null;
+        }
+        
+        // Restore in UI
+        setVetoedRequestIds(prev => {
+          const next = new Set(prev);
+          next.delete(requestId);
+          return next;
+        });
+        isVetoed = false;
+
+        addNotification({
+          type: 'info',
+          title: '↩️ Veto Cancelled',
+          message: `"${request.songTitle}" restored to queue`,
+        });
+      },
+    });
+
+    // Finalize veto after 5 seconds
+    vetoTimerId = setTimeout(async () => {
+      if (isVetoed) return; // Already processed
+      isVetoed = true;
+
+      try {
+        // 1. Veto the request
+        await submitVeto(request.requestId, "DJ vetoed request");
+        
+        // 2. Process refund automatically
+        try {
+          const refund = await submitRefund(request.requestId, 'DJ vetoed request');
+          console.log('✅ Refund processed:', refund);
+          
+          // 3. Notify DJ of successful veto + refund
+          addNotification({
+            type: 'info',
+            title: '✅ Request Vetoed',
+            message: `Refund of R${request.price} processed for ${request.userName}`,
+            metadata: {
+              requestId: request.requestId,
+            }
+          });
+        } catch (refundError) {
+          console.error('⚠️ Refund processing failed:', refundError);
+          
+          // Alert DJ but don't fail the veto
+          addNotification({
+            type: 'error',
+            title: '⚠️ Refund Pending',
+            message: 'Request vetoed but refund needs manual processing. Contact support.',
+          });
+        }
+
+        console.log('✅ Request vetoed successfully');
+      } catch (error) {
+        console.error('❌ Veto failed:', error);
+        
+        // Restore in UI on error
+        setVetoedRequestIds(prev => {
+          const next = new Set(prev);
+          next.delete(requestId);
+          return next;
+        });
+        
+        addNotification({
+          type: 'error',
+          title: '❌ Veto Failed',
+          message: 'Failed to veto request. Changes rolled back.',
+        });
+      }
+    }, 5000);
   };
 
   // Features 6, 10, 12 - Request Management Handlers
   const handleRequestTap = (request: any) => {
-    setSelectedRequest(request);
-    setShowAcceptPanel(true);
+    // Direct accept with optimistic UI (no modal)
+    handleAccept(request);
   };
 
-  const handleAccept = async () => {
-    if (!selectedRequest || !currentSetId) return;
-    setIsProcessing(true);
-    
-    try {
-      await submitAcceptRequest(selectedRequest.requestId, currentSetId);
-      setShowAcceptPanel(false);
-      setSelectedRequest(null);
-      // Queue will auto-refresh via WebSocket
-      console.log('✅ Request accepted successfully');
-    } catch (error) {
-      console.error('❌ Accept failed:', error);
-      alert('Failed to accept request. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  const handleAccept = async (request?: any) => {
+    const requestToAccept = request || selectedRequest;
+    if (!requestToAccept || !currentSetId) return;
 
-  const handleVetoConfirm = async (reason?: string) => {
-    if (!selectedRequest) return;
-    setIsProcessing(true);
-    
-    try {
-      // 1. Veto the request
-      await submitVeto(selectedRequest.requestId, reason);
-      
-      // 2. Process refund automatically
-      try {
-        const refund = await submitRefund(selectedRequest.requestId, reason || 'DJ vetoed request');
-        console.log('✅ Refund processed:', refund);
+    let acceptTimerId: NodeJS.Timeout | null = null;
+    let isAccepted = false;
+
+    // Optimistically mark as accepted in UI
+    setAcceptedRequestIds(prev => new Set(prev).add(requestToAccept.requestId));
+
+    // Show undo toast
+    showUndoToast({
+      message: `Accepting "${requestToAccept.songTitle}" by ${requestToAccept.artistName}`,
+      duration: 5000,
+      onUndo: () => {
+        // Cancel the accept
+        if (acceptTimerId) {
+          clearTimeout(acceptTimerId);
+          acceptTimerId = null;
+        }
         
-        // 3. Notify DJ of successful veto + refund
+        // Restore in UI
+        setAcceptedRequestIds(prev => {
+          const next = new Set(prev);
+          next.delete(requestToAccept.requestId);
+          return next;
+        });
+        isAccepted = false;
+
         addNotification({
           type: 'info',
-          title: '✅ Request Vetoed',
-          message: `Refund of R${selectedRequest.price} processed for ${selectedRequest.userName}`,
-          metadata: {
-            requestId: selectedRequest.requestId,
-          }
+          title: '↩️ Accept Cancelled',
+          message: `"${requestToAccept.songTitle}" moved back to pending`,
         });
-      } catch (refundError) {
-        console.error('⚠️ Refund processing failed:', refundError);
+      },
+    });
+
+    // Finalize accept after 5 seconds
+    acceptTimerId = setTimeout(async () => {
+      if (isAccepted) return; // Already processed
+      isAccepted = true;
+
+      try {
+        await submitAcceptRequest(requestToAccept.requestId, currentSetId);
         
-        // Alert DJ but don't fail the veto
+        addNotification({
+          type: 'info',
+          title: '✅ Request Accepted',
+          message: `"${requestToAccept.songTitle}" added to queue`,
+        });
+
+        console.log('✅ Request accepted successfully');
+      } catch (error) {
+        console.error('❌ Accept failed:', error);
+        
+        // Restore in UI on error
+        setAcceptedRequestIds(prev => {
+          const next = new Set(prev);
+          next.delete(requestToAccept.requestId);
+          return next;
+        });
+        
         addNotification({
           type: 'error',
-          title: '⚠️ Refund Pending',
-          message: 'Request vetoed but refund needs manual processing. Contact support.',
+          title: '❌ Accept Failed',
+          message: 'Failed to accept request. Changes rolled back.',
         });
       }
-      
-      setShowVetoModal(false);
-      setSelectedRequest(null);
-      console.log('✅ Request vetoed successfully');
-    } catch (error) {
-      console.error('❌ Veto failed:', error);
-      alert('Failed to veto request. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
+    }, 5000);
   };
+
+  // Old veto confirm handler removed - now using optimistic pattern
 
   const handleMarkPlaying = () => {
     // Get the #1 request in queue
@@ -865,7 +968,7 @@ export const DJPortalOrbital: React.FC = () => {
       icon: <Settings className="w-5 h-5" />,
       label: 'Settings',
       angle: 180,
-      color: 'from-purple-500 to-pink-500',
+      color: themeClasses.gradientPrimary.replace('bg-gradient-to-r ', ''),
       onClick: () => {
         setShowSettings(true);
         setIsMenuExpanded(false);
@@ -880,7 +983,12 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeLeft={handleSwipeLeft}
       onSwipeRight={handleSwipeRight}
     >
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden animate-vinyl-spin">
+      <div 
+        className="min-h-screen relative overflow-hidden animate-vinyl-spin"
+        style={{
+          background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+        }}
+      >
         {/* Status Arc - Hide when live or menu open */}
         {!isLiveMode && !showSetSelector && (
           <StatusArc
@@ -948,7 +1056,7 @@ export const DJPortalOrbital: React.FC = () => {
                 <div className="text-center max-w-md">
                   <button
                     onClick={() => setShowEventCreator(true)}
-                    className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer"
+                    className={`w-32 h-32 mx-auto mb-6 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer`}
                     title="Create Event"
                   >
                     <span className="text-6xl">🎵</span>
@@ -957,7 +1065,7 @@ export const DJPortalOrbital: React.FC = () => {
                   
                   <button
                     onClick={() => setShowEventCreator(true)}
-                    className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-semibold text-lg transition-all shadow-lg"
+                    className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-full font-semibold text-lg transition-all shadow-lg`}
                   >
                     Create Event
                   </button>
@@ -966,7 +1074,10 @@ export const DJPortalOrbital: React.FC = () => {
                 // Has Event + Requests
                 <div className="flex flex-col items-center gap-6">
                   <CircularQueueVisualizer
-                    requests={queueRequests}
+                    requests={queueRequests.filter((r: any) => 
+                      !vetoedRequestIds.has(r.requestId || r.id) && 
+                      !acceptedRequestIds.has(r.requestId || r.id)
+                    )}
                     onVeto={handleVeto}
                     onRequestTap={handleRequestTap}
                     onAccept={handleAccept}
@@ -1001,14 +1112,29 @@ export const DJPortalOrbital: React.FC = () => {
                   {!showSetSelector && (
                     <button
                       onClick={() => setShowSetSelector(!showSetSelector)}
-                      className="mx-auto mb-6 w-48 h-48 rounded-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center border-4 border-purple-500/30 hover:border-purple-500/50 cursor-pointer group relative transition-all hover:scale-105 z-10"
+                      className="mx-auto mb-6 w-48 h-48 rounded-full flex items-center justify-center border-4 cursor-pointer group relative transition-all hover:scale-105 z-10"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                        borderColor: `${currentTheme.primary}4D`,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
+                      }}
                       title="Switch DJ Sets"
                     >
                       <span className="text-8xl">🎵</span>
                       
                       {/* Subtle hint - only when closed */}
                       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-xs text-purple-400 font-semibold whitespace-nowrap">Switch Sets ({mySets.length})</span>
+                        <span 
+                          className="text-xs font-semibold whitespace-nowrap"
+                          style={{ color: currentTheme.accent }}
+                        >
+                          Switch Sets ({mySets.length})
+                        </span>
                       </div>
                     </button>
                   )}
@@ -1022,7 +1148,17 @@ export const DJPortalOrbital: React.FC = () => {
                         {/* Header Button - Fixed at top */}
                         <button
                           onClick={() => setShowSetSelector(false)}
-                          className="flex-shrink-0 w-80 h-16 mx-auto mt-4 rounded-3xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center border-4 border-purple-500/30 hover:border-purple-500/50 cursor-pointer transition-all duration-300 z-50"
+                          className="flex-shrink-0 w-80 h-16 mx-auto mt-4 rounded-3xl flex items-center justify-center border-4 cursor-pointer transition-all duration-300 z-50"
+                          style={{
+                            background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                            borderColor: `${currentTheme.primary}4D`,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
+                          }}
                         >
                           <span className="text-4xl">🎵</span>
                           <span className="ml-3 text-white font-bold text-xl animate-fade-in">DJ Sets</span>
@@ -1046,7 +1182,7 @@ export const DJPortalOrbital: React.FC = () => {
                                     }}
                                     className={`w-full px-6 py-4 mb-3 text-left rounded-2xl transition-all transform hover:scale-[1.02] ${
                                       currentSetId === set.setId 
-                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg' 
+                                        ? `${themeClasses.gradientPrimary} shadow-lg`
                                         : 'bg-white/5 hover:bg-white/10'
                                     }`}
                                     style={{
@@ -1088,7 +1224,7 @@ export const DJPortalOrbital: React.FC = () => {
                                   setShowEventCreator(true);
                                   setShowSetSelector(false);
                                 }}
-                                className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl transition-all shadow-lg"
+                                className={`w-full px-6 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
                               >
                                 + Create New Event
                               </button>
@@ -1109,8 +1245,14 @@ export const DJPortalOrbital: React.FC = () => {
                           </div>
                         ) : (
                           <div className="flex-1 flex flex-col items-center justify-center p-8">
-                            <div className="w-24 h-24 mb-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-                              <Music className="w-12 h-12 text-purple-400" />
+                            <div 
+                              className="w-24 h-24 mb-6 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: `${currentTheme.primary}33` }}
+                            >
+                              <Music 
+                                className="w-12 h-12" 
+                                style={{ color: currentTheme.accent }}
+                              />
                             </div>
                             <p className="text-gray-400 text-lg mb-8">No other sets</p>
                             <button
@@ -1118,7 +1260,7 @@ export const DJPortalOrbital: React.FC = () => {
                                 setShowEventCreator(true);
                                 setShowSetSelector(false);
                               }}
-                              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-2xl transition-all shadow-lg"
+                              className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
                             >
                               + Create New Event
                             </button>
@@ -1135,7 +1277,16 @@ export const DJPortalOrbital: React.FC = () => {
                       {!isLiveMode ? (
                         <button
                           onClick={handleGoLive}
-                          className="w-full max-w-sm mx-auto py-6 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-2xl font-bold text-xl transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3"
+                          className="w-full max-w-sm mx-auto py-6 text-white rounded-2xl font-bold text-xl transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3"
+                          style={{
+                            background: `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.primary})`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`;
+                          }}
                         >
                           <span className="text-3xl">🔴</span>
                           <span>GO LIVE</span>
@@ -1189,7 +1340,13 @@ export const DJPortalOrbital: React.FC = () => {
               <div className="max-w-6xl mx-auto h-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
                 {/* Event Playlist Quick Access */}
                 {currentEventId && (
-                  <div className="p-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-purple-500/30">
+                  <div 
+                    className="p-4 border-b"
+                    style={{
+                      background: `linear-gradient(to right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                      borderColor: `${currentTheme.primary}4D`,
+                    }}
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-white font-semibold">Event-Specific Playlist</h3>
@@ -1197,7 +1354,7 @@ export const DJPortalOrbital: React.FC = () => {
                       </div>
                       <button
                         onClick={() => setShowPlaylistManager(true)}
-                        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+                        className={`px-4 py-2 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-lg font-semibold transition-all flex items-center gap-2`}
                       >
                         <Sparkles className="w-4 h-4" />
                         Manage Playlist
@@ -1293,12 +1450,19 @@ export const DJPortalOrbital: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Role</p>
-                        <p className="text-purple-400 font-semibold">{user?.role}</p>
+                        <p className="font-semibold" style={{ color: currentTheme.accent }}>{user?.role}</p>
                       </div>
                                 <div className="pt-3">
                                   <button
                                     onClick={() => setShowProfile(true)}
-                                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm font-semibold transition-all"
+                                    className="px-3 py-2 rounded-lg text-white text-sm font-semibold transition-all"
+                                    style={{ backgroundColor: currentTheme.primary }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.opacity = '0.9';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.opacity = '1';
+                                    }}
                                   >
                                     Manage Profile
                                   </button>
@@ -1312,7 +1476,14 @@ export const DJPortalOrbital: React.FC = () => {
                       <h3 className="text-xl font-semibold text-white">Event Settings</h3>
                       <button
                         onClick={() => setIsEditingSettings(!isEditingSettings)}
-                        className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-lg text-white text-sm transition-all"
+                        className="px-3 py-1 rounded-lg text-white text-sm transition-all"
+                        style={{ backgroundColor: currentTheme.primary }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '0.9';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                        }}
                       >
                         {isEditingSettings ? 'Save' : 'Edit'}
                       </button>
@@ -1358,10 +1529,19 @@ export const DJPortalOrbital: React.FC = () => {
                             onChange={(e) => setSpotlightSlots(Number(e.target.value))}
                             min="0"
                             max="5"
-                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-pink-500"
+                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+                            style={{
+                              '--tw-ring-color': currentTheme.secondary,
+                            } as React.CSSProperties}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = currentTheme.secondary;
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            }}
                           />
                         ) : (
-                          <div className="text-pink-400 font-semibold text-lg">{spotlightSlots}</div>
+                          <div className="font-semibold text-lg" style={{ color: currentTheme.secondary }}>{spotlightSlots}</div>
                         )}
                       </div>
                     </div>
@@ -1454,8 +1634,15 @@ export const DJPortalOrbital: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                      <p className="text-purple-400 text-xs">
+                    <div 
+                      className="mt-4 p-3 rounded-lg"
+                      style={{
+                        backgroundColor: `${currentTheme.primary}1A`,
+                        borderWidth: '1px',
+                        borderColor: `${currentTheme.primary}4D`,
+                      }}
+                    >
+                      <p className="text-xs" style={{ color: currentTheme.accent }}>
                         💡 <strong>Tip:</strong> The ring automatically adjusts based on your set status and request activity. 
                         When you go LIVE, the interface simplifies to show only essential controls and the status ring.
                       </p>
@@ -1465,7 +1652,16 @@ export const DJPortalOrbital: React.FC = () => {
                   {/* Actions */}
                   <button
                     onClick={logout}
-                    className="w-full py-4 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-full font-semibold transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 text-white rounded-full font-semibold transition-all flex items-center justify-center gap-2"
+                    style={{
+                      background: `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = `linear-gradient(to right, rgb(185, 28, 28), ${currentTheme.primary})`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`;
+                    }}
                   >
                     <LogOut className="w-5 h-5" />
                     Logout
@@ -1488,95 +1684,74 @@ export const DJPortalOrbital: React.FC = () => {
           </div>
         )}
 
-        {/* Modals */}
+        {/* Modals - Phase 8: Lazy loaded for performance */}
         {showEventCreator && (
-          <EventCreator
-            onClose={() => setShowEventCreator(false)}
-            onEventCreated={handleEventCreated}
-          />
-        )}
-
-        {showQRCode && currentEvent && currentEventId && (
-          <QRCodeDisplay
-            eventId={currentEventId}
-            venueName={currentEvent.venueName}
-            onClose={() => setShowQRCode(false)}
-          />
+          <Suspense fallback={
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="text-white text-lg">Loading...</div>
+            </div>
+          }>
+            <EventCreator
+              onClose={() => setShowEventCreator(false)}
+              onEventCreated={handleEventCreated}
+            />
+          </Suspense>
         )}
 
         {/* Event Playlist Manager Modal */}
         {showPlaylistManager && (
-          <EventPlaylistManager
-            masterLibrary={tracks}
-            currentEventName={currentEvent?.venueName}
-            currentSetId={currentSetId || undefined}
-            isLive={isLiveMode}
-            onApplyPlaylist={async (trackIds, playlistInfo) => {
-              console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
-              
-              // 1. Save playlist to backend
-              if (currentSetId) {
-                try {
-                  await updateSetPlaylist(currentSetId, {
-                    playlistType: playlistInfo.type,
-                    playlistId: playlistInfo.id,
-                    playlistName: playlistInfo.name,
-                    playlistTracks: trackIds
-                  });
-                  console.log('✅ Playlist saved to backend successfully');
-                } catch (error) {
-                  console.error('❌ Failed to save playlist to backend:', error);
-                  // Continue anyway - playlist still applied locally
+          <Suspense fallback={
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="text-white text-lg">Loading...</div>
+            </div>
+          }>
+            <EventPlaylistManager
+              masterLibrary={tracks}
+              currentEventName={currentEvent?.venueName}
+              currentSetId={currentSetId || undefined}
+              isLive={isLiveMode}
+              onApplyPlaylist={async (trackIds, playlistInfo) => {
+                console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
+                
+                // 1. Save playlist to backend
+                if (currentSetId) {
+                  try {
+                    await updateSetPlaylist(currentSetId, {
+                      playlistType: playlistInfo.type,
+                      playlistId: playlistInfo.id,
+                      playlistName: playlistInfo.name,
+                      playlistTracks: trackIds
+                    });
+                    console.log('✅ Playlist saved to backend successfully');
+                  } catch (error) {
+                    console.error('❌ Failed to save playlist to backend:', error);
+                    // Continue anyway - playlist still applied locally
+                  }
                 }
-              }
-              
-              // 2. Enable selected tracks, disable others (local state)
-              setTracks(prevTracks =>
-                prevTracks.map(track => ({
-                  ...track,
-                  isEnabled: trackIds.includes(track.id)
-                }))
-              );
-              
-              // 3. Show success notification
-              addNotification({
-                type: 'info',
-                title: '✅ Playlist Applied',
-                message: `${playlistInfo.name}: ${trackIds.length} songs enabled for this event`,
-              });
-            }}
-            onClose={() => setShowPlaylistManager(false)}
-          />
+                
+                // 2. Enable selected tracks, disable others (local state)
+                setTracks(prevTracks =>
+                  prevTracks.map(track => ({
+                    ...track,
+                    isEnabled: trackIds.includes(track.id)
+                  }))
+                );
+                
+                // 3. Show success notification
+                addNotification({
+                  type: 'info',
+                  title: '✅ Playlist Applied',
+                  message: `${playlistInfo.name}: ${trackIds.length} songs enabled for this event`,
+                });
+              }}
+              onClose={() => setShowPlaylistManager(false)}
+            />
+          </Suspense>
         )}
 
         {/* Features 6, 10, 12 - Request Management Modals */}
-        {showAcceptPanel && selectedRequest && (
-          <AcceptRequestPanel
-            request={selectedRequest}
-            onAccept={handleAccept}
-            onSkip={() => {
-              setShowAcceptPanel(false);
-              setShowVetoModal(true);
-            }}
-            onClose={() => {
-              setShowAcceptPanel(false);
-              setSelectedRequest(null);
-            }}
-            isProcessing={isProcessing}
-          />
-        )}
-
-        {showVetoModal && selectedRequest && (
-          <VetoConfirmation
-            request={selectedRequest}
-            onConfirm={handleVetoConfirm}
-            onCancel={() => {
-              setShowVetoModal(false);
-              setSelectedRequest(null);
-            }}
-            isProcessing={isProcessing}
-          />
-        )}
+        {/* Accept modal removed - now using optimistic pattern with undo toast */}
+        {/* Veto modal removed - now using optimistic pattern with undo toast */}
 
         {showPlayingPanel && selectedRequest && (
           <MarkPlayingPanel
@@ -1611,29 +1786,31 @@ export const DJPortalOrbital: React.FC = () => {
 
         {/* Notification Center Modal */}
         {showNotifications && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="max-w-2xl w-full max-h-[90vh]">
-              <NotificationCenter
-                notifications={notifications}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
-                onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
-                onNotificationClick={(notification) => {
-                  markAsRead(notification.id);
-                  if (notification.metadata?.requestId) {
-                    console.log('Open request:', notification.metadata.requestId);
-                  }
-                }}
-                className="w-full"
-              />
-              <button
-                onClick={() => setShowNotifications(false)}
-                className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
-              >
-                Close
-              </button>
+          <Suspense fallback={null}>
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="max-w-2xl w-full max-h-[90vh]">
+                <NotificationCenter
+                  notifications={notifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
+                  onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
+                  onNotificationClick={(notification) => {
+                    markAsRead(notification.id);
+                    if (notification.metadata?.requestId) {
+                      console.log('Open request:', notification.metadata.requestId);
+                    }
+                  }}
+                  className="w-full"
+                />
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
-          </div>
+          </Suspense>
         )}
 
         {/* DJ Profile Management Modal */}
@@ -1703,12 +1880,28 @@ export const DJPortalOrbital: React.FC = () => {
         )}
       </div>
 
-      {/* Settings Modal */}
+      {/* Slide-out Panels (non-blocking) - Phase 8: Lazy loaded */}
       {showSettings && (
-        <SettingsModal
-          onClose={() => setShowSettings(false)}
-          mode="dj"
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+        }>
+          <SettingsModal
+            onClose={() => setShowSettings(false)}
+            mode="dj"
+          />
+        </Suspense>
+      )}
+
+      {showQRCode && currentEvent && currentEventId && (
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+        }>
+          <QRCodeDisplay
+            eventId={currentEventId}
+            venueName={currentEvent.venueName}
+            onClose={() => setShowQRCode(false)}
+          />
+        </Suspense>
       )}
     </GestureHandler>
   );

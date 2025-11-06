@@ -1,0 +1,58 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: nkosimano
+            - generic [ref=e14]:
+              - img [ref=e15]
+              - generic [ref=e17]: BRONZE
+        - generic [ref=e18]:
+          - button "Notifications" [ref=e19] [cursor=pointer]:
+            - img [ref=e20]
+          - button "Settings" [ref=e23] [cursor=pointer]:
+            - img [ref=e24]
+          - button "Sign out" [ref=e27] [cursor=pointer]:
+            - img [ref=e28]
+      - generic [ref=e33]:
+        - generic [ref=e35]: Event 1 of 1
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - img [ref=e38]
+            - generic [ref=e42]: Nearby
+          - generic [ref=e43]:
+            - heading "Blue room" [level=2] [ref=e44]
+            - paragraph [ref=e45]: 🎤 DJ
+            - generic [ref=e46]:
+              - generic [ref=e47]:
+                - img [ref=e48]
+                - text: All Genres
+              - generic [ref=e52]:
+                - img [ref=e53]
+                - text: 0 people
+        - generic [ref=e55]:
+          - button "Skip event" [ref=e56] [cursor=pointer]:
+            - img [ref=e57]
+          - button "Join event" [ref=e60] [cursor=pointer]:
+            - img [ref=e61]
+        - paragraph [ref=e64]: Swipe or tap buttons below
+      - generic [ref=e66]:
+        - button "Events" [ref=e67] [cursor=pointer]:
+          - img [ref=e68]
+          - generic [ref=e70]: Events
+        - button "Browse" [disabled] [ref=e71]:
+          - img [ref=e72]
+          - generic [ref=e76]: Browse
+        - button "Alerts" [ref=e77] [cursor=pointer]:
+          - img [ref=e78]
+          - generic [ref=e81]: Alerts
+        - button "Settings" [ref=e82] [cursor=pointer]:
+          - img [ref=e83]
+          - generic [ref=e86]: Settings
+```

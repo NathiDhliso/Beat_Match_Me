@@ -135,6 +135,59 @@ html:not(.dark) {
 }
 
 /* ============================================
+   THEME MODES - BeatByMe / Gold / Platinum
+   For Elite International DJs
+   ============================================ */
+
+/* BEATBYME THEME - Original Purple & Pink */
+html[data-theme="beatbyme"] {
+  --theme-primary: #8B5CF6;           /* Purple-600 */
+  --theme-primary-dark: #7C3AED;      /* Purple-700 */
+  --theme-primary-light: #A78BFA;     /* Purple-400 */
+  --theme-secondary: #EC4899;         /* Pink-600 */
+  --theme-secondary-dark: #DB2777;    /* Pink-700 */
+  --theme-secondary-light: #F472B6;   /* Pink-400 */
+  --theme-accent: #A78BFA;            /* Purple-400 */
+  --theme-gradient: linear-gradient(to right, #8B5CF6, #EC4899);
+  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #581c87, #0a0a0a);
+  --theme-orbital-glow: rgba(139, 92, 246, 0.3);
+  --theme-border: #7C3AED;
+  --theme-shadow: rgba(139, 92, 246, 0.5);
+}
+
+/* GOLD THEME - Luxury Egyptian Gold */
+html[data-theme="gold"] {
+  --theme-primary: #D4AF37;           /* Rich Gold */
+  --theme-primary-dark: #B8860B;      /* Dark Goldenrod */
+  --theme-primary-light: #FFD700;     /* Gold */
+  --theme-secondary: #F59E0B;         /* Amber-500 */
+  --theme-secondary-dark: #D97706;    /* Amber-600 */
+  --theme-secondary-light: #FBBF24;   /* Amber-400 */
+  --theme-accent: #FBBF24;            /* Amber-400 */
+  --theme-gradient: linear-gradient(to right, #D4AF37, #F59E0B);
+  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #78350f, #0a0a0a);
+  --theme-orbital-glow: rgba(212, 175, 55, 0.4);
+  --theme-border: #D4AF37;
+  --theme-shadow: rgba(212, 175, 55, 0.5);
+}
+
+/* PLATINUM THEME - Elite Platinum & Silver */
+html[data-theme="platinum"] {
+  --theme-primary: #E5E4E2;           /* Platinum */
+  --theme-primary-dark: #C0C0C0;      /* Silver */
+  --theme-primary-light: #F5F5F5;     /* Whitesmoke */
+  --theme-secondary: #94A3B8;         /* Slate-400 */
+  --theme-secondary-dark: #64748B;    /* Slate-500 */
+  --theme-secondary-light: #CBD5E1;   /* Slate-300 */
+  --theme-accent: #CBD5E1;            /* Slate-300 */
+  --theme-gradient: linear-gradient(to right, #E5E4E2, #94A3B8);
+  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #1e293b, #0a0a0a);
+  --theme-orbital-glow: rgba(229, 228, 226, 0.3);
+  --theme-border: #94A3B8;
+  --theme-shadow: rgba(148, 163, 184, 0.5);
+}
+
+/* ============================================
    UTILITY CLASSES
    ============================================ */
 
@@ -582,12 +635,42 @@ html:not(.dark) {
   }
 }
 
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .animate-swipe-left {
   animation: swipe-left 0.3s ease-out forwards;
 }
 
 .animate-swipe-right {
   animation: swipe-right 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ============================================

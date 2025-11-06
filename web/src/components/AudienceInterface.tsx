@@ -5,6 +5,8 @@
 
 import React, { useState } from 'react';
 import { Music, Heart, X, Check, Zap } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 /**
  * Event Discovery - Tinder-style card stack
@@ -150,10 +152,15 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          {/* Event Image/Gradient */}
-          <div className="h-2/3 relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          {/* Event Image/Gradient - Phase 8: Lazy loaded */}
+          <div className="h-2/3 relative bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
             {currentEvent.image ? (
-              <img src={currentEvent.image} alt={currentEvent.venueName} className="w-full h-full object-cover" />
+              <LazyLoadImage
+                src={currentEvent.image}
+                alt={currentEvent.venueName}
+                className="w-full h-full object-cover"
+                effect="blur"
+              />
             ) : (
               <Music className="w-32 h-32 text-white/50" />
             )}
@@ -288,10 +295,16 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
               onClick={() => handleSelectSong(song)}
               aria-label={`Select ${song.title} by ${song.artist}`}
             >
-              {/* Album Art */}
+              {/* Album Art - Phase 8: Lazy loaded for performance */}
               <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 relative">
                 {song.albumArt ? (
-                  <img src={song.albumArt} alt={song.title} className="w-full h-full object-cover" />
+                  <LazyLoadImage
+                    src={song.albumArt}
+                    alt={song.title}
+                    className="w-full h-full object-cover"
+                    effect="blur"
+                    placeholderSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%238B5CF6' width='100' height='100'/%3E%3C/svg%3E"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Music className="w-12 h-12 text-white/50" />

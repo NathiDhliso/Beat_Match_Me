@@ -2,10 +2,16 @@
  * Request Confirmation Component
  * Feature 3: Submit a Song Request with Payment
  * Comprehensive confirmation screen with pricing breakdown, tier discounts, and Fair-Play Promise
+ * Phase 8: Performance - Lazy loaded album art
  */
 
 import React, { useState } from 'react';
 import { Music, Info, X, Zap, Shield, CheckCircle } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import { useTheme, useThemeClasses } from '../context/ThemeContext';
+import type { UserTier } from '../theme/tokens';
+import { getTierColor, getTierDiscount, getTierBackgroundColor } from '../theme/tokens';
 
 interface Song {
   id: string;
@@ -19,7 +25,7 @@ interface Song {
 
 interface RequestConfirmationProps {
   song: Song;
-  userTier?: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+  userTier?: UserTier;
   estimatedQueuePosition?: number;
   estimatedWaitTime?: string;
   onConfirm: (data: RequestData) => Promise<void>;
@@ -34,20 +40,6 @@ interface RequestData {
   totalAmount: number;
 }
 
-const TIER_MULTIPLIERS = {
-  BRONZE: 1.0,
-  SILVER: 0.9,
-  GOLD: 0.8,
-  PLATINUM: 0.7,
-};
-
-const TIER_COLORS = {
-  BRONZE: '#cd7f32',
-  SILVER: '#c0c0c0',
-  GOLD: '#ffd700',
-  PLATINUM: '#e5e4e2',
-};
-
 export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   song,
   userTier = 'BRONZE',
@@ -59,13 +51,17 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   const [requestType, setRequestType] = useState<'standard' | 'spotlight'>('standard');
   const [showDedication, setShowDedication] = useState(false);
   const [dedication, setDedication] = useState('');
-  const [showFairPlayModal, setShowFairPlayModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Use centralized theme system
+  const { currentTheme } = useTheme();
+  const themeClasses = useThemeClasses();
+  const tierColor = getTierColor(userTier);
+  const tierMultiplier = getTierDiscount(userTier);
 
   const SPOTLIGHT_PRICE = 75;
   const DEDICATION_PRICE = 10;
   
-  const tierMultiplier = TIER_MULTIPLIERS[userTier];
   const tierDiscount = Math.round((1 - tierMultiplier) * 100);
 
   const calculateTotal = () => {
@@ -119,10 +115,13 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
           {/* Song Info with Album Art */}
           <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30">
             {song.albumArt ? (
-              <img
+              <LazyLoadImage
                 src={song.albumArt}
                 alt={song.title}
                 className="w-48 h-48 mx-auto rounded-xl mb-4 object-cover"
+                effect="blur"
+                width={192}
+                height={192}
               />
             ) : (
               <div className="w-48 h-48 mx-auto rounded-xl mb-4 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -135,7 +134,10 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             
             <div className="flex items-center justify-center gap-3 mb-2">
               {song.genre && (
-                <span className="px-3 py-1 bg-purple-600 rounded-full text-sm text-white font-semibold">
+                <span 
+                  className="px-3 py-1 rounded-full text-sm text-white font-semibold"
+                  style={{ backgroundColor: currentTheme.primary }}
+                >
                   {song.genre}
                 </span>
               )}
@@ -147,10 +149,10 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             <p className="text-gray-400 text-sm">Base Price: R{song.basePrice}</p>
           </div>
 
-          {/* User Tier Badge */}
+          {/* User Tier Badge - Now using centralized tier colors! */}
           <div
             className="rounded-xl p-4 flex justify-between items-center"
-            style={{ backgroundColor: TIER_COLORS[userTier] + '40' }}
+            style={{ backgroundColor: getTierBackgroundColor(userTier, 0.25) }}
           >
             <div>
               <p className="text-white font-bold text-lg">{userTier} MEMBER</p>
@@ -160,7 +162,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             </div>
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: TIER_COLORS[userTier] }}
+              style={{ backgroundColor: tierColor.hex }}
             >
               <span className="text-white font-bold text-xl">
                 {userTier.charAt(0)}
@@ -180,18 +182,42 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             </div>
           </div>
 
-          {/* Fair-Play Promise */}
-          <button
-            onClick={() => setShowFairPlayModal(true)}
-            className="w-full bg-green-600 hover:bg-green-700 rounded-xl p-4 flex items-center gap-3 transition-colors"
-          >
-            <Shield className="w-6 h-6 text-white" />
-            <div className="flex-1 text-left">
-              <p className="text-white font-bold">Fair-Play Promise</p>
-              <p className="text-green-100 text-sm">Full refund if DJ vetoes</p>
+          {/* Fair-Play Promise - Inline Expandable */}
+          <details className="w-full bg-green-600/10 border border-green-600/30 rounded-xl overflow-hidden group">
+            <summary className="cursor-pointer p-4 flex items-center gap-3 hover:bg-green-600/20 transition-colors list-none">
+              <Shield className="w-6 h-6 text-green-400" />
+              <div className="flex-1 text-left">
+                <p className="text-white font-bold">Fair-Play Promise</p>
+                <p className="text-green-100 text-sm">Full refund if DJ vetoes</p>
+              </div>
+              <Info className="w-5 h-5 text-green-400 group-open:rotate-180 transition-transform" />
+            </summary>
+            
+            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-green-600/20">
+              <p className="text-sm font-semibold text-green-400 mb-3">Your Money is Protected:</p>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-300 text-sm">
+                  If DJ vetoes your request for any reason, you get an automatic full refund
+                </p>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-300 text-sm">
+                  Refunds process within 5-10 business days
+                </p>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-300 text-sm">
+                  No questions asked - your satisfaction is guaranteed
+                </p>
+              </div>
             </div>
-            <Info className="w-5 h-5 text-white" />
-          </button>
+          </details>
 
           <div className="border-t border-gray-700 my-6" />
 
@@ -204,16 +230,23 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
                 onClick={() => setRequestType('standard')}
                 className={`w-full p-4 rounded-xl border-2 transition-all ${
                   requestType === 'standard'
-                    ? 'border-purple-500 bg-purple-900/30'
+                    ? 'bg-opacity-30'
                     : 'border-gray-700 bg-gray-800 hover:border-gray-600'
                 }`}
+                style={requestType === 'standard' ? {
+                  borderColor: currentTheme.primary,
+                  backgroundColor: `${currentTheme.primary}33`
+                } : {}}
               >
                 <div className="flex justify-between items-center">
                   <div className="text-left">
                     <p className="text-white font-bold">Standard Request</p>
                     <p className="text-gray-400 text-sm">Added to queue in order</p>
                   </div>
-                  <p className="text-purple-400 font-bold text-xl">
+                  <p 
+                    className="font-bold text-xl"
+                    style={{ color: currentTheme.accent }}
+                  >
                     R{(song.basePrice * tierMultiplier).toFixed(2)}
                   </p>
                 </div>
@@ -269,8 +302,11 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
                         ? 'border-red-500'
                         : hasWarning
                         ? 'border-yellow-500'
-                        : 'border-gray-700 focus:border-purple-500'
+                        : 'border-gray-700'
                     }`}
+                    style={dedication.length <= 100 && !hasWarning ? {
+                      ['--tw-ring-color' as string]: currentTheme.primary,
+                    } as React.CSSProperties : {}}
                     rows={3}
                     maxLength={100}
                   />
@@ -290,41 +326,108 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             </div>
           </div>
 
-          {/* Pricing Breakdown */}
-          <div className="bg-gray-800 rounded-xl p-6 space-y-3">
-            <h4 className="text-lg font-bold text-white mb-4">Pricing Breakdown</h4>
+          {/* Enhanced Pricing Breakdown - Phase 6: Price Transparency */}
+          <div 
+            className="rounded-xl p-6 space-y-3 border-2"
+            style={{ 
+              backgroundColor: `${currentTheme.primary}08`,
+              borderColor: `${currentTheme.primary}30`
+            }}
+          >
+            <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              💰 Pricing Breakdown
+            </h4>
             
-            <div className="flex justify-between text-gray-400">
-              <span>Base Price:</span>
-              <span>R{song.basePrice}</span>
+            {/* Base Price */}
+            <div className="flex justify-between items-center text-gray-300">
+              <div className="flex items-center gap-2">
+                <Music className="w-4 h-4 text-gray-400" />
+                <span>Base Song Price:</span>
+              </div>
+              <span className="font-semibold">R{song.basePrice.toFixed(2)}</span>
             </div>
             
-            <div className="flex justify-between text-gray-400">
-              <span>Tier Multiplier ({userTier}):</span>
-              <span>×{tierMultiplier.toFixed(1)}</span>
+            {/* Tier Discount - Show savings prominently */}
+            {tierDiscount > 0 ? (
+              <div 
+                className="flex justify-between items-center p-3 rounded-lg"
+                style={{ backgroundColor: `${tierColor.hex}20` }}
+              >
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    style={{ backgroundColor: tierColor.hex }}
+                  >
+                    {userTier.charAt(0)}
+                  </div>
+                  <span className="font-semibold" style={{ color: tierColor.hex }}>
+                    {userTier} Member Discount ({tierDiscount}%):
+                  </span>
+                </div>
+                <span className="font-bold" style={{ color: tierColor.hex }}>
+                  -R{(song.basePrice * (1 - tierMultiplier)).toFixed(2)}
+                </span>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center text-gray-400 text-sm">
+                <span>💡 Upgrade your tier to unlock discounts!</span>
+              </div>
+            )}
+            
+            {/* Discounted Base Price */}
+            <div className="flex justify-between items-center text-white bg-gray-800/50 p-3 rounded-lg">
+              <span className="font-semibold">Discounted Song Price:</span>
+              <span className="font-bold text-lg">R{(song.basePrice * tierMultiplier).toFixed(2)}</span>
             </div>
             
+            {/* Spotlight Add-on */}
             {requestType === 'spotlight' && (
-              <div className="flex justify-between text-yellow-400">
-                <span>Spotlight:</span>
-                <span>+R{SPOTLIGHT_PRICE}</span>
+              <div className="flex justify-between items-center text-yellow-400 bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  <span className="font-semibold">Spotlight Priority:</span>
+                </div>
+                <span className="font-bold">+R{SPOTLIGHT_PRICE.toFixed(2)}</span>
               </div>
             )}
             
+            {/* Dedication Add-on */}
             {showDedication && (
-              <div className="flex justify-between text-pink-400">
-                <span>Dedication:</span>
-                <span>+R{DEDICATION_PRICE}</span>
+              <div className="flex justify-between items-center text-pink-400 bg-pink-900/20 p-3 rounded-lg border border-pink-500/30">
+                <div className="flex items-center gap-2">
+                  <span>💝</span>
+                  <span className="font-semibold">Dedication Message:</span>
+                </div>
+                <span className="font-bold">+R{DEDICATION_PRICE.toFixed(2)}</span>
               </div>
             )}
             
-            <div className="border-t border-gray-700 my-2" />
+            {/* Total with prominent styling */}
+            <div className="border-t-2 border-gray-700 my-2" />
             
-            <div className="flex justify-between items-center">
-              <span className="text-xl font-bold text-white">Total:</span>
-              <span className="text-3xl font-bold text-green-400">
-                R{total.toFixed(2)}
-              </span>
+            <div 
+              className="flex justify-between items-center p-4 rounded-xl"
+              style={{ 
+                background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.accent}15)`
+              }}
+            >
+              <div>
+                <p className="text-sm text-gray-400 uppercase tracking-wide">Total Amount</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {tierDiscount > 0 && `You saved R${(song.basePrice * (1 - tierMultiplier)).toFixed(2)}!`}
+                </p>
+              </div>
+              <div className="text-right">
+                <p 
+                  className="text-4xl font-bold"
+                  style={{ color: currentTheme.accent }}
+                >
+                  R{total.toFixed(2)}
+                </p>
+                {tierDiscount === 0 && (
+                  <p className="text-xs text-gray-400 mt-1">Original Price</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -341,7 +444,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
             <button
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 animate-pulse-glow"
+              className={`flex-1 text-white py-4 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${themeClasses.gradientPrimary} hover:opacity-90`}
             >
               {isProcessing ? (
                 <>
@@ -359,47 +462,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
         </div>
       </div>
 
-      {/* Fair-Play Modal */}
-      {showFairPlayModal && (
-        <div className="fixed inset-0 bg-black/90 z-60 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl max-w-md w-full p-8">
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <Shield className="w-8 h-8 text-green-400" />
-              Your Money is Protected
-            </h3>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                <p className="text-gray-300">
-                  If DJ vetoes your request for any reason, you get an automatic full refund
-                </p>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                <p className="text-gray-300">
-                  Refunds process within 5-10 business days
-                </p>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                <p className="text-gray-300">
-                  No questions asked - your satisfaction is guaranteed
-                </p>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => setShowFairPlayModal(false)}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-xl font-bold transition-colors"
-            >
-              Got It
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Fair-Play modal removed - now inline expandable section */}
     </div>
   );
 };

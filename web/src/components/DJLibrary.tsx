@@ -1,10 +1,14 @@
 /**
  * DJ Library Management
- * Upload, manage, and configure your tracklist
+ * Curate master tracklist, enable/disable songs for events
+ * Phase 8: Performance - Added virtual scrolling for large track lists
  */
 
 import React, { useState } from 'react';
-import { Music, Upload, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight, Search, Filter, Globe, X } from 'lucide-react';
+import { Music, Search, Filter, X, Upload, Globe, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight } from 'lucide-react';
+import { List } from 'react-window';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { SpotifySearch } from './SpotifySearch';
 import { SpotifyPlaylistImport } from './SpotifyPlaylistImport';
 
@@ -121,22 +125,35 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         </div>
       </div>
 
-      {/* Track List */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 gap-3">
-          {filteredTracks.map(track => (
-            <TrackCard
-              key={track.id}
-              track={track}
-              onEdit={() => setEditingTrack(track)}
-              onDelete={() => onDeleteTrack(track.id)}
-              onToggle={() => onToggleTrack(track.id)}
-              onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
-            />
-          ))}
-        </div>
-
-        {filteredTracks.length === 0 && (
+      {/* Track List - Phase 8: Virtual scrolling for performance */}
+      <div className="flex-1 overflow-hidden p-6">
+        {filteredTracks.length > 0 ? (
+          <div className="h-full">
+            <List
+              height={window.innerHeight - 300}
+              itemCount={filteredTracks.length}
+              itemSize={100}
+              width="100%"
+              itemData={filteredTracks}
+            >
+              {/* @ts-expect-error - react-window v2 children render function type mismatch */}
+              {({ data, index, style }: { data: Track[]; index: number; style: React.CSSProperties }) => {
+                const track = data[index];
+                return (
+                  <div style={style} className="pr-3 pb-3">
+                    <TrackCard
+                      track={track}
+                      onEdit={() => setEditingTrack(track)}
+                      onDelete={() => onDeleteTrack(track.id)}
+                      onToggle={() => onToggleTrack(track.id)}
+                      onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
+                    />
+                  </div>
+                );
+              }}
+            </List>
+          </div>
+        ) : (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">
             <Music className="w-16 h-16 mb-4 opacity-50" />
             <p className="text-lg">No tracks found</p>
@@ -270,7 +287,8 @@ interface TrackCardProps {
   onUpdatePrice: (price: number) => void;
 }
 
-const TrackCard: React.FC<TrackCardProps> = ({ track, onEdit, onDelete, onToggle, onUpdatePrice }) => {
+// Phase 8: Memoized TrackCard for virtual scrolling performance
+const TrackCard: React.FC<TrackCardProps> = React.memo(({ track, onEdit, onDelete, onToggle, onUpdatePrice }) => {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [tempPrice, setTempPrice] = useState(track.basePrice.toString());
 
@@ -285,10 +303,17 @@ const TrackCard: React.FC<TrackCardProps> = ({ track, onEdit, onDelete, onToggle
   return (
     <div className={`bg-white/5 backdrop-blur-lg rounded-xl p-4 border ${track.isEnabled ? 'border-green-500/30' : 'border-white/10'} hover:border-purple-500/50 transition-all group`}>
       <div className="flex items-center gap-4">
-        {/* Album Art */}
-        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+        {/* Album Art - Phase 8: Lazy loaded for performance */}
+        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
           {track.albumArt ? (
-            <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover rounded-lg" />
+            <LazyLoadImage
+              src={track.albumArt}
+              alt={track.title}
+              className="w-full h-full object-cover rounded-lg"
+              effect="blur"
+              width={64}
+              height={64}
+            />
           ) : (
             <Music className="w-8 h-8 text-white" />
           )}
@@ -366,7 +391,7 @@ const TrackCard: React.FC<TrackCardProps> = ({ track, onEdit, onDelete, onToggle
       </div>
     </div>
   );
-};
+});
 
 /**
  * Add Track Modal

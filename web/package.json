@@ -16,12 +16,15 @@
   "dependencies": {
     "@apollo/client": "^3.11.0",
     "@aws-amplify/ui-react": "^6.5.0",
+    "@types/react-window": "^1.8.8",
     "canvas-confetti": "^1.9.3",
     "lucide-react": "^0.460.0",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-lazy-load-image-component": "^1.6.3",
     "react-router-dom": "^7.0.0",
+    "react-window": "^2.2.2",
     "recharts": "^2.13.0"
   },
   "devDependencies": {
@@ -33,6 +36,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/react-lazy-load-image-component": "^1.6.4",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.36.0",

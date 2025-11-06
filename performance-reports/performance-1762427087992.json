@@ -1,0 +1,180 @@
+{
+  "timestamp": "2025-11-06T11:04:47.991Z",
+  "buildTime": "12.45",
+  "bundleSize": {
+    "total": 1173188,
+    "formatted": "1.12 MB",
+    "files": [
+      {
+        "name": "index-D5A9rQ4S.js",
+        "size": 706621,
+        "type": "js"
+      },
+      {
+        "name": "components-DxGeuX03.js",
+        "size": 98397,
+        "type": "js"
+      },
+      {
+        "name": "index-DZrnRzNd.css",
+        "size": 90759,
+        "type": "css"
+      },
+      {
+        "name": "NowPlayingCard-BRUDrKDb.js",
+        "size": 67298,
+        "type": "js"
+      },
+      {
+        "name": "DJPortalOrbital-Ct9xA8JX.js",
+        "size": 44638,
+        "type": "js"
+      },
+      {
+        "name": "UserPortalInnovative-ChY7lO-a.js",
+        "size": 37729,
+        "type": "js"
+      },
+      {
+        "name": "blur-QEXtxomH.js",
+        "size": 27417,
+        "type": "js"
+      },
+      {
+        "name": "AudienceInterface-aR2-ZsUd.js",
+        "size": 16544,
+        "type": "js"
+      },
+      {
+        "name": "RequestConfirmation-D6HJo1dw.js",
+        "size": 12317,
+        "type": "js"
+      },
+      {
+        "name": "analytics-YZSLdWly.js",
+        "size": 11109,
+        "type": "js"
+      },
+      {
+        "name": "Settings-BzDlijcG.js",
+        "size": 10512,
+        "type": "js"
+      },
+      {
+        "name": "LiveModeIndicators-DRK_BOo8.js",
+        "size": 10349,
+        "type": "js"
+      },
+      {
+        "name": "components-C8Ns6WOa.css",
+        "size": 9391,
+        "type": "css"
+      },
+      {
+        "name": "Notifications-B_bxyv5W.js",
+        "size": 9133,
+        "type": "js"
+      },
+      {
+        "name": "graphql-B2VD081q.js",
+        "size": 6773,
+        "type": "js"
+      },
+      {
+        "name": "RefundConfirmation-6FSXDURo.js",
+        "size": 6567,
+        "type": "js"
+      },
+      {
+        "name": "Settings-BuClMWsL.css",
+        "size": 4180,
+        "type": "css"
+      },
+      {
+        "name": "auth-CSXqx3xs.js",
+        "size": 408,
+        "type": "js"
+      },
+      {
+        "name": "blur-D8DuMFaX.css",
+        "size": 284,
+        "type": "css"
+      },
+      {
+        "name": "LiveModeIndicators-BNSOPqXn.js",
+        "size": 273,
+        "type": "js"
+      },
+      {
+        "name": "shield-CziEx7Aw.js",
+        "size": 261,
+        "type": "js"
+      },
+      {
+        "name": "zap-CnIRC3_s.js",
+        "size": 251,
+        "type": "js"
+      },
+      {
+        "name": "RequestConfirmation-_hwxqd4B.js",
+        "size": 236,
+        "type": "js"
+      },
+      {
+        "name": "RefundConfirmation-DKOCqqjW.js",
+        "size": 234,
+        "type": "js"
+      },
+      {
+        "name": "api-DuzYhWZl.js",
+        "size": 209,
+        "type": "js"
+      },
+      {
+        "name": "music-9OgLF2F3.js",
+        "size": 208,
+        "type": "js"
+      },
+      {
+        "name": "dollar-sign-BJs6n7sR.js",
+        "size": 207,
+        "type": "js"
+      },
+      {
+        "name": "bell-DnCXJDKF.js",
+        "size": 197,
+        "type": "js"
+      },
+      {
+        "name": "Notifications-TnbeotcA.js",
+        "size": 196,
+        "type": "js"
+      },
+      {
+        "name": "circle-check-big-DMMtpawr.js",
+        "size": 181,
+        "type": "js"
+      },
+      {
+        "name": "StatusModals-BIvul9r3.js",
+        "size": 129,
+        "type": "js"
+      },
+      {
+        "name": "Settings-CnVz7AFD.js",
+        "size": 120,
+        "type": "js"
+      },
+      {
+        "name": "client-DOWhr2KO.js",
+        "size": 60,
+        "type": "js"
+      }
+    ],
+    "withinTarget": false
+  },
+  "issues": [
+    "Duplicate dependencies found. Run `npm dedupe`.",
+    "Consider adding service worker for offline support"
+  ]
+}
