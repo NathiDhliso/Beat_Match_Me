@@ -1431,14 +1431,14 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Settings View */}
           {currentView === 'settings' && (
-            <div className="h-full overflow-y-auto px-4 py-8">
-              <div className="max-w-4xl mx-auto space-y-4">
-                <h2 className="text-3xl font-bold text-white mb-6 text-center">Settings</h2>
+            <div className="h-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8">
+              <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Settings</h2>
                 
                 {/* Theme Selector - Full Width */}
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
                       🎨 Theme
                     </h3>
                   </div>
@@ -1447,7 +1447,7 @@ export const DJPortalOrbital: React.FC = () => {
                       <button
                         key={mode}
                         onClick={() => setThemeMode(mode)}
-                        className={`py-2.5 px-3 rounded-xl font-semibold text-sm transition-all ${
+                        className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                           themeMode === mode
                             ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
                             : 'opacity-60 hover:opacity-100'
@@ -1474,77 +1474,79 @@ export const DJPortalOrbital: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Profile & Event Settings - 2 Column Grid */}
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Profile & Event Settings - 2 Column Grid on mobile and desktop */}
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   {/* Profile Card */}
-                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                      👤 Profile
+                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                    <h3 className="text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
+                      <span className="text-base sm:text-lg">👤</span>
+                      <span className="hidden sm:inline">Profile</span>
                     </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Name</span>
-                        <span className="text-white font-medium">{user?.name}</span>
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Name</span>
+                        <span className="text-white font-medium truncate">{user?.name}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Role</span>
-                        <span className="font-medium" style={{ color: currentTheme.accent }}>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Role</span>
+                        <span className="font-medium truncate" style={{ color: currentTheme.accent }}>
                           {user?.role}
                         </span>
                       </div>
                       <button
                         onClick={() => setShowProfile(true)}
-                        className="w-full mt-2 px-3 py-2 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
+                        className="w-full mt-1.5 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm font-semibold transition-all hover:opacity-90"
                         style={{ backgroundColor: currentTheme.primary }}
                       >
-                        Edit Profile
+                        Edit
                       </button>
                     </div>
                   </div>
 
                   {/* Event Settings Card */}
-                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                        ⚙️ Event
+                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <h3 className="text-sm sm:text-lg font-semibold text-white flex items-center gap-1 sm:gap-2">
+                        <span className="text-base sm:text-lg">⚙️</span>
+                        <span className="hidden sm:inline">Event</span>
                       </h3>
                       <button
                         onClick={() => setIsEditingSettings(!isEditingSettings)}
-                        className="px-2.5 py-1 rounded-lg text-white text-xs font-medium transition-all hover:opacity-90"
+                        className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white text-[10px] sm:text-xs font-medium transition-all hover:opacity-90"
                         style={{ backgroundColor: currentTheme.primary }}
                       >
                         {isEditingSettings ? 'Save' : 'Edit'}
                       </button>
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Base Price</span>
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Base Price</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
                             value={basePrice}
                             onChange={(e) => setBasePrice(Number(e.target.value))}
-                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:border-yellow-500"
+                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-yellow-500"
                           />
                         ) : (
                           <span className="text-yellow-400 font-semibold">R{basePrice}</span>
                         )}
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Requests/Hour</span>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Requests/Hr</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
                             value={requestsPerHour}
                             onChange={(e) => setRequestsPerHour(Number(e.target.value))}
-                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:border-blue-500"
+                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
                           />
                         ) : (
                           <span className="text-blue-400 font-semibold">{requestsPerHour}</span>
                         )}
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Spotlight Slots</span>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Spotlight</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
@@ -1552,7 +1554,7 @@ export const DJPortalOrbital: React.FC = () => {
                             onChange={(e) => setSpotlightSlots(Number(e.target.value))}
                             min="0"
                             max="5"
-                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none"
+                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none"
                             style={{
                               borderColor: currentTheme.secondary,
                             }}
@@ -1568,8 +1570,8 @@ export const DJPortalOrbital: React.FC = () => {
                 </div>
 
                 {/* Request Cap Manager - Compact */}
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
                     📊 Request Cap
                   </h3>
                   <RequestCapManager
@@ -1613,36 +1615,36 @@ export const DJPortalOrbital: React.FC = () => {
                   />
                 </div>
 
-                {/* Status Ring Guide - 3 Column Grid */}
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                {/* Status Ring Guide - 3 Column Grid (single row) */}
+                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
                     💡 Status Ring Guide
                   </h3>
-                  <div className="grid md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {/* Blue */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
                       <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0">
-                        <p className="text-blue-400 font-semibold text-xs">Browsing</p>
-                        <p className="text-gray-400 text-[10px] truncate">No active set</p>
+                      <div className="min-w-0 text-center sm:text-left">
+                        <p className="text-blue-400 font-semibold text-[10px] sm:text-xs">Browsing</p>
+                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">No active set</p>
                       </div>
                     </div>
                     
                     {/* Green */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
                       <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0">
-                        <p className="text-green-400 font-semibold text-xs">Active</p>
-                        <p className="text-gray-400 text-[10px] truncate">Accepting requests</p>
+                      <div className="min-w-0 text-center sm:text-left">
+                        <p className="text-green-400 font-semibold text-[10px] sm:text-xs">Active</p>
+                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">Accepting requests</p>
                       </div>
                     </div>
                     
                     {/* Yellow */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
                       <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0">
-                        <p className="text-yellow-400 font-semibold text-xs">Earning</p>
-                        <p className="text-gray-400 text-[10px] truncate">High activity</p>
+                      <div className="min-w-0 text-center sm:text-left">
+                        <p className="text-yellow-400 font-semibold text-[10px] sm:text-xs">Earning</p>
+                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">High activity</p>
                       </div>
                     </div>
                   </div>
@@ -1651,12 +1653,12 @@ export const DJPortalOrbital: React.FC = () => {
                 {/* Logout Button */}
                 <button
                   onClick={logout}
-                  className="w-full py-3 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:opacity-90"
+                  className="w-full py-2.5 sm:py-3 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:opacity-90 text-sm sm:text-base"
                   style={{
                     background: `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`,
                   }}
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                   Logout
                 </button>
               </div>
