@@ -42,7 +42,7 @@ type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
 
 export const DJPortalOrbital: React.FC = () => {
   const { user, logout } = useAuth();
-  const { currentTheme } = useTheme();
+  const { currentTheme, themeMode, setThemeMode } = useTheme();
   const themeClasses = useThemeClasses();
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
@@ -1436,6 +1436,49 @@ export const DJPortalOrbital: React.FC = () => {
                 <h2 className="text-4xl font-bold text-white mb-8 text-center">Settings</h2>
                 
                 <div className="space-y-6">
+                  {/* Theme Selector */}
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-white mb-4">Appearance</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-gray-300 text-sm mb-2 block">Theme Mode</label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {(['beatbyme', 'gold', 'platinum'] as const).map((mode) => (
+                            <button
+                              key={mode}
+                              onClick={() => setThemeMode(mode)}
+                              className={`py-3 px-4 rounded-xl font-semibold transition-all ${
+                                themeMode === mode
+                                  ? 'ring-2 ring-offset-2 ring-offset-gray-900'
+                                  : 'opacity-60 hover:opacity-100'
+                              }`}
+                              style={{
+                                background: mode === 'beatbyme' 
+                                  ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
+                                  : mode === 'gold'
+                                  ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
+                                  : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
+                                color: '#ffffff',
+                                ...(themeMode === mode && {
+                                  boxShadow: mode === 'beatbyme' 
+                                    ? '0 0 0 2px #8B5CF6'
+                                    : mode === 'gold'
+                                    ? '0 0 0 2px #D4AF37'
+                                    : '0 0 0 2px #E5E4E2'
+                                })
+                              }}
+                            >
+                              {mode === 'beatbyme' ? '🎵 BeatByMe' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-gray-400 text-xs mt-2">
+                          Choose your interface color scheme
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* User Info */}
                   <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
                     <h3 className="text-xl font-semibold text-white mb-4">Profile</h3>

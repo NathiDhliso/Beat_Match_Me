@@ -11,6 +11,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { SpotifySearch } from './SpotifySearch';
 import { SpotifyPlaylistImport } from './SpotifyPlaylistImport';
+import { useTheme } from '../context/ThemeContext';
 
 interface Track {
   id: string;
@@ -38,6 +39,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   onDeleteTrack,
   onToggleTrack,
 }) => {
+  const { currentTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -62,14 +64,20 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
           <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowSongSearch(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              style={{
+                background: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.secondary})`
+              }}
             >
               <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               <span className="whitespace-nowrap">Search Online</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              style={{
+                background: `linear-gradient(to right, ${currentTheme.secondary}, ${currentTheme.accent})`
+              }}
             >
               <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               <span className="whitespace-nowrap">Add Manual</span>

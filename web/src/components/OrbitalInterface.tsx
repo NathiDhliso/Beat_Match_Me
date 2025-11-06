@@ -416,12 +416,13 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   onSwipeRight,
   children,
 }) => {
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
+      time: Date.now(),
     });
   };
 
@@ -431,24 +432,37 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const touchEnd = {
       x: e.changedTouches[0].clientX,
       y: e.changedTouches[0].clientY,
+      time: Date.now(),
     };
 
     const deltaX = touchEnd.x - touchStart.x;
     const deltaY = touchEnd.y - touchStart.y;
-    const threshold = 50;
+    const deltaTime = touchEnd.time - touchStart.time;
+    
+    // Increased threshold from 50 to 100 pixels for less sensitivity
+    const distanceThreshold = 100;
+    
+    // Require minimum time (200ms) to prevent accidental swipes
+    const minSwipeTime = 200;
+    
+    // Calculate velocity (pixels per ms)
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const velocity = distance / deltaTime;
+    
+    // Require minimum velocity (0.3 px/ms) to ensure intentional swipe
+    const minVelocity = 0.3;
 
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe
-      if (Math.abs(deltaX) > threshold) {
+    // Only trigger if swipe meets all criteria
+    if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
         if (deltaX > 0) {
           onSwipeRight();
         } else {
           onSwipeLeft();
         }
-      }
-    } else {
-      // Vertical swipe
-      if (Math.abs(deltaY) > threshold) {
+      } else {
+        // Vertical swipe
         if (deltaY > 0) {
           onSwipeDown();
         } else {
