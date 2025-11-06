@@ -1,0 +1,53 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Platinum Background -->
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  
+  <!-- Spotlight Beam -->
+  <path d="M 16 4 L 10 18 L 22 18 Z" fill="url(#light)" opacity="0.5"/>
+  
+  <!-- Light Source -->
+  <circle cx="16" cy="4" r="2" fill="#FFFFFF" opacity="0.9"/>
+  
+  <!-- Lady Silhouette -->
+  <g transform="translate(16, 20)">
+    <!-- Head -->
+    <ellipse cy="-3" rx="3.5" ry="4.5" fill="#8B7355"/>
+    
+    <!-- Hair -->
+    <path d="M -3.5 -4.5 Q -4 -6 -3 -7 Q 0 -8 3 -7 Q 4 -6 3.5 -4.5 Q 3 -3 2.5 -2 L 2.5 0 Q 1.5 -1 0 -1 Q -1.5 -1 -2.5 0 L -2.5 -2 Q -3 -3 -3.5 -4.5 Z" fill="#1A1A1A"/>
+    
+    <!-- Headphones -->
+    <ellipse cx="-4" cy="-3" rx="1.5" ry="2" fill="url(#metal)" stroke="#FFF" stroke-width="0.3"/>
+    <ellipse cx="4" cy="-3" rx="1.5" ry="2" fill="url(#metal)" stroke="#FFF" stroke-width="0.3"/>
+    
+    <!-- Headband -->
+    <path d="M -4 -6 Q 0 -8.5 4 -6" stroke="url(#metal)" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+    
+    <!-- Body hint -->
+    <path d="M -3 0 L -5 3" stroke="#6B5344" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M 3 0 L 5 3" stroke="#6B5344" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Sound Waves -->
+  <path d="M 4 16 Q 6 14 8 16" stroke="#CBD5E1" stroke-width="0.5" fill="none" opacity="0.5"/>
+  <path d="M 24 16 Q 26 14 28 16" stroke="#CBD5E1" stroke-width="0.5" fill="none" opacity="0.5"/>
+  
+  <!-- Sparkles -->
+  <circle cx="8" cy="10" r="0.5" fill="#FFF" opacity="0.7"/>
+  <circle cx="24" cy="12" r="0.5" fill="#E5E4E2" opacity="0.7"/>
+  
+  <defs>
+    <radialGradient id="bg">
+      <stop offset="0%" style="stop-color:#3A3A3A"/>
+      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    </radialGradient>
+    <linearGradient id="light" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#E5E4E2;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="metal">
+      <stop offset="0%" style="stop-color:#F0F0F0"/>
+      <stop offset="100%" style="stop-color:#CBD5E1"/>
+    </linearGradient>
+  </defs>
+</svg>
