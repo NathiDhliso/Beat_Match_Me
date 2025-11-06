@@ -7,6 +7,11 @@ const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const lambda = new AWS.Lambda();
 
+// Environment configuration - allows override for testing
+const EVENTS_TABLE = process.env.EVENTS_TABLE || 'beatmatchme-events';
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+const QUEUES_TABLE = process.env.QUEUES_TABLE || 'beatmatchme-queues';
+
 exports.handler = async (event) => {
   console.log('Vetoing request:', JSON.stringify(event, null, 2));
 
@@ -17,7 +22,7 @@ exports.handler = async (event) => {
     // Get request details
     const requestResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         Key: { requestId },
       })
       .promise();
@@ -31,7 +36,7 @@ exports.handler = async (event) => {
     // Verify performer owns this event
     const eventResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId: request.eventId },
       })
       .promise();
@@ -47,7 +52,7 @@ exports.handler = async (event) => {
     // Update request status
     await dynamodb
       .update({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         Key: { requestId },
         UpdateExpression: 'SET #status = :status, vetoedAt = :vetoedAt, vetoReason = :reason',
         ExpressionAttributeNames: {
@@ -64,7 +69,7 @@ exports.handler = async (event) => {
     // Remove from queue
     const queueResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-queues',
+        TableName: QUEUES_TABLE,
         Key: { eventId: request.eventId },
       })
       .promise();
@@ -76,7 +81,7 @@ exports.handler = async (event) => {
 
       await dynamodb
         .put({
-          TableName: 'beatmatchme-queues',
+          TableName: QUEUES_TABLE,
           Item: {
             eventId: request.eventId,
             orderedRequestIds,

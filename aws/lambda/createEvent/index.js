@@ -10,6 +10,11 @@ const QRCode = require('qrcode');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
 
+// Environment configuration - allows override for testing
+const USERS_TABLE = process.env.USERS_TABLE || 'beatmatchme-users';
+const EVENTS_TABLE = process.env.EVENTS_TABLE || 'beatmatchme-events';
+const QUEUES_TABLE = process.env.QUEUES_TABLE || 'beatmatchme-queues';
+
 async function generateQRCode(eventId) {
   const url = `beatmatchme://event/${eventId}`;
   
@@ -52,7 +57,7 @@ exports.handler = async (event) => {
     // Validate performer
     const userResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-users',
+        TableName: USERS_TABLE,
         Key: { userId: performerId },
       })
       .promise();
@@ -109,7 +114,7 @@ exports.handler = async (event) => {
     // Save event
     await dynamodb
       .put({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Item: newEvent,
       })
       .promise();
@@ -117,7 +122,7 @@ exports.handler = async (event) => {
     // Initialize empty queue
     await dynamodb
       .put({
-        TableName: 'beatmatchme-queues',
+        TableName: QUEUES_TABLE,
         Item: {
           eventId,
           orderedRequestIds: [],

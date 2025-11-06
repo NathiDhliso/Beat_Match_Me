@@ -6,6 +6,11 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+// Environment configuration - allows override for testing
+const EVENTS_TABLE = process.env.EVENTS_TABLE || 'beatmatchme-events';
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+const QUEUES_TABLE = process.env.QUEUES_TABLE || 'beatmatchme-queues';
+
 exports.handler = async (event) => {
   console.log('Reordering queue:', JSON.stringify(event, null, 2));
 
@@ -16,7 +21,7 @@ exports.handler = async (event) => {
     // Verify performer owns this event
     const eventResult = await dynamodb
       .get({
-        TableName: 'beatmatchme-events',
+        TableName: EVENTS_TABLE,
         Key: { eventId },
       })
       .promise();
@@ -32,7 +37,7 @@ exports.handler = async (event) => {
     // Update queue order
     await dynamodb
       .put({
-        TableName: 'beatmatchme-queues',
+        TableName: QUEUES_TABLE,
         Item: {
           eventId,
           orderedRequestIds,
@@ -45,7 +50,7 @@ exports.handler = async (event) => {
     const updatePromises = orderedRequestIds.map((requestId, index) =>
       dynamodb
         .update({
-          TableName: 'beatmatchme-requests',
+          TableName: REQUESTS_TABLE,
           Key: { requestId },
           UpdateExpression: 'SET queuePosition = :position',
           ExpressionAttributeValues: {

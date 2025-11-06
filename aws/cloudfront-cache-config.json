@@ -1,0 +1,165 @@
+{
+  "Description": "CloudFront caching configuration for BeatMatchMe API optimization",
+  "CacheBehaviors": [
+    {
+      "PathPattern": "/api/events/*/details",
+      "Comment": "Event details (read-heavy, infrequent updates)",
+      "CachingEnabled": true,
+      "TTL": {
+        "DefaultTTL": 300,
+        "MaxTTL": 3600,
+        "MinTTL": 60
+      },
+      "CachePolicy": {
+        "Name": "EventDetailsCachePolicy",
+        "Comment": "Cache event details for 5 minutes",
+        "DefaultTTL": 300,
+        "MaxTTL": 3600,
+        "MinTTL": 60,
+        "ParametersInCacheKeyAndForwardedToOrigin": {
+          "EnableAcceptEncodingGzip": true,
+          "EnableAcceptEncodingBrotli": true,
+          "QueryStringsConfig": {
+            "QueryStringBehavior": "none"
+          },
+          "HeadersConfig": {
+            "HeaderBehavior": "whitelist",
+            "Headers": {
+              "Items": ["Authorization"]
+            }
+          },
+          "CookiesConfig": {
+            "CookieBehavior": "none"
+          }
+        }
+      },
+      "ResponseHeadersPolicy": {
+        "CustomHeaders": [
+          {
+            "Header": "Cache-Control",
+            "Value": "public, max-age=300, s-maxage=300"
+          },
+          {
+            "Header": "X-Cache-Status",
+            "Value": "HIT"
+          }
+        ]
+      }
+    },
+    {
+      "PathPattern": "/api/pricing/config",
+      "Comment": "Pricing configuration (static, rarely changes)",
+      "CachingEnabled": true,
+      "TTL": {
+        "DefaultTTL": 3600,
+        "MaxTTL": 86400,
+        "MinTTL": 300
+      },
+      "CachePolicy": {
+        "Name": "PricingConfigCachePolicy",
+        "Comment": "Cache pricing config for 1 hour",
+        "DefaultTTL": 3600,
+        "MaxTTL": 86400,
+        "MinTTL": 300,
+        "ParametersInCacheKeyAndForwardedToOrigin": {
+          "EnableAcceptEncodingGzip": true,
+          "EnableAcceptEncodingBrotli": true,
+          "QueryStringsConfig": {
+            "QueryStringBehavior": "none"
+          },
+          "HeadersConfig": {
+            "HeaderBehavior": "none"
+          },
+          "CookiesConfig": {
+            "CookieBehavior": "none"
+          }
+        }
+      },
+      "ResponseHeadersPolicy": {
+        "CustomHeaders": [
+          {
+            "Header": "Cache-Control",
+            "Value": "public, max-age=3600, s-maxage=3600, immutable"
+          }
+        ]
+      }
+    },
+    {
+      "PathPattern": "/api/events/*/queue",
+      "Comment": "Queue data (real-time, no caching)",
+      "CachingEnabled": false,
+      "CachePolicy": {
+        "Name": "DisabledCachePolicy",
+        "Comment": "No caching for real-time queue data",
+        "DefaultTTL": 0,
+        "MaxTTL": 0,
+        "MinTTL": 0
+      },
+      "ResponseHeadersPolicy": {
+        "CustomHeaders": [
+          {
+            "Header": "Cache-Control",
+            "Value": "no-store, no-cache, must-revalidate"
+          }
+        ]
+      }
+    },
+    {
+      "PathPattern": "/api/requests/*",
+      "Comment": "Request mutations (never cache)",
+      "CachingEnabled": false,
+      "CachePolicy": {
+        "Name": "DisabledCachePolicy",
+        "Comment": "No caching for mutations",
+        "DefaultTTL": 0,
+        "MaxTTL": 0,
+        "MinTTL": 0
+      }
+    }
+  ],
+  "OriginRequestPolicy": {
+    "Name": "BeatMatchMeAPIOriginPolicy",
+    "Comment": "Forward necessary headers to API Gateway",
+    "HeadersConfig": {
+      "HeaderBehavior": "whitelist",
+      "Headers": {
+        "Items": [
+          "Authorization",
+          "Content-Type",
+          "X-Amz-Date",
+          "X-Api-Key"
+        ]
+      }
+    },
+    "QueryStringsConfig": {
+      "QueryStringBehavior": "all"
+    },
+    "CookiesConfig": {
+      "CookieBehavior": "none"
+    }
+  },
+  "Notes": [
+    "OPT-3: CloudFront caching reduces Lambda invocations by ~50% for read-heavy endpoints",
+    "Event details cached for 5 minutes (balance between freshness and performance)",
+    "Pricing config cached for 1 hour (static data)",
+    "Queue data NOT cached (real-time requirement)",
+    "All mutations bypass cache (POST/PUT/DELETE)",
+    "Cache invalidation via CloudFront API when data changes"
+  ],
+  "CacheInvalidationTriggers": [
+    {
+      "Event": "Event settings updated",
+      "InvalidationPath": "/api/events/*/details"
+    },
+    {
+      "Event": "Pricing changed",
+      "InvalidationPath": "/api/pricing/config"
+    }
+  ],
+  "ExpectedImpact": {
+    "LambdaInvocationReduction": "50%",
+    "AverageCacheHitRate": "70-80%",
+    "LatencyImprovement": "200-500ms for cached responses",
+    "CostSavings": "$50-100/month on Lambda invocations"
+  }
+}

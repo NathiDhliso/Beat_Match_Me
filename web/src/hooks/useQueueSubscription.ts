@@ -5,6 +5,7 @@
  * - Automatic polling fallback
  * - Telemetry tracking
  * - Error handling
+ * - OPT-4: WebSocket connection reuse across remounts
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -26,6 +27,42 @@ interface QueueData {
   lastUpdated?: number;
 }
 
+// OPT-4: Global WebSocket connection cache for reuse across component remounts
+interface CachedConnection {
+  subscription: any;
+  eventId: string;
+  lastUsed: number;
+  refCount: number;
+}
+
+const connectionCache = new Map<string, CachedConnection>();
+const CONNECTION_CACHE_TTL = 5 * 60 * 1000; // Keep connections alive for 5 minutes
+
+/**
+ * Clean up stale cached connections
+ */
+function cleanupStaleConnections() {
+  const now = Date.now();
+  const staleKeys: string[] = [];
+
+  connectionCache.forEach((cached, key) => {
+    if (cached.refCount === 0 && now - cached.lastUsed > CONNECTION_CACHE_TTL) {
+      console.log(`🗑️ Cleaning up stale WebSocket connection: ${key}`);
+      try {
+        cached.subscription?.unsubscribe();
+      } catch (e) {
+        console.error('Error unsubscribing stale connection:', e);
+      }
+      staleKeys.push(key);
+    }
+  });
+
+  staleKeys.forEach(key => connectionCache.delete(key));
+}
+
+// Run cleanup every minute
+setInterval(cleanupStaleConnections, 60000);
+
 export function useQueueSubscription(setId: string, eventId: string) {
   const [queueData, setQueueData] = useState<QueueData | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
@@ -46,6 +83,9 @@ export function useQueueSubscription(setId: string, eventId: string) {
   const lastHealthCheckResponseRef = useRef<number>(Date.now());
   const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
   const HEALTH_CHECK_TIMEOUT = 60000;  // 60 seconds - no response = stale connection
+
+  // OPT-4: Connection cache key
+  const cacheKey = `${eventId}-${setId}`;
 
   // NEW: Recover missed messages after reconnection
   const recoverMissedMessages = useCallback(async () => {
@@ -292,7 +332,7 @@ export function useQueueSubscription(setId: string, eventId: string) {
     }
   }, []);
 
-  // Real-time subscription
+  // Real-time subscription with OPT-4 connection reuse
   const connectSubscription = useCallback(async () => {
     if (!setId || !eventId || setId === '' || eventId === '' || !subscriptionsAvailable) {
       console.log('⚠️ Cannot connect subscription: invalid IDs or subscriptions unavailable');
@@ -300,6 +340,19 @@ export function useQueueSubscription(setId: string, eventId: string) {
         startPolling();
         trackPollingFallback();
       }
+      return;
+    }
+
+    // OPT-4: Check if connection already exists in cache
+    const cached = connectionCache.get(cacheKey);
+    if (cached && cached.subscription) {
+      console.log(`♻️ Reusing cached WebSocket connection: ${cacheKey}`);
+      subscriptionRef.current = cached.subscription;
+      cached.refCount++;
+      cached.lastUsed = Date.now();
+      setConnectionStatus('connected');
+      trackConnectionSuccess();
+      startHealthCheck();
       return;
     }
 
@@ -369,6 +422,15 @@ export function useQueueSubscription(setId: string, eventId: string) {
         // NEW: Start health check after successful subscription
         startHealthCheck();
         
+        // OPT-4: Cache the connection for reuse
+        connectionCache.set(cacheKey, {
+          subscription: subscriptionRef.current,
+          eventId,
+          lastUsed: Date.now(),
+          refCount: 1,
+        });
+        console.log(`💾 Cached WebSocket connection: ${cacheKey}`);
+        
       } else {
         console.warn('Subscription not available, falling back to polling');
         startPolling();
@@ -381,20 +443,32 @@ export function useQueueSubscription(setId: string, eventId: string) {
       setConnectionStatus('error');
       reconnect();
     }
-  }, [setId, eventId, subscriptionsAvailable, reconnect, startPolling, startHealthCheck, stopHealthCheck]);
+  }, [setId, eventId, subscriptionsAvailable, reconnect, startPolling, startHealthCheck, stopHealthCheck, cacheKey]);
 
   useEffect(() => {
     return () => {
-      if (subscriptionRef.current) {
+      // OPT-4: Decrement ref count instead of immediate unsubscribe
+      const cached = connectionCache.get(cacheKey);
+      if (cached) {
+        cached.refCount--;
+        cached.lastUsed = Date.now();
+        console.log(`📉 Decremented connection ref count: ${cached.refCount} (${cacheKey})`);
+        
+        // Only unsubscribe if no other components using it
+        if (cached.refCount <= 0) {
+          console.log(`🔌 Last reference removed, will cleanup after TTL: ${cacheKey}`);
+        }
+      } else if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
       }
+      
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
       // NEW: Clean up health check on unmount
       stopHealthCheck();
     };
-  }, [stopHealthCheck]);
+  }, [stopHealthCheck, cacheKey]);
 
   useEffect(() => {
     // Guard: Don't attempt connection without valid IDs (check for empty strings too)
@@ -412,15 +486,12 @@ export function useQueueSubscription(setId: string, eventId: string) {
     }
 
     return () => {
-      if (subscriptionRef.current && subscriptionRef.current.unsubscribe) {
-        subscriptionRef.current.unsubscribe();
-        subscriptionRef.current = null;
-      }
+      // Cleanup handled by first useEffect
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       }
-      // NEW: Clean up health check
+      // Stop health check
       stopHealthCheck();
     };
   }, [setId, eventId, subscriptionsAvailable, connectSubscription, startPolling, stopHealthCheck]);

@@ -6,6 +6,11 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+// Environment configuration - allows override for testing
+const USERS_TABLE = process.env.USERS_TABLE || 'beatmatchme-users';
+const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'beatmatchme-requests';
+const QUEUES_TABLE = process.env.QUEUES_TABLE || 'beatmatchme-queues';
+
 // Tier weights for queue priority
 const TIER_WEIGHTS = {
   PLATINUM: 4,
@@ -35,7 +40,7 @@ function calculatePriority(request, userTier) {
 async function getUserTier(userId) {
   const result = await dynamodb
     .get({
-      TableName: 'beatmatchme-users',
+      TableName: USERS_TABLE,
       Key: { userId },
       ProjectionExpression: 'tier',
     })
@@ -48,7 +53,7 @@ async function getUserTier(userId) {
 async function getPendingRequests(eventId) {
   const result = await dynamodb
     .query({
-      TableName: 'beatmatchme-requests',
+      TableName: REQUESTS_TABLE,
       IndexName: 'EventStatusIndex',
       KeyConditionExpression: 'eventId = :eventId AND #status = :status',
       ExpressionAttributeNames: {
@@ -69,7 +74,7 @@ async function updateQueuePositions(requests) {
   const updatePromises = requests.map((request, index) =>
     dynamodb
       .update({
-        TableName: 'beatmatchme-requests',
+        TableName: REQUESTS_TABLE,
         Key: { requestId: request.requestId },
         UpdateExpression: 'SET queuePosition = :position',
         ExpressionAttributeValues: {
@@ -88,7 +93,7 @@ async function updateQueueRecord(eventId, sortedRequests) {
 
   await dynamodb
     .put({
-      TableName: 'beatmatchme-queues',
+      TableName: QUEUES_TABLE,
       Item: {
         queueId,
         eventId,
