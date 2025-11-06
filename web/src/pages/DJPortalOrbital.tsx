@@ -1431,140 +1431,120 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Settings View */}
           {currentView === 'settings' && (
-            <div className="h-full flex items-center justify-center px-4">
-              <div className="max-w-2xl w-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
-                <h2 className="text-4xl font-bold text-white mb-8 text-center">Settings</h2>
+            <div className="h-full overflow-y-auto px-4 py-8">
+              <div className="max-w-4xl mx-auto space-y-4">
+                <h2 className="text-3xl font-bold text-white mb-6 text-center">Settings</h2>
                 
-                <div className="space-y-6">
-                  {/* Theme Selector */}
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-white mb-4">Appearance</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-gray-300 text-sm mb-2 block">Theme Mode</label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {(['beatbyme', 'gold', 'platinum'] as const).map((mode) => (
-                            <button
-                              key={mode}
-                              onClick={() => setThemeMode(mode)}
-                              className={`py-3 px-4 rounded-xl font-semibold transition-all ${
-                                themeMode === mode
-                                  ? 'ring-2 ring-offset-2 ring-offset-gray-900'
-                                  : 'opacity-60 hover:opacity-100'
-                              }`}
-                              style={{
-                                background: mode === 'beatbyme' 
-                                  ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
-                                  : mode === 'gold'
-                                  ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
-                                  : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
-                                color: '#ffffff',
-                                ...(themeMode === mode && {
-                                  boxShadow: mode === 'beatbyme' 
-                                    ? '0 0 0 2px #8B5CF6'
-                                    : mode === 'gold'
-                                    ? '0 0 0 2px #D4AF37'
-                                    : '0 0 0 2px #E5E4E2'
-                                })
-                              }}
-                            >
-                              {mode === 'beatbyme' ? '🎵 BeatByMe' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-gray-400 text-xs mt-2">
-                          Choose your interface color scheme
-                        </p>
+                {/* Theme Selector - Full Width */}
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      🎨 Theme
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['beatbyme', 'gold', 'platinum'] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => setThemeMode(mode)}
+                        className={`py-2.5 px-3 rounded-xl font-semibold text-sm transition-all ${
+                          themeMode === mode
+                            ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
+                            : 'opacity-60 hover:opacity-100'
+                        }`}
+                        style={{
+                          background: mode === 'beatbyme' 
+                            ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
+                            : mode === 'gold'
+                            ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
+                            : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
+                          color: '#ffffff',
+                          ...(themeMode === mode && {
+                            boxShadow: mode === 'beatbyme' 
+                              ? '0 0 0 2px #8B5CF6'
+                              : mode === 'gold'
+                              ? '0 0 0 2px #D4AF37'
+                              : '0 0 0 2px #E5E4E2'
+                          })
+                        }}
+                      >
+                        {mode === 'beatbyme' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Profile & Event Settings - 2 Column Grid */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Profile Card */}
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      👤 Profile
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Name</span>
+                        <span className="text-white font-medium">{user?.name}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Role</span>
+                        <span className="font-medium" style={{ color: currentTheme.accent }}>
+                          {user?.role}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowProfile(true)}
+                        className="w-full mt-2 px-3 py-2 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
+                        style={{ backgroundColor: currentTheme.primary }}
+                      >
+                        Edit Profile
+                      </button>
                     </div>
                   </div>
 
-                  {/* User Info */}
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-white mb-4">Profile</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-gray-400 text-sm">Name</p>
-                        <p className="text-white font-semibold">{user?.name}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Email</p>
-                        <p className="text-white">{user?.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Role</p>
-                        <p className="font-semibold" style={{ color: currentTheme.accent }}>{user?.role}</p>
-                      </div>
-                                <div className="pt-3">
-                                  <button
-                                    onClick={() => setShowProfile(true)}
-                                    className="px-3 py-2 rounded-lg text-white text-sm font-semibold transition-all"
-                                    style={{ backgroundColor: currentTheme.primary }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.opacity = '0.9';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.opacity = '1';
-                                    }}
-                                  >
-                                    Manage Profile
-                                  </button>
-                                </div>
-                    </div>
-                  </div>
-
-                  {/* Event Settings */}
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-white">Event Settings</h3>
+                  {/* Event Settings Card */}
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        ⚙️ Event
+                      </h3>
                       <button
                         onClick={() => setIsEditingSettings(!isEditingSettings)}
-                        className="px-3 py-1 rounded-lg text-white text-sm transition-all"
+                        className="px-2.5 py-1 rounded-lg text-white text-xs font-medium transition-all hover:opacity-90"
                         style={{ backgroundColor: currentTheme.primary }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.opacity = '0.9';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.opacity = '1';
-                        }}
                       >
                         {isEditingSettings ? 'Save' : 'Edit'}
                       </button>
                     </div>
-                    <div className="space-y-4">
-                      {/* Base Price */}
-                      <div>
-                        <label className="text-gray-300 text-sm mb-1 block">Base Price (R)</label>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Base Price</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
                             value={basePrice}
                             onChange={(e) => setBasePrice(Number(e.target.value))}
-                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:border-yellow-500"
                           />
                         ) : (
-                          <div className="text-yellow-400 font-semibold text-lg">R{basePrice}</div>
+                          <span className="text-yellow-400 font-semibold">R{basePrice}</span>
                         )}
                       </div>
-                      
-                      {/* Requests per Hour */}
-                      <div>
-                        <label className="text-gray-300 text-sm mb-1 block">Requests per Hour</label>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Requests/Hour</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
                             value={requestsPerHour}
                             onChange={(e) => setRequestsPerHour(Number(e.target.value))}
-                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:border-blue-500"
                           />
                         ) : (
-                          <div className="text-blue-400 font-semibold text-lg">{requestsPerHour}</div>
+                          <span className="text-blue-400 font-semibold">{requestsPerHour}</span>
                         )}
                       </div>
-                      
-                      {/* Spotlight Slots */}
-                      <div>
-                        <label className="text-gray-300 text-sm mb-1 block">Spotlight Slots</label>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Spotlight Slots</span>
                         {isEditingSettings ? (
                           <input
                             type="number"
@@ -1572,144 +1552,113 @@ export const DJPortalOrbital: React.FC = () => {
                             onChange={(e) => setSpotlightSlots(Number(e.target.value))}
                             min="0"
                             max="5"
-                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+                            className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none"
                             style={{
-                              '--tw-ring-color': currentTheme.secondary,
-                            } as React.CSSProperties}
-                            onFocus={(e) => {
-                              e.currentTarget.style.borderColor = currentTheme.secondary;
-                            }}
-                            onBlur={(e) => {
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                              borderColor: currentTheme.secondary,
                             }}
                           />
                         ) : (
-                          <div className="font-semibold text-lg" style={{ color: currentTheme.secondary }}>{spotlightSlots}</div>
+                          <span className="font-semibold" style={{ color: currentTheme.secondary }}>
+                            {spotlightSlots}
+                          </span>
                         )}
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Request Cap Manager - DJ control */}
-                  <div className="mt-6 bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-white mb-4">Request Cap Manager</h3>
-                    <RequestCapManager
-                      currentRequestCount={queueRequests.length}
-                      requestCapPerHour={requestsPerHour}
-                      isSoldOut={false}
-                      onUpdateSettings={async (settings) => {
-                        console.log('Updating request cap settings:', settings);
-                        
-                        // Update local state immediately for responsive UI
-                        setRequestsPerHour(settings.requestCapPerHour);
-                        
-                        // Persist to backend
-                        if (currentSetId) {
-                          try {
-                            const success = await updateDJSetSettings(currentSetId, {
-                              requestCapPerHour: settings.requestCapPerHour,
-                              isSoldOut: settings.isSoldOut
-                            });
-                            
-                            if (success) {
-                              addNotification({
-                                type: 'info',
-                                title: '✅ Settings Saved',
-                                message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
-                              });
-                            } else {
-                              addNotification({
-                                type: 'info',
-                                title: 'Settings Updated Locally',
-                                message: 'Backend sync pending - settings will persist after deployment',
-                              });
-                            }
-                          } catch (error) {
-                            console.error('Failed to save settings:', error);
+                {/* Request Cap Manager - Compact */}
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    📊 Request Cap
+                  </h3>
+                  <RequestCapManager
+                    currentRequestCount={queueRequests.length}
+                    requestCapPerHour={requestsPerHour}
+                    isSoldOut={false}
+                    onUpdateSettings={async (settings) => {
+                      console.log('Updating request cap settings:', settings);
+                      setRequestsPerHour(settings.requestCapPerHour);
+                      
+                      if (currentSetId) {
+                        try {
+                          const success = await updateDJSetSettings(currentSetId, {
+                            requestCapPerHour: settings.requestCapPerHour,
+                            isSoldOut: settings.isSoldOut
+                          });
+                          
+                          if (success) {
                             addNotification({
-                              type: 'error',
-                              title: '⚠️ Save Failed',
-                              message: 'Could not save to backend. Using local settings.',
+                              type: 'info',
+                              title: '✅ Settings Saved',
+                              message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
+                            });
+                          } else {
+                            addNotification({
+                              type: 'info',
+                              title: 'Settings Updated Locally',
+                              message: 'Backend sync pending',
                             });
                           }
-                        } else {
+                        } catch (error) {
+                          console.error('Failed to save settings:', error);
                           addNotification({
-                            type: 'info',
-                            title: 'Settings Updated',
-                            message: 'Select an active set to persist changes',
+                            type: 'error',
+                            title: '⚠️ Save Failed',
+                            message: 'Could not save to backend',
                           });
                         }
-                      }}
-                    />
-                  </div>
-
-                  {/* Status Ring Legend */}
-                  <div className="mt-6 bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-white mb-4">Neon Status Ring Legend</h3>
-                    <p className="text-gray-400 text-sm mb-4">
-                      The colored ring around your screen indicates your current status and activity:
-                    </p>
-                    <div className="space-y-3">
-                      {/* Blue - Browsing */}
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 animate-pulse"></div>
-                        <div>
-                          <p className="text-blue-400 font-semibold text-sm">Blue - Browsing</p>
-                          <p className="text-gray-400 text-xs">No active set or requests yet</p>
-                        </div>
-                      </div>
-                      
-                      {/* Green - Active */}
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-500 via-green-600 to-green-500 animate-pulse"></div>
-                        <div>
-                          <p className="text-green-400 font-semibold text-sm">Green - Active</p>
-                          <p className="text-gray-400 text-xs">Set is live and accepting requests</p>
-                        </div>
-                      </div>
-                      
-                      {/* Yellow/Orange - Earning */}
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 animate-pulse"></div>
-                        <div>
-                          <p className="text-yellow-400 font-semibold text-sm">Yellow/Orange - Earning</p>
-                          <p className="text-gray-400 text-xs">High activity with revenue flowing</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div 
-                      className="mt-4 p-3 rounded-lg"
-                      style={{
-                        backgroundColor: `${currentTheme.primary}1A`,
-                        borderWidth: '1px',
-                        borderColor: `${currentTheme.primary}4D`,
-                      }}
-                    >
-                      <p className="text-xs" style={{ color: currentTheme.accent }}>
-                        💡 <strong>Tip:</strong> The ring automatically adjusts based on your set status and request activity. 
-                        When you go LIVE, the interface simplifies to show only essential controls and the status ring.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <button
-                    onClick={logout}
-                    className="w-full py-4 text-white rounded-full font-semibold transition-all flex items-center justify-center gap-2"
-                    style={{
-                      background: `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`,
+                      }
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = `linear-gradient(to right, rgb(185, 28, 28), ${currentTheme.primary})`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`;
-                    }}
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Logout
-                  </button>
+                  />
                 </div>
+
+                {/* Status Ring Guide - 3 Column Grid */}
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    💡 Status Ring Guide
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    {/* Blue */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                      <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></div>
+                      <div className="min-w-0">
+                        <p className="text-blue-400 font-semibold text-xs">Browsing</p>
+                        <p className="text-gray-400 text-[10px] truncate">No active set</p>
+                      </div>
+                    </div>
+                    
+                    {/* Green */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
+                      <div className="min-w-0">
+                        <p className="text-green-400 font-semibold text-xs">Active</p>
+                        <p className="text-gray-400 text-[10px] truncate">Accepting requests</p>
+                      </div>
+                    </div>
+                    
+                    {/* Yellow */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
+                      <div className="min-w-0">
+                        <p className="text-yellow-400 font-semibold text-xs">Earning</p>
+                        <p className="text-gray-400 text-[10px] truncate">High activity</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logout Button */}
+                <button
+                  onClick={logout}
+                  className="w-full py-3 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:opacity-90"
+                  style={{
+                    background: `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`,
+                  }}
+                >
+                  <LogOut className="w-5 h-5" />
+                  Logout
+                </button>
               </div>
             </div>
           )}
