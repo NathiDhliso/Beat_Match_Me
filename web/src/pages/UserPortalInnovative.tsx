@@ -820,7 +820,7 @@ export const UserPortalInnovative: React.FC = () => {
       peekContent={peekContent}
     >
       <div 
-        className="fixed inset-0 h-dvh overflow-hidden"
+        className="fixed inset-0 h-dvh"
         style={{
           background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
         }}

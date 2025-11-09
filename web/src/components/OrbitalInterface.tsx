@@ -442,7 +442,14 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   const [currentDelta, setCurrentDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPeeking, setIsPeeking] = useState(false);
 
+  // Debug: Log when component renders
+  React.useEffect(() => {
+    console.log('🎮 GestureHandler rendered, children:', !!children);
+    console.log('📦 GestureHandler has peekContent:', !!peekContent);
+  }, [children, peekContent]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
+    console.log('👆 Touch START:', e.touches[0].clientX, e.touches[0].clientY);
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -462,6 +469,8 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const deltaX = currentTouch.x - touchStart.x;
     const deltaY = currentTouch.y - touchStart.y;
 
+    console.log('👉 Touch MOVE - Delta:', { deltaX, deltaY });
+
     // Apply resistance effect - smoother feel
     const resistance = 0.4; // 40% of actual movement for better control
     setCurrentDelta({
@@ -471,6 +480,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    console.log('👋 Touch END');
     if (!touchStart) return;
 
     const touchEnd = {
@@ -482,6 +492,8 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const deltaX = touchEnd.x - touchStart.x;
     const deltaY = touchEnd.y - touchStart.y;
     const deltaTime = touchEnd.time - touchStart.time;
+    
+    console.log('✅ Swipe detected:', { deltaX, deltaY, deltaTime });
     
     // Reset peek animation
     setCurrentDelta({ x: 0, y: 0 });
@@ -495,21 +507,29 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const velocity = distance / deltaTime;
     const minVelocity = 0.3;
 
+    console.log('📊 Swipe metrics:', { distance, velocity, threshold: distanceThreshold, minVelocity });
+
     // Trigger navigation if swipe meets criteria
     if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (deltaX > 0) {
+          console.log('➡️ SWIPE RIGHT triggered');
           onSwipeRight();
         } else {
+          console.log('⬅️ SWIPE LEFT triggered');
           onSwipeLeft();
         }
       } else {
         if (deltaY > 0) {
+          console.log('⬇️ SWIPE DOWN triggered');
           onSwipeDown();
         } else {
+          console.log('⬆️ SWIPE UP triggered');
           onSwipeUp();
         }
       }
+    } else {
+      console.log('❌ Swipe did not meet criteria');
     }
 
     setTouchStart(null);
@@ -544,13 +564,23 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
 
   const peekPreview = getPeekPreview();
 
+  // Debug: Log render state
+  console.log('🎨 GestureHandler rendering:', {
+    isPeeking,
+    hasPeekPreview: !!peekPreview,
+    hasChildren: !!children,
+    childrenType: typeof children
+  });
+
   return (
     <div
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="h-full w-full relative"
-      style={{ overflow: 'clip' }}
+      className="h-full w-full"
+      style={{ 
+        position: 'relative'
+      }}
     >
       {/* Peek Preview Layer - Shows next page sliding in */}
       {peekPreview?.content && (
