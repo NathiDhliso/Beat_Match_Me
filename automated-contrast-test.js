@@ -58,8 +58,8 @@ function passesWCAG(ratio, type = 'normal') {
 
 // Define all 3 themes with actual values from tokens.ts
 const themes = {
-  beatByMe: {
-    name: 'BeatByMe Original',
+  BeatMatchMe: {
+    name: 'BeatMatchMe Original',
     colors: {
       primary: '#8B5CF6',
       primaryDark: '#7C3AED',

@@ -4,8 +4,8 @@ import { useColorScheme } from 'react-native';
 const ThemeContext = createContext();
 
 export const themes = {
-  beatbyme: {
-    name: 'BeatByMe',
+  BeatMatchMe: {
+    name: 'BeatMatchMe',
     background: ['#1f2937', '#111827'],
     card: '#374151',
     cardSecondary: '#1f2937',
@@ -81,10 +81,10 @@ export const themes = {
 
 export function ThemeProvider({ children }) {
   const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeMode] = useState('beatbyme');
+  const [themeMode, setThemeMode] = useState('BeatMatchMe');
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
 
-  const theme = themes[themeMode] || themes.beatbyme;
+  const theme = themes[themeMode] || themes.BeatMatchMe;
 
   const toggleTheme = () => setIsDark(!isDark);
 

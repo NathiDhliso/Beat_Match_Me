@@ -20,8 +20,8 @@
   },
   "themes": [
     {
-      "id": "beatByMe",
-      "name": "BeatByMe Original",
+      "id": "BeatMatchMe",
+      "name": "BeatMatchMe Original",
       "colors": {
         "primary": "#8B5CF6",
         "primaryDark": "#7C3AED",
@@ -64,7 +64,7 @@
   ],
   "results": [
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Primary on darkBackground",
       "foreground": "#8B5CF6",
       "background": "#111827",
@@ -73,7 +73,7 @@
       "largePass": true
     },
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Primary on cardBackground",
       "foreground": "#8B5CF6",
       "background": "#1F2937",
@@ -82,7 +82,7 @@
       "largePass": true
     },
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Primary on black",
       "foreground": "#8B5CF6",
       "background": "#000000",
@@ -147,7 +147,7 @@
   ],
   "issues": [
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Primary color on darkBackground",
       "foreground": "#8B5CF6",
       "background": "#111827",
@@ -156,7 +156,7 @@
       "actual": "LARGE TEXT ONLY"
     },
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Primary color on cardBackground",
       "foreground": "#8B5CF6",
       "background": "#1F2937",
@@ -165,7 +165,7 @@
       "actual": "LARGE TEXT ONLY"
     },
     {
-      "theme": "BeatByMe Original",
+      "theme": "BeatMatchMe Original",
       "element": "Secondary color on cardBackground",
       "foreground": "#EC4899",
       "background": "#1F2937",

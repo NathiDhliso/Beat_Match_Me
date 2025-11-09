@@ -12,7 +12,7 @@ import { ThemeProvider } from './context/ThemeContext'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <ThemeProvider defaultThemeMode="beatbyme" defaultDarkMode={true}>
+      <ThemeProvider defaultThemeMode="BeatMatchMe" defaultDarkMode={true}>
         <BackendProvider>
           <NotificationProvider>
             <App />

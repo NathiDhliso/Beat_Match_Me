@@ -135,12 +135,12 @@ html:not(.dark) {
 }
 
 /* ============================================
-   THEME MODES - BeatByMe / Gold / Platinum
+   THEME MODES - BeatMatchMe / Gold / Platinum
    For Elite International DJs
    ============================================ */
 
-/* BEATBYME THEME - Original Purple & Pink */
-html[data-theme="beatbyme"] {
+/* BeatMatchMe THEME - Original Purple & Pink */
+html[data-theme="BeatMatchMe"] {
   --theme-primary: #8B5CF6;           /* Purple-600 */
   --theme-primary-dark: #7C3AED;      /* Purple-700 */
   --theme-primary-light: #A78BFA;     /* Purple-400 */

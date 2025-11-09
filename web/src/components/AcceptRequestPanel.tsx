@@ -8,7 +8,6 @@
 import React from 'react';
 import { X, CheckCircle, Music, Clock, Users, Heart, SkipForward } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import styles from './AcceptRequestPanel.module.css';
 
 export interface RequestDetails {
@@ -72,7 +71,7 @@ export const AcceptRequestPanel: React.FC<AcceptRequestPanelProps> = ({
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.panel}>
+      <div className={`${styles.panel} ${styles.lazyBlur}`}>
         {/* Header */}
         <div 
           className={styles.header}

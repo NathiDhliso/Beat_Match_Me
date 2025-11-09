@@ -399,6 +399,34 @@
   font-size: 0.875rem;
 }
 
+.lazyBlur {
+  isolation: isolate;
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur) {
+  filter: blur(20px);
+  transform: scale(1.05);
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur.lazy-load-image-loaded) {
+  filter: blur(0);
+  transform: scale(1);
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur > img) {
+  opacity: 0;
+  transform: scale(1.02);
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur.lazy-load-image-loaded > img) {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .metadataLabel {
   color: rgb(156 163 175); /* gray-400 */
 }

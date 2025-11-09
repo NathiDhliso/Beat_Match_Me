@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Music, Heart, X, Check, Zap } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import styles from './AudienceInterface.module.css';
 
 /**
  * Event Discovery - Tinder-style card stack
@@ -129,7 +129,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
   }
 
   return (
-    <div className="h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+    <div className={`h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 ${styles.lazyBlur}`}>
       <div className="relative w-full max-w-md">
         {/* Event Counter */}
         <div className="text-center mb-4">

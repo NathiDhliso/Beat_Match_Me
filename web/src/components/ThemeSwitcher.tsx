@@ -1,6 +1,6 @@
 /**
  * THEME SWITCHER COMPONENT
- * Allows users to switch between BeatByMe (purple), Gold, and Platinum themes
+ * Allows users to switch between BeatMatchMe (purple), Gold, and Platinum themes
  * 
  * Usage:
  * <ThemeSwitcher />
@@ -19,7 +19,7 @@ interface ThemeSwitcherProps {
 
 // Theme icons mapping
 const themeIcons = {
-  beatbyme: Music,
+  BeatMatchMe: Music,
   gold: Crown,
   platinum: Award,
 };

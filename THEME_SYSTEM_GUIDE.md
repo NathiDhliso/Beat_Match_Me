@@ -8,7 +8,7 @@ BeatMatchMe features a comprehensive 3-theme system designed for both DJs and au
 
 ## 🌈 Available Themes
 
-### 1. BeatByMe (Default)
+### 1. BeatMatchMe (Default)
 **Colors:**
 - Primary: Purple `#8B5CF6`
 - Secondary: Pink `#EC4899`
@@ -46,9 +46,9 @@ Centralized theme configuration:
 
 ```typescript
 export const themes = {
-  beatbyme: {
-    id: 'beatbyme',
-    name: 'BeatByMe',
+  BeatMatchMe: {
+    id: 'BeatMatchMe',
+    name: 'BeatMatchMe',
     colors: {
       primary: '#8B5CF6',
       secondary: '#EC4899',
@@ -65,7 +65,7 @@ export const themes = {
 };
 
 export type ThemeName = keyof typeof themes;
-export type Theme = typeof themes.beatbyme;
+export type Theme = typeof themes.BeatMatchMe;
 ```
 
 ### Theme Context
@@ -81,7 +81,7 @@ interface ThemeContextValue {
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTheme, setCurrentTheme] = useState<ThemeName>('beatbyme');
+  const [currentTheme, setCurrentTheme] = useState<ThemeName>('BeatMatchMe');
   
   return (
     <ThemeContext.Provider value={{ currentTheme, setTheme, theme: themes[currentTheme] }}>

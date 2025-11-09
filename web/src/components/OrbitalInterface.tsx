@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Music, DollarSign } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface MenuOption {
   icon: React.ReactNode;
@@ -154,47 +155,61 @@ interface StatusArcProps {
   requestCount: number;
 }
 
-// Phase 8: Memoized StatusArc - only re-renders when mode, revenue, or requestCount change
-export const StatusArc: React.FC<StatusArcProps> = React.memo(({ mode, revenue, requestCount }) => {
-  const colors = {
-    browsing: 'from-blue-500 via-blue-600 to-blue-500',
-    active: 'from-green-500 via-green-600 to-green-500',
-    earning: 'from-yellow-500 via-orange-500 to-yellow-500',
-  };
+// Phase 8: Memoized StatusArc - only re-renders when revenue or requestCount change
+export const StatusArc: React.FC<StatusArcProps> = React.memo(({ revenue, requestCount }) => {
+  const { currentTheme } = useTheme();
 
   return (
     <>
-      {/* Top Arc */}
-      <div className="fixed top-0 left-0 right-0 h-1 z-40">
-        <div className={`h-full bg-gradient-to-r ${colors[mode]} animate-pulse-glow`} />
+      {/* Top Arc - More prominent with glow */}
+      <div className="fixed top-0 left-0 right-0 h-1 sm:h-1.5 z-40">
+        <div 
+          className="h-full animate-pulse-glow"
+          style={{
+            background: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.secondary}, ${currentTheme.accent}, ${currentTheme.secondary}, ${currentTheme.primary})`,
+            boxShadow: `0 0 20px ${currentTheme.primary}80, 0 0 40px ${currentTheme.secondary}60`
+          }}
+        />
       </div>
 
       {/* Counters - Top Left Side by Side */}
       <div className="fixed top-2 sm:top-4 md:top-6 left-2 sm:left-4 md:left-6 z-40 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 md:gap-4">
         {/* Request Counter */}
-        <div className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border border-blue-500/50">
+        <div 
+          className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border"
+          style={{ borderColor: `${currentTheme.primary}80` }}
+        >
           <div className="flex items-center gap-1 sm:gap-2">
-            <Music className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-blue-400 animate-pulse" />
-            <span className="text-base sm:text-xl md:text-2xl font-bold text-blue-400 tabular-nums">
+            <Music className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 animate-pulse" style={{ color: currentTheme.primary }} />
+            <span className="text-base sm:text-xl md:text-2xl font-bold tabular-nums" style={{ color: currentTheme.primary }}>
               {requestCount}
             </span>
           </div>
         </div>
 
         {/* Revenue Counter */}
-        <div className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border border-yellow-500/50">
+        <div 
+          className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border"
+          style={{ borderColor: `${currentTheme.accent}80` }}
+        >
           <div className="flex items-center gap-1 sm:gap-2">
-            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-400 animate-pulse" />
-            <span className="text-base sm:text-xl md:text-2xl font-bold text-yellow-400 tabular-nums">
+            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 animate-pulse" style={{ color: currentTheme.accent }} />
+            <span className="text-base sm:text-xl md:text-2xl font-bold tabular-nums" style={{ color: currentTheme.accent }}>
               R{revenue.toFixed(2)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Arc */}
-      <div className="fixed bottom-0 left-0 right-0 h-1 z-40">
-        <div className={`h-full bg-gradient-to-r ${colors[mode]} animate-pulse-glow`} />
+      {/* Bottom Arc - More prominent with glow */}
+      <div className="fixed bottom-0 left-0 right-0 h-1 sm:h-1.5 z-40">
+        <div 
+          className="h-full animate-pulse-glow"
+          style={{
+            background: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.secondary}, ${currentTheme.accent}, ${currentTheme.secondary}, ${currentTheme.primary})`,
+            boxShadow: `0 0 20px ${currentTheme.primary}80, 0 0 40px ${currentTheme.secondary}60`
+          }}
+        />
       </div>
     </>
   );

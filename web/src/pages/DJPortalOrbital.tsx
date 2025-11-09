@@ -984,7 +984,7 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeRight={handleSwipeRight}
     >
       <div 
-        className="min-h-screen relative overflow-hidden animate-vinyl-spin"
+        className="h-dvh relative overflow-hidden animate-vinyl-spin"
         style={{
           background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
         }}
@@ -1047,7 +1047,7 @@ export const DJPortalOrbital: React.FC = () => {
         )}
 
         {/* Main Content Area */}
-        <div className="h-screen w-full">
+        <div className="h-full w-full">
           {/* Queue View - Circular Visualizer */}
           {currentView === 'queue' && (
             <div className="h-full flex flex-col items-center justify-center">
@@ -1389,21 +1389,39 @@ export const DJPortalOrbital: React.FC = () => {
                 
                 {/* Revenue Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl p-6 border border-yellow-500/30">
-                    <p className="text-yellow-400 text-sm mb-2">Total Earnings</p>
-                    <p className="text-5xl font-bold text-yellow-400 animate-tumble">
+                  <div 
+                    className="rounded-2xl p-6 border"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                      borderColor: `${currentTheme.primary}80`
+                    }}
+                  >
+                    <p className="text-sm mb-2" style={{ color: currentTheme.accent }}>Total Earnings</p>
+                    <p className="text-5xl font-bold animate-tumble" style={{ color: currentTheme.accent }}>
                       R{totalRevenue.toFixed(2)}
                     </p>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl p-6 border border-green-500/30">
-                    <p className="text-green-400 text-sm mb-2">Requests Filled</p>
-                    <p className="text-5xl font-bold text-green-400">{queueRequests.length}</p>
+                  <div 
+                    className="rounded-2xl p-6 border"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${currentTheme.secondary}33, ${currentTheme.accent}33)`,
+                      borderColor: `${currentTheme.secondary}80`
+                    }}
+                  >
+                    <p className="text-sm mb-2" style={{ color: currentTheme.secondary }}>Requests Filled</p>
+                    <p className="text-5xl font-bold" style={{ color: currentTheme.secondary }}>{queueRequests.length}</p>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl p-6 border border-blue-500/30">
-                    <p className="text-blue-400 text-sm mb-2">Avg per Request</p>
-                    <p className="text-5xl font-bold text-blue-400">
+                  <div 
+                    className="rounded-2xl p-6 border"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${currentTheme.accent}33, ${currentTheme.primary}33)`,
+                      borderColor: `${currentTheme.accent}80`
+                    }}
+                  >
+                    <p className="text-sm mb-2" style={{ color: currentTheme.primary }}>Avg per Request</p>
+                    <p className="text-5xl font-bold" style={{ color: currentTheme.primary }}>
                       R{queueRequests.length > 0 ? (totalRevenue / queueRequests.length).toFixed(2) : '0.00'}
                     </p>
                   </div>
@@ -1443,7 +1461,7 @@ export const DJPortalOrbital: React.FC = () => {
                     </h3>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {(['beatbyme', 'gold', 'platinum'] as const).map((mode) => (
+                    {(['BeatMatchMe', 'gold', 'platinum'] as const).map((mode) => (
                       <button
                         key={mode}
                         onClick={() => setThemeMode(mode)}
@@ -1453,14 +1471,14 @@ export const DJPortalOrbital: React.FC = () => {
                             : 'opacity-60 hover:opacity-100'
                         }`}
                         style={{
-                          background: mode === 'beatbyme' 
+                          background: mode === 'BeatMatchMe' 
                             ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
                             : mode === 'gold'
                             ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
                             : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
                           color: '#ffffff',
                           ...(themeMode === mode && {
-                            boxShadow: mode === 'beatbyme' 
+                            boxShadow: mode === 'BeatMatchMe' 
                               ? '0 0 0 2px #8B5CF6'
                               : mode === 'gold'
                               ? '0 0 0 2px #D4AF37'
@@ -1468,7 +1486,7 @@ export const DJPortalOrbital: React.FC = () => {
                           })
                         }}
                       >
-                        {mode === 'beatbyme' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
+                        {mode === 'BeatMatchMe' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
                       </button>
                     ))}
                   </div>

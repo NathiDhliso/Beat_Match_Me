@@ -111,9 +111,9 @@ return <div className={tierClasses.bg}>...</div>;
 ```typescript
 // Test all 3 themes
 describe('MyComponent theming', () => {
-  it('renders with BeatByMe theme', () => {
+  it('renders with BeatMatchMe theme', () => {
     render(
-      <ThemeProvider value="beatbyme">
+      <ThemeProvider value="BeatMatchMe">
         <MyComponent />
       </ThemeProvider>
     );
@@ -726,7 +726,7 @@ import MyComponent from './MyComponent';
 
 describe('MyComponent theming', () => {
   it('renders with each theme', () => {
-    const themes = ['beatbyme', 'gold', 'platinum'] as const;
+    const themes = ['BeatMatchMe', 'gold', 'platinum'] as const;
     
     themes.forEach(theme => {
       const { rerender } = render(

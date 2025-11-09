@@ -1,6 +1,6 @@
 /**
  * BEATMATCHME THEME CONTEXT
- * Manages theme mode (BeatByMe/Gold/Platinum) and dark/light mode switching
+ * Manages theme mode (BeatMatchMe/Gold/Platinum) and dark/light mode switching
  * 
  * Usage:
  * const { themeMode, setThemeMode, isDark, toggleDarkMode, currentTheme } = useTheme();
@@ -21,7 +21,7 @@ interface ThemeContextType {
   toggleDarkMode: () => void;
   setIsDark: (isDark: boolean) => void;
   
-  // Theme Mode (BeatByMe/Gold/Platinum)
+  // Theme Mode (BeatMatchMe/Gold/Platinum)
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
   currentTheme: Theme;
@@ -44,7 +44,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ 
   children, 
-  defaultThemeMode = 'beatbyme',
+  defaultThemeMode = 'BeatMatchMe',
   defaultDarkMode = true 
 }: ThemeProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);

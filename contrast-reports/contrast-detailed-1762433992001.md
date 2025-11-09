@@ -19,7 +19,7 @@
 
 ### 1. Primary color on darkBackground
 
-- **Theme:** BeatByMe Original
+- **Theme:** BeatMatchMe Original
 - **Foreground:** #8B5CF6
 - **Background:** #111827
 - **Contrast Ratio:** 4.19:1
@@ -28,7 +28,7 @@
 
 ### 2. Primary color on cardBackground
 
-- **Theme:** BeatByMe Original
+- **Theme:** BeatMatchMe Original
 - **Foreground:** #8B5CF6
 - **Background:** #1F2937
 - **Contrast Ratio:** 3.47:1
@@ -37,7 +37,7 @@
 
 ### 3. Secondary color on cardBackground
 
-- **Theme:** BeatByMe Original
+- **Theme:** BeatMatchMe Original
 - **Foreground:** #EC4899
 - **Background:** #1F2937
 - **Contrast Ratio:** 4.16:1

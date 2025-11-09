@@ -4,10 +4,10 @@
  * 
  * Usage:
  * import { themes, getTheme, tierColors } from '@/theme/tokens';
- * const theme = getTheme('gold'); // or 'beatbyme' or 'platinum'
+ * const theme = getTheme('gold'); // or 'BeatMatchMe' or 'platinum'
  */
 
-export type ThemeMode = 'beatbyme' | 'gold' | 'platinum';
+export type ThemeMode = 'BeatMatchMe' | 'gold' | 'platinum';
 export type UserTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
 
 // ============================================
@@ -52,9 +52,9 @@ export interface Theme {
 }
 
 export const themes: Record<ThemeMode, Theme> = {
-  beatbyme: {
-    id: 'beatbyme',
-    name: 'BeatByMe Original',
+  BeatMatchMe: {
+    id: 'BeatMatchMe',
+    name: 'BeatMatchMe Original',
     description: 'Signature purple & pink gradients for the original BeatMatchMe experience',
     
     // Primary Colors
@@ -251,7 +251,7 @@ export const tierDiscounts: Record<UserTier, number> = {
 
 /**
  * Get theme configuration by mode
- * @param mode - 'beatbyme' | 'gold' | 'platinum'
+ * @param mode - 'BeatMatchMe' | 'gold' | 'platinum'
  * @returns Theme configuration object
  */
 export function getTheme(mode: ThemeMode): Theme {
@@ -373,7 +373,7 @@ export function getAllThemes(): Array<{ id: ThemeMode; name: string; description
  * Check if a string is a valid theme mode
  */
 export function isThemeMode(value: string): value is ThemeMode {
-  return ['beatbyme', 'gold', 'platinum'].includes(value);
+  return ['BeatMatchMe', 'gold', 'platinum'].includes(value);
 }
 
 /**

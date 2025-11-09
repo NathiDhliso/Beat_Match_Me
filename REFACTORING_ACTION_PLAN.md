@@ -17,7 +17,7 @@
 
 ### Success Metrics
 - **0 Modals** for critical DJ workflows (down from 10)
-- **3 Complete Themes** (BeatByMe, Gold, Platinum)
+- **3 Complete Themes** (BeatMatchMe, Gold, Platinum)
 - **100% Theme Token Coverage** (from 20%)
 - **< 50ms Theme Switch Time**
 - **6 Quick-Win Features** delivered
@@ -68,7 +68,7 @@
  * Single source of truth for all colors, gradients, and theme definitions
  */
 
-export type ThemeMode = 'beatbyme' | 'gold' | 'platinum';
+export type ThemeMode = 'BeatMatchMe' | 'gold' | 'platinum';
 export type UserTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
 
 // ============================================
@@ -76,9 +76,9 @@ export type UserTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
 // ============================================
 
 export const themes = {
-  beatbyme: {
-    id: 'beatbyme',
-    name: 'BeatByMe Original',
+  BeatMatchMe: {
+    id: 'BeatMatchMe',
+    name: 'BeatMatchMe Original',
     description: 'Signature purple & pink gradients',
     
     // Primary Colors
@@ -669,7 +669,7 @@ npm run lighthouse        # Performance audit
 4. **Build ThemeSwitcher** (1 hour)
    ```bash
    code web/src/components/ThemeSwitcher.tsx
-   # 3-button toggle: BeatByMe | Gold | Platinum
+   # 3-button toggle: BeatMatchMe | Gold | Platinum
    ```
 
 5. **Test integration** (1 hour)

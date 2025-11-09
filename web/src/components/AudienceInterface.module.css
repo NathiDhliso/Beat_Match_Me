@@ -1,0 +1,48 @@
+.lazyBlur {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur) {
+  filter: blur(20px);
+  transform: scale(1.05);
+  will-change: filter, transform;
+  backface-visibility: hidden;
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur.lazy-load-image-loaded) {
+  filter: blur(0);
+  transform: scale(1);
+  transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: auto;
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur > img) {
+  opacity: 0;
+  transform: scale(1.02);
+  will-change: opacity, transform;
+}
+
+.lazyBlur :global(.lazy-load-image-background.blur.lazy-load-image-loaded > img) {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: auto;
+}
+
+/* Optional: Add a subtle fade-in for the container itself */
+.lazyBlur :global(.lazy-load-image-background) {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

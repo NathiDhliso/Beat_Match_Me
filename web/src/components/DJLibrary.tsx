@@ -4,11 +4,11 @@
  * Phase 8: Performance - Added virtual scrolling for large track lists
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Music, Search, Filter, X, Upload, Globe, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight } from 'lucide-react';
 import { List } from 'react-window';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import styles from './DJLibrary.module.css';
 import { SpotifySearch } from './SpotifySearch';
 import { SpotifyPlaylistImport } from './SpotifyPlaylistImport';
 import { useTheme } from '../context/ThemeContext';
@@ -45,6 +45,8 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSongSearch, setShowSongSearch] = useState(false);
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  const [listHeight, setListHeight] = useState(0);
 
   const genres = ['all', ...new Set(tracks.map(t => t.genre))];
   
@@ -55,55 +57,95 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
     return matchesSearch && matchesGenre;
   });
 
+  useEffect(() => {
+    const element = listContainerRef.current;
+    if (!element) {
+      return;
+    }
+
+    const setHeight = () => {
+      setListHeight(element.getBoundingClientRect().height);
+    };
+
+    setHeight();
+
+    let observer: ResizeObserver | null = null;
+
+    if (typeof window !== 'undefined') {
+      if ('ResizeObserver' in window) {
+        observer = new ResizeObserver(entries => {
+          if (entries[0]) {
+            setListHeight(entries[0].contentRect.height);
+          }
+        });
+        observer.observe(element);
+      }
+
+      window.addEventListener('resize', setHeight);
+    }
+
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', setHeight);
+      }
+    };
+  }, []);
+
+  const computedListHeight = Math.max(240, listHeight - 48);
+
   return (
-    <div className="h-full flex flex-col">
+    <div className={`h-full flex flex-col ${styles.libraryRoot}`}>
       {/* Header */}
-      <div className="p-4 sm:p-6 border-b border-white/10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">My Library</h2>
+      <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-white/10 space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">My Library</h2>
           <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowSongSearch(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
               style={{
                 background: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.secondary})`
               }}
             >
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="whitespace-nowrap">Search Online</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full text-white text-xs sm:text-sm md:text-base font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
               style={{
                 background: `linear-gradient(to right, ${currentTheme.secondary}, ${currentTheme.accent})`
               }}
             >
-              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="whitespace-nowrap">Add Manual</span>
             </button>
           </div>
         </div>
 
         {/* Search and Filter */}
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search songs or artists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors text-sm"
             />
           </div>
           
           <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <select
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
-              className="pl-12 pr-8 py-3 bg-white/5 border border-white/10 rounded-full text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none cursor-pointer"
+              className="pl-10 pr-7 py-2.5 bg-white/5 border border-white/10 rounded-full text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none cursor-pointer text-sm"
             >
               {genres.map(genre => (
                 <option key={genre} value={genre} className="bg-gray-900">
@@ -115,18 +157,18 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         </div>
 
         {/* Stats */}
-        <div className="flex gap-4 mt-4">
-          <div className="flex-1 bg-white/5 rounded-lg p-3 border border-white/10">
-            <p className="text-gray-400 text-sm">Total Tracks</p>
-            <p className="text-2xl font-bold text-white">{tracks.length}</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
+            <p className="text-gray-400 text-xs">Total</p>
+            <p className="text-xl font-bold text-white">{tracks.length}</p>
           </div>
-          <div className="flex-1 bg-white/5 rounded-lg p-3 border border-white/10">
-            <p className="text-gray-400 text-sm">Enabled</p>
-            <p className="text-2xl font-bold text-green-400">{tracks.filter(t => t.isEnabled).length}</p>
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
+            <p className="text-gray-400 text-xs">Enabled</p>
+            <p className="text-xl font-bold text-green-400">{tracks.filter(t => t.isEnabled).length}</p>
           </div>
-          <div className="flex-1 bg-white/5 rounded-lg p-3 border border-white/10">
-            <p className="text-gray-400 text-sm">Avg Price</p>
-            <p className="text-2xl font-bold text-yellow-400">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
+            <p className="text-gray-400 text-xs">Avg Price</p>
+            <p className="text-xl font-bold text-yellow-400">
               R{(tracks.reduce((sum, t) => sum + t.basePrice, 0) / tracks.length || 0).toFixed(0)}
             </p>
           </div>
@@ -134,16 +176,17 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
       </div>
 
       {/* Track List - Phase 8: Virtual scrolling for performance */}
-      <div className="flex-1 overflow-hidden p-6">
-        {filteredTracks.length > 0 ? (
-          <div className="h-full">
-            <List
-              height={window.innerHeight - 300}
-              itemCount={filteredTracks.length}
-              itemSize={100}
-              width="100%"
-              itemData={filteredTracks}
-            >
+      <div ref={listContainerRef} className="flex-1 overflow-hidden">
+        <div className="h-full p-6">
+          {filteredTracks.length > 0 ? (
+            <div className="h-full">
+              <List
+                height={computedListHeight}
+                itemCount={filteredTracks.length}
+                itemSize={100}
+                width="100%"
+                itemData={filteredTracks}
+              >
               {/* @ts-expect-error - react-window v2 children render function type mismatch */}
               {({ data, index, style }: { data: Track[]; index: number; style: React.CSSProperties }) => {
                 const track = data[index];
@@ -159,15 +202,16 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
                   </div>
                 );
               }}
-            </List>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-            <Music className="w-16 h-16 mb-4 opacity-50" />
-            <p className="text-lg">No tracks found</p>
-            <p className="text-sm">Try adjusting your search or filters</p>
-          </div>
-        )}
+              </List>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <Music className="w-16 h-16 mb-4 opacity-50" />
+              <p className="text-lg">No tracks found</p>
+              <p className="text-sm">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Add Track Modal */}

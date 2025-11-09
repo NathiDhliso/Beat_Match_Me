@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { Music, Info, X, Zap, Shield, CheckCircle } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import styles from './RequestConfirmation.module.css';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 import type { UserTier } from '../theme/tokens';
 import { getTierColor, getTierDiscount, getTierBackgroundColor } from '../theme/tokens';
@@ -98,7 +98,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   const hasWarning = showDedication && validateDedication(dedication);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${styles.lazyBlur}`}>
       <div className="bg-gray-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-6 flex justify-between items-center z-10">
@@ -113,7 +113,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
 
         <div className="p-6 space-y-6">
           {/* Song Info with Album Art */}
-          <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30">
+          <div className={`bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30 ${styles.lazyBlur}`}>
             {song.albumArt ? (
               <LazyLoadImage
                 src={song.albumArt}

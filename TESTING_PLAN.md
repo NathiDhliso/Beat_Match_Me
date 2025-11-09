@@ -17,7 +17,7 @@ Comprehensive testing plan for BeatMatchMe production readiness, covering theme 
 #### 1. Visual Regression Testing
 
 **All 3 Themes Must Be Tested:**
-- BeatByMe (Purple + Pink)
+- BeatMatchMe (Purple + Pink)
 - Gold (Gold + Amber)
 - Platinum (Platinum + Slate)
 
@@ -52,7 +52,7 @@ Comprehensive testing plan for BeatMatchMe production readiness, covering theme 
 // TC-THEME-001: Switch between themes
 1. Login as user
 2. Open settings panel
-3. Switch from BeatByMe → Gold
+3. Switch from BeatMatchMe → Gold
    Expected: All colors update immediately
 4. Switch from Gold → Platinum
    Expected: All colors update immediately
@@ -61,7 +61,7 @@ Comprehensive testing plan for BeatMatchMe production readiness, covering theme 
 
 // TC-THEME-002: Tier-based theming
 1. Login as BASIC tier user
-   Expected: BeatByMe theme
+   Expected: BeatMatchMe theme
 2. Upgrade to GOLD tier
    Expected: Theme switches to Gold automatically
 3. Upgrade to PLATINUM tier
@@ -81,7 +81,7 @@ Comprehensive testing plan for BeatMatchMe production readiness, covering theme 
 
 **Test Each Theme:**
 ```bash
-# BeatByMe theme
+# BeatMatchMe theme
 Primary (#8B5CF6) on white: ___ (must be ≥4.5:1)
 White on Primary (#8B5CF6): ___ (must be ≥4.5:1)
 Accent (#EC4899) on white: ___ (must be ≥4.5:1)
@@ -97,7 +97,7 @@ Accent (#94A3B8) on white: ___ (must be ≥4.5:1)
 
 #### 4. Test Checklist
 
-- [ ] All components render in BeatByMe theme
+- [ ] All components render in BeatMatchMe theme
 - [ ] All components render in Gold theme
 - [ ] All components render in Platinum theme
 - [ ] Theme switching works without refresh
@@ -792,7 +792,7 @@ test('Request lifecycle from submission to playing', async ({ browser }) => {
 **Devices:** iPhone 12, Samsung S21, Desktop Chrome
 
 ### Theme System Testing
-- [ ] BeatByMe theme: PASS / FAIL
+- [ ] BeatMatchMe theme: PASS / FAIL
 - [ ] Gold theme: PASS / FAIL
 - [ ] Platinum theme: PASS / FAIL
 - [ ] Theme switching: PASS / FAIL

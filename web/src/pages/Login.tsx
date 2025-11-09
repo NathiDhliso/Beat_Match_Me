@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      className="h-dvh flex items-center justify-center p-4 relative overflow-hidden"
       style={{
         background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
       }}

@@ -27,7 +27,7 @@ test.describe('DJ Portal - Event Creation', () => {
     await page.fill('input[name="venueName"]', 'Test Venue');
     await page.fill('input[name="eventDate"]', '2025-12-25');
     await page.fill('input[name="eventTime"]', '20:00');
-    await page.selectOption('select[name="theme"]', 'beatbyme');
+    await page.selectOption('select[name="theme"]', 'BeatMatchMe');
     
     // Submit form
     await page.click('button:has-text("Create Event")');
