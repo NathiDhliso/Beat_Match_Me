@@ -549,7 +549,8 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="h-full w-full relative overflow-hidden"
+      className="h-full w-full relative"
+      style={{ overflow: 'clip' }}
     >
       {/* Peek Preview Layer - Shows next page sliding in */}
       {peekPreview?.content && (
