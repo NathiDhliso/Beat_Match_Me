@@ -771,12 +771,53 @@ export const UserPortalInnovative: React.FC = () => {
     }
   };
 
+  // Peek content previews for gesture navigation
+  const peekContent = {
+    left: viewState === 'discovery' && currentEventId ? (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center">
+          <Music className="w-20 h-20 text-purple-400 mx-auto mb-4" />
+          <h3 className="text-white text-2xl font-bold">Browse Songs</h3>
+          <p className="text-gray-400 mt-2">Swipe to see DJ's library</p>
+        </div>
+      </div>
+    ) : viewState === 'browsing' ? (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center">
+          <Bell className="w-20 h-20 text-purple-400 mx-auto mb-4" />
+          <h3 className="text-white text-2xl font-bold">Notifications</h3>
+          <p className="text-gray-400 mt-2">Check your alerts</p>
+        </div>
+      </div>
+    ) : null,
+    right: viewState === 'browsing' ? (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center">
+          <Calendar className="w-20 h-20 text-purple-400 mx-auto mb-4" />
+          <h3 className="text-white text-2xl font-bold">Events</h3>
+          <p className="text-gray-400 mt-2">Find nearby events</p>
+        </div>
+      </div>
+    ) : null,
+    up: (
+      <div className="h-full flex items-center justify-center p-8">
+        <div className="text-center">
+          <Bell className="w-20 h-20 text-yellow-400 mx-auto mb-4 animate-pulse" />
+          <h3 className="text-white text-2xl font-bold">Notifications</h3>
+          <p className="text-gray-400 mt-2">{unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}</p>
+        </div>
+      </div>
+    ),
+    down: null, // No preview for down swipe (usually closes things)
+  };
+
   return (
     <GestureHandler
       onSwipeUp={handleSwipeUp}
       onSwipeDown={handleSwipeDown}
       onSwipeLeft={handleSwipeLeft}
       onSwipeRight={handleSwipeRight}
+      peekContent={peekContent}
     >
       <div 
         className="fixed inset-0 h-dvh overflow-hidden"

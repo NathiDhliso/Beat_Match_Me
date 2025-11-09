@@ -945,6 +945,70 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  themeOptions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  themeOption: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#1F2937',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  themePreview: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+  themeLabel: {
+    color: '#F3F4F6',
+    fontSize: 12,
+    textTransform: 'capitalize',
+  },
+  darkModeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  darkModeLabel: {
+    color: '#F3F4F6',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  qrContainer: {
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginVertical: 16,
+  },
+  qrText: {
+    color: '#6B7280',
+    fontSize: 14,
+    marginTop: 16,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EF4444',
+    marginTop: 24,
+    marginBottom: 48,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default DJPortalScreen;

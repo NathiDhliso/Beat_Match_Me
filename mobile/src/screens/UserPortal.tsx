@@ -53,6 +53,12 @@ export const UserPortalScreen: React.FC = () => {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Tinder-style swipe
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [currentDelta, setCurrentDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPeeking, setIsPeeking] = useState(false);
 
   // Hooks
   const { event } = useEvent(currentEventId);
@@ -239,6 +245,72 @@ export const UserPortalScreen: React.FC = () => {
     );
   });
 
+  // Swipe handlers (reused from web with peek animation)
+  const handleTouchStart = (e: any) => {
+    setTouchStart({
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+    });
+    setIsPeeking(true);
+  };
+
+  const handleTouchMove = (e: any) => {
+    if (!touchStart) return;
+
+    const deltaX = e.nativeEvent.pageX - touchStart.x;
+    const deltaY = e.nativeEvent.pageY - touchStart.y;
+
+    // Resistance effect (30% of actual movement)
+    const resistance = 0.3;
+    setCurrentDelta({
+      x: deltaX * resistance,
+      y: deltaY * resistance,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart) return;
+
+    const absX = Math.abs(currentDelta.x);
+    const absY = Math.abs(currentDelta.y);
+    const threshold = 30; // 100px actual movement = 30px with resistance
+
+    // Reset peek
+    setCurrentDelta({ x: 0, y: 0 });
+    setIsPeeking(false);
+
+    // Determine swipe direction
+    if (absX > threshold && absX > absY) {
+      if (currentDelta.x > 0) {
+        // Swipe right - join event
+        if (events[currentEventIndex]) {
+          handleSelectEvent(events[currentEventIndex]);
+        }
+      } else {
+        // Swipe left - skip
+        setCurrentEventIndex(prev => Math.min(prev + 1, events.length - 1));
+      }
+    }
+
+    setTouchStart(null);
+  };
+
+  // Get swipe hint indicator
+  const getSwipeHint = () => {
+    if (!isPeeking) return null;
+    
+    const absX = Math.abs(currentDelta.x);
+    const absY = Math.abs(currentDelta.y);
+    
+    if (absX < 6 && absY < 6) return null; // 20px actual = 6px with resistance
+    
+    if (absX > absY) {
+      return currentDelta.x > 0 ? '→' : '←';
+    } else {
+      return currentDelta.y > 0 ? '↓' : '↑';
+    }
+  };
+
   // Render Event Discovery
   const renderDiscovery = () => {
     if (eventsLoading && !refreshing) {
@@ -250,51 +322,117 @@ export const UserPortalScreen: React.FC = () => {
       );
     }
 
+    const currentEvent = events[currentEventIndex];
+    const swipeHint = getSwipeHint();
+
+    if (!currentEvent) {
+      return (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Discover Events</Text>
+            <Text style={styles.headerSubtitle}>Swipe right to join →</Text>
+          </View>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateTitle}>No More Events</Text>
+            <Text style={styles.emptyStateText}>
+              Check back soon for new events!
+            </Text>
+            <TouchableOpacity
+              style={styles.refreshButton}
+              onPress={() => {
+                setCurrentEventIndex(0);
+                onRefresh();
+              }}
+            >
+              <Text style={styles.refreshButtonText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
     return (
-      <ScrollView
-        style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
+      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Discover Events</Text>
-          <Text style={styles.headerSubtitle}>Find live music near you</Text>
+          <Text style={styles.headerSubtitle}>
+            Swipe right to join → | Event {currentEventIndex + 1} of {events.length}
+          </Text>
         </View>
 
-        {events.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateTitle}>No Events Available</Text>
-            <Text style={styles.emptyStateText}>
-              There are no live events right now. Check back soon!
-            </Text>
-          </View>
-        ) : (
-          events.map((eventData) => (
-            <TouchableOpacity
-              key={eventData.eventId}
-              style={styles.eventCard}
-              onPress={() => handleSelectEvent(eventData)}
-            >
-              <View style={styles.eventCardContent}>
-                <Text style={styles.eventVenue}>{eventData.venueName}</Text>
-                {eventData.djName && (
-                  <Text style={styles.eventDJ}>DJ: {eventData.djName}</Text>
+        {/* Tinder Card with Peek Animation */}
+        <View
+          style={[
+            styles.cardContainer,
+            {
+              transform: [
+                { translateX: currentDelta.x },
+                { translateY: currentDelta.y },
+              ]
+            }
+          ]}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <View style={styles.eventCardSwipe}>
+            <View style={styles.eventCardContent}>
+              <Text style={styles.eventVenue}>{currentEvent.venueName}</Text>
+              {currentEvent.djName && (
+                <Text style={styles.eventDJ}>DJ: {currentEvent.djName}</Text>
+              )}
+              <View style={styles.eventMeta}>
+                {currentEvent.status === 'ACTIVE' && (
+                  <View style={styles.liveBadge}>
+                    <View style={styles.liveDot} />
+                    <Text style={styles.liveText}>LIVE NOW</Text>
+                  </View>
                 )}
-                <View style={styles.eventMeta}>
-                  {eventData.status === 'ACTIVE' && (
-                    <View style={styles.liveBadge}>
-                      <View style={styles.liveDot} />
-                      <Text style={styles.liveText}>LIVE NOW</Text>
-                    </View>
-                  )}
-                  {eventData.genre && (
-                    <Text style={styles.eventGenre}>{eventData.genre}</Text>
-                  )}
-                </View>
+                {currentEvent.genre && (
+                  <Text style={styles.eventGenre}>{currentEvent.genre}</Text>
+                )}
               </View>
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+            </View>
+
+            {/* Swipe Indicators */}
+            {currentDelta.x < -18 && (
+              <View style={styles.swipeIndicatorLeft}>
+                <Text style={styles.swipeText}>← SKIP</Text>
+              </View>
+            )}
+            {currentDelta.x > 18 && (
+              <View style={styles.swipeIndicatorRight}>
+                <Text style={styles.swipeText}>JOIN →</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Swipe Hint */}
+          {swipeHint && (
+            <View style={styles.swipeHintContainer}>
+              <View style={styles.swipeHint}>
+                <Text style={styles.swipeHintText}>{swipeHint}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => setCurrentEventIndex(prev => Math.min(prev + 1, events.length - 1))}
+          >
+            <Text style={styles.buttonText}>Skip</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.joinButton}
+            onPress={() => currentEvent && handleSelectEvent(currentEvent)}
+          >
+            <Text style={styles.buttonText}>Join Event</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     );
   };
 
@@ -770,6 +908,104 @@ const styles = StyleSheet.create({
     color: '#f3f4f6',
     fontSize: 16,
     fontWeight: '600',
+  },
+  refreshButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#8b5cf6',
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  refreshButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cardContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  eventCardSwipe: {
+    width: '100%',
+    height: 500,
+    backgroundColor: '#1f2937',
+    borderRadius: 24,
+    padding: 24,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  swipeIndicatorLeft: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+    padding: 12,
+    borderRadius: 12,
+  },
+  swipeIndicatorRight: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: 'rgba(16, 185, 129, 0.9)',
+    padding: 12,
+    borderRadius: 12,
+  },
+  swipeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  swipeHintContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -40,
+    marginTop: -40,
+  },
+  swipeHint: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swipeHintText: {
+    fontSize: 48,
+    color: '#fff',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 16,
+    paddingHorizontal: 16,
+    marginTop: 24,
+  },
+  skipButton: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#ef4444',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  joinButton: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#10b981',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

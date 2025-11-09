@@ -414,7 +414,7 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = React.mem
 });
 
 /**
- * Gesture Handler Component with Peek Animation
+ * Gesture Handler Component with Peek Preview
  */
 interface GestureHandlerProps {
   onSwipeUp: () => void;
@@ -422,6 +422,12 @@ interface GestureHandlerProps {
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
   children: React.ReactNode;
+  peekContent?: {
+    left?: React.ReactNode;
+    right?: React.ReactNode;
+    up?: React.ReactNode;
+    down?: React.ReactNode;
+  };
 }
 
 export const GestureHandler: React.FC<GestureHandlerProps> = ({
@@ -430,6 +436,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   onSwipeLeft,
   onSwipeRight,
   children,
+  peekContent,
 }) => {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
   const [currentDelta, setCurrentDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -455,8 +462,8 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const deltaX = currentTouch.x - touchStart.x;
     const deltaY = currentTouch.y - touchStart.y;
 
-    // Apply resistance effect - the further you drag, the harder it gets (like a rubber band)
-    const resistance = 0.3; // 30% of actual movement
+    // Apply resistance effect - smoother feel
+    const resistance = 0.4; // 40% of actual movement for better control
     setCurrentDelta({
       x: deltaX * resistance,
       y: deltaY * resistance,
@@ -480,30 +487,23 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     setCurrentDelta({ x: 0, y: 0 });
     setIsPeeking(false);
     
-    // Increased threshold from 50 to 100 pixels for less sensitivity
+    // Threshold for swipe detection
     const distanceThreshold = 100;
-    
-    // Require minimum time (200ms) to prevent accidental swipes
     const minSwipeTime = 200;
     
-    // Calculate velocity (pixels per ms)
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const velocity = distance / deltaTime;
-    
-    // Require minimum velocity (0.3 px/ms) to ensure intentional swipe
     const minVelocity = 0.3;
 
-    // Only trigger if swipe meets all criteria
+    // Trigger navigation if swipe meets criteria
     if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Horizontal swipe
         if (deltaX > 0) {
           onSwipeRight();
         } else {
           onSwipeLeft();
         }
       } else {
-        // Vertical swipe
         if (deltaY > 0) {
           onSwipeDown();
         } else {
@@ -515,48 +515,82 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     setTouchStart(null);
   };
 
-  // Determine swipe direction hint
-  const getSwipeHint = () => {
-    if (!isPeeking || !currentDelta) return null;
+  // Determine which peek preview to show
+  const getPeekPreview = () => {
+    if (!isPeeking || !peekContent) return null;
     
     const absX = Math.abs(currentDelta.x);
     const absY = Math.abs(currentDelta.y);
     
-    // Only show hint if moved more than 20px
-    if (absX < 20 && absY < 20) return null;
+    // Only show preview if moved more than 30px
+    if (absX < 30 && absY < 30) return null;
     
     if (absX > absY) {
-      return currentDelta.x > 0 ? '→' : '←';
+      // Horizontal swipe
+      if (currentDelta.x > 0) {
+        return { content: peekContent.right, direction: 'right', offset: currentDelta.x };
+      } else {
+        return { content: peekContent.left, direction: 'left', offset: currentDelta.x };
+      }
     } else {
-      return currentDelta.y > 0 ? '↓' : '↑';
+      // Vertical swipe
+      if (currentDelta.y > 0) {
+        return { content: peekContent.down, direction: 'down', offset: currentDelta.y };
+      } else {
+        return { content: peekContent.up, direction: 'up', offset: currentDelta.y };
+      }
     }
   };
 
-  const swipeHint = getSwipeHint();
+  const peekPreview = getPeekPreview();
 
   return (
     <div
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="h-full w-full relative"
-      style={{
-        transform: isPeeking ? `translate(${currentDelta.x}px, ${currentDelta.y}px)` : 'translate(0, 0)',
-        transition: isPeeking ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}
+      className="h-full w-full relative overflow-hidden"
     >
-      {children}
-      
-      {/* Swipe Direction Indicator */}
-      {swipeHint && (
+      {/* Peek Preview Layer - Shows next page sliding in */}
+      {peekPreview?.content && (
         <div
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
+          className="absolute inset-0 z-40"
           style={{
-            animation: 'fadeIn 0.2s ease-out',
+            transform: 
+              peekPreview.direction === 'left' ? `translateX(${100 + (peekPreview.offset * 0.6)}%)` :
+              peekPreview.direction === 'right' ? `translateX(${-100 + (peekPreview.offset * 0.6)}%)` :
+              peekPreview.direction === 'up' ? `translateY(${100 + (peekPreview.offset * 0.6)}%)` :
+              `translateY(${-100 + (peekPreview.offset * 0.6)}%)`,
+            opacity: Math.min(Math.abs(peekPreview.offset) / 150, 1),
+            transition: 'none',
           }}
         >
-          <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 flex items-center justify-center">
-            <span className="text-5xl text-white animate-pulse">{swipeHint}</span>
+          <div className="h-full w-full bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 backdrop-blur-xl">
+            {peekPreview.content}
+          </div>
+        </div>
+      )}
+      
+      {/* Current Page Layer - Slides with finger */}
+      <div
+        className="h-full w-full relative z-50"
+        style={{
+          transform: isPeeking ? `translate(${currentDelta.x}px, ${currentDelta.y}px)` : 'translate(0, 0)',
+          transition: isPeeking ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {children}
+      </div>
+      
+      {/* Direction Hint Arrow */}
+      {peekPreview && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] pointer-events-none">
+          <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-xl border-2 border-white/50 flex items-center justify-center shadow-2xl">
+            <span className="text-4xl text-white drop-shadow-lg">
+              {peekPreview.direction === 'left' ? '←' : 
+               peekPreview.direction === 'right' ? '→' :
+               peekPreview.direction === 'up' ? '↑' : '↓'}
+            </span>
           </div>
         </div>
       )}
