@@ -1668,17 +1668,6 @@ export const DJPortalOrbital: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Logout Button */}
-                <button
-                  onClick={logout}
-                  className="w-full py-2.5 sm:py-3 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:opacity-90 text-sm sm:text-base"
-                  style={{
-                    background: `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.secondary})`,
-                  }}
-                >
-                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Logout
-                </button>
               </div>
             </div>
           )}
