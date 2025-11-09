@@ -12,6 +12,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import apolloClient from './src/services/api';
 import AppNavigator from './src/navigation/AppNavigator';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 // Configure Amplify
 Amplify.configure({
@@ -38,13 +39,15 @@ Amplify.configure({
 
 export default function App() {
   return (
-    <ApolloProvider client={apolloClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <StatusBar style="light" />
-          <AppNavigator />
-        </AuthProvider>
-      </ThemeProvider>
-    </ApolloProvider>
+    <ErrorBoundary>
+      <ApolloProvider client={apolloClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <StatusBar style="light" />
+            <AppNavigator />
+          </AuthProvider>
+        </ThemeProvider>
+      </ApolloProvider>
+    </ErrorBoundary>
   );
 }

@@ -38,6 +38,8 @@ body {
   overscroll-behavior-y: contain;
   /* Allow horizontal overscroll for back navigation on some browsers */
   overscroll-behavior-x: auto;
+  /* Prevent double-tap zoom on mobile */
+  touch-action: manipulation;
 }
 
 #root {
@@ -46,8 +48,26 @@ body {
   min-height: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
   /* Alternative: use dynamic viewport height for mobile browsers */
   min-height: 100dvh;
-  /* Touch action to prevent default gestures but allow custom touch events */
-  touch-action: pan-x pan-y;
+  /* Prevent zoom and allow panning */
+  touch-action: manipulation;
+}
+
+/* Prevent annoying tap highlights on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection during gestures (only on interactive elements) */
+button, a, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Ensure inputs allow text selection */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Custom Animations for Features 3 & 4 */
@@ -85,6 +105,18 @@ body {
     }
     75% {
       transform: scale(1.05);
+    }
+  }
+
+  /* Fade In Scale Animation for Gesture Arrow */
+  @keyframes fadeInScale {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 

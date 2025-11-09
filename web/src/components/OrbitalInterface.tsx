@@ -563,6 +563,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
               `translateY(${-100 + (peekPreview.offset * 0.6)}%)`,
             opacity: Math.min(Math.abs(peekPreview.offset) / 150, 1),
             transition: 'none',
+            willChange: 'transform, opacity',
           }}
         >
           <div className="h-full w-full bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 backdrop-blur-xl">
@@ -576,16 +577,27 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
         className="h-full w-full relative z-50"
         style={{
           transform: isPeeking ? `translate(${currentDelta.x}px, ${currentDelta.y}px)` : 'translate(0, 0)',
-          transition: isPeeking ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: isPeeking ? 'none' : 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+          willChange: 'transform',
         }}
       >
         {children}
       </div>
       
-      {/* Direction Hint Arrow */}
+      {/* Direction Hint Arrow with smooth fade */}
       {peekPreview && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] pointer-events-none">
-          <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-xl border-2 border-white/50 flex items-center justify-center shadow-2xl">
+        <div 
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] pointer-events-none"
+          style={{
+            animation: 'fadeInScale 0.2s ease-out',
+          }}
+        >
+          <div 
+            className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-xl border-2 border-white/50 flex items-center justify-center shadow-2xl"
+            style={{
+              transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+            }}
+          >
             <span className="text-4xl text-white drop-shadow-lg">
               {peekPreview.direction === 'left' ? '←' : 
                peekPreview.direction === 'right' ? '→' :
