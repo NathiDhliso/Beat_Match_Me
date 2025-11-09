@@ -9,6 +9,7 @@ import { ApolloProvider } from '@apollo/client';
 import { Amplify } from 'aws-amplify';
 import awsConfig from './src/config/aws-exports';
 import { AuthProvider } from './src/context/AuthContext';
+import { ThemeProvider } from './src/context/ThemeContext';
 import apolloClient from './src/services/api';
 import AppNavigator from './src/navigation/AppNavigator';
 
@@ -38,10 +39,12 @@ Amplify.configure({
 export default function App() {
   return (
     <ApolloProvider client={apolloClient}>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <AppNavigator />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <StatusBar style="light" />
+          <AppNavigator />
+        </AuthProvider>
+      </ThemeProvider>
     </ApolloProvider>
   );
 }

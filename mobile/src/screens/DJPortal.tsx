@@ -15,6 +15,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useEvent } from '../hooks/useEvent';
 import { useQueue } from '../hooks/useQueue';
 import { useQueueSubscription } from '../hooks/useQueueSubscription';
@@ -25,16 +26,19 @@ import {
   submitMarkCompleted,
   submitRefund,
 } from '../services/graphql';
+import { StatusArc, CircularQueueVisualizer } from '../components/OrbitalInterface';
 
 type TabView = 'queue' | 'history' | 'settings';
 
 export const DJPortalScreen: React.FC = () => {
   const { user } = useAuth();
+  const { currentTheme } = useTheme();
   const [currentTab, setCurrentTab] = useState<TabView>('queue');
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'orbital'>('orbital');
 
   // Load user's sets (simplified - in production would list all sets)
   useEffect(() => {
@@ -57,10 +61,15 @@ export const DJPortalScreen: React.FC = () => {
     .map((req: any, index: number) => ({
       ...req,
       queuePosition: index + 1,
+      position: index + 1,
+      type: req.isSpotlight ? 'spotlight' : req.dedication ? 'dedication' : 'standard',
     }));
 
   const pendingRequests = queueRequests.filter((r: any) => r.status === 'PENDING');
   const acceptedRequests = queueRequests.filter((r: any) => r.status === 'ACCEPTED');
+  
+  // Calculate total revenue
+  const totalRevenue = queueRequests.reduce((sum: number, req: any) => sum + (req.price || 0), 0);
 
   // Pull to refresh
   const onRefresh = useCallback(async () => {
@@ -344,25 +353,73 @@ export const DJPortalScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Queue List */}
+      {/* Queue View */}
       {currentTab === 'queue' && (
-        <ScrollView
-          style={styles.queueList}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          {queueRequests.length === 0 ? (
-            <View style={styles.emptyQueue}>
-              <Text style={styles.emptyQueueText}>No requests yet</Text>
-              <Text style={styles.emptyQueueSubtext}>
-                Share your QR code with patrons to receive requests
+        <>
+          {/* Status Arc - Always visible in queue tab */}
+          <StatusArc revenue={totalRevenue} requestCount={queueRequests.length} />
+
+          {/* View Mode Toggle */}
+          <View style={styles.viewModeToggle}>
+            <TouchableOpacity
+              style={[styles.viewModeButton, viewMode === 'orbital' && styles.viewModeActive]}
+              onPress={() => setViewMode('orbital')}
+            >
+              <Text style={[styles.viewModeText, viewMode === 'orbital' && styles.viewModeTextActive]}>
+                Orbital
               </Text>
-            </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewModeButton, viewMode === 'list' && styles.viewModeActive]}
+              onPress={() => setViewMode('list')}
+            >
+              <Text style={[styles.viewModeText, viewMode === 'list' && styles.viewModeTextActive]}>
+                List
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Orbital View */}
+          {viewMode === 'orbital' ? (
+            <CircularQueueVisualizer
+              requests={queueRequests}
+              onAccept={async (id) => {
+                const req = queueRequests.find((r: any) => r.requestId === id);
+                if (req) await handleAcceptRequest(req);
+              }}
+              onVeto={async (id) => {
+                const req = queueRequests.find((r: any) => r.requestId === id);
+                if (req) await handleVetoRequest(req);
+              }}
+              onRequestTap={(req) => {
+                // Show request details modal (future enhancement)
+                Alert.alert(
+                  req.songTitle,
+                  `${req.artistName}\nRequested by: ${req.userName || 'Unknown'}\nPrice: R${req.price || 0}`
+                );
+              }}
+            />
           ) : (
-            queueRequests.map(renderQueueItem)
+            /* List View */
+            <ScrollView
+              style={styles.queueList}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            >
+              {queueRequests.length === 0 ? (
+                <View style={styles.emptyQueue}>
+                  <Text style={styles.emptyQueueText}>No requests yet</Text>
+                  <Text style={styles.emptyQueueSubtext}>
+                    Share your QR code with patrons to receive requests
+                  </Text>
+                </View>
+              ) : (
+                queueRequests.map(renderQueueItem)
+              )}
+            </ScrollView>
           )}
-        </ScrollView>
+        </>
       )}
 
       {/* History Tab (Placeholder) */}
@@ -372,11 +429,96 @@ export const DJPortalScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Settings Tab (Placeholder) */}
+      {/* Settings Tab - Revenue Dashboard */}
       {currentTab === 'settings' && (
-        <View style={styles.placeholderContainer}>
-          <Text style={styles.placeholderText}>Settings coming soon</Text>
-        </View>
+        <ScrollView style={styles.settingsContainer}>
+          {/* Revenue Stats */}
+          <View style={[styles.statsCard, { borderColor: currentTheme.primary + '30' }]}>
+            <Text style={[styles.statsTitle, { color: currentTheme.primary }]}>
+              💰 Revenue Overview
+            </Text>
+            
+            <View style={[styles.revenueCard, { backgroundColor: currentTheme.primary + '20' }]}>
+              <Text style={styles.revenueLabel}>Total Earnings</Text>
+              <Text style={[styles.revenueAmount, { color: currentTheme.accent }]}>
+                R{totalRevenue.toFixed(2)}
+              </Text>
+            </View>
+
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Total Requests</Text>
+                <Text style={[styles.statValue, { color: currentTheme.primary }]}>
+                  {queueRequests.length}
+                </Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Accepted</Text>
+                <Text style={[styles.statValue, { color: '#10b981' }]}>
+                  {acceptedRequests.length}
+                </Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Pending</Text>
+                <Text style={[styles.statValue, { color: '#f59e0b' }]}>
+                  {pendingRequests.length}
+                </Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Avg Price</Text>
+                <Text style={[styles.statValue, { color: currentTheme.accent }]}>
+                  R{queueRequests.length > 0 ? (totalRevenue / queueRequests.length).toFixed(2) : '0.00'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Event Info */}
+          {event && (
+            <View style={[styles.statsCard, { borderColor: currentTheme.secondary + '30' }]}>
+              <Text style={[styles.statsTitle, { color: currentTheme.secondary }]}>
+                🎵 Event Details
+              </Text>
+              <View style={styles.eventInfo}>
+                <View style={styles.eventRow}>
+                  <Text style={styles.eventLabel}>Venue</Text>
+                  <Text style={styles.eventValue}>{event.venueName}</Text>
+                </View>
+                <View style={styles.eventRow}>
+                  <Text style={styles.eventLabel}>Status</Text>
+                  <Text style={[styles.eventValue, { color: event.status === 'LIVE' ? '#10b981' : '#6b7280' }]}>
+                    {event.status}
+                  </Text>
+                </View>
+                {event.totalRevenue !== undefined && (
+                  <View style={styles.eventRow}>
+                    <Text style={styles.eventLabel}>Event Total</Text>
+                    <Text style={[styles.eventValue, { color: currentTheme.accent }]}>
+                      R{event.totalRevenue.toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Connection Status */}
+          <View style={[styles.statsCard, { borderColor: currentTheme.accent + '30' }]}>
+            <Text style={[styles.statsTitle, { color: currentTheme.accent }]}>
+              📡 Connection Status
+            </Text>
+            <View style={styles.connectionInfo}>
+              {renderConnectionStatus()}
+              <Text style={styles.connectionDescription}>
+                {connectionStatus === 'connected' 
+                  ? 'Real-time updates active' 
+                  : connectionStatus === 'connecting'
+                  ? 'Establishing connection...'
+                  : 'Offline - Pull to refresh'}
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
       )}
     </View>
   );
@@ -613,6 +755,111 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 16,
     color: '#9ca3af',
+  },
+  viewModeToggle: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 70,
+    marginBottom: 8,
+    backgroundColor: '#1f2937',
+    borderRadius: 8,
+    padding: 4,
+  },
+  viewModeButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  viewModeActive: {
+    backgroundColor: '#8b5cf6',
+  },
+  viewModeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9ca3af',
+  },
+  viewModeTextActive: {
+    color: '#ffffff',
+  },
+  settingsContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  statsCard: {
+    backgroundColor: '#1F2937',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  statsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  revenueCard: {
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  revenueLabel: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  revenueAmount: {
+    fontSize: 48,
+    fontWeight: 'bold',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statItem: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#111827',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  statLabel: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  eventInfo: {
+    gap: 12,
+  },
+  eventRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  eventLabel: {
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+  eventValue: {
+    color: '#F3F4F6',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  connectionInfo: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  connectionDescription: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

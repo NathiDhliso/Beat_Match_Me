@@ -19,6 +19,7 @@ import {
   LockedInAnimation,
   NowPlayingCelebration,
 } from '../components/AudienceInterface';
+import { GestureHandler } from '../components/OrbitalInterface';
 import { QueueTracker } from '../components/QueueTracker';
 import { EmptyState } from '../components/EmptyState';
 import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
@@ -731,13 +732,58 @@ export const UserPortalInnovative: React.FC = () => {
     basePrice: t.basePrice,
   }));
 
+  // Gesture navigation handlers
+  const handleSwipeLeft = () => {
+    // Navigate to next view (right)
+    if (viewState === 'discovery' && currentEventId) {
+      setViewState('browsing');
+    } else if (viewState === 'browsing') {
+      setShowNotifications(true);
+    }
+  };
+
+  const handleSwipeRight = () => {
+    // Navigate to previous view (left)
+    if (viewState === 'browsing') {
+      setViewState('discovery');
+      setCurrentEventId(null);
+      setCurrentSetId(null);
+    } else if (viewState === 'requesting') {
+      handleCancelRequest();
+    } else if (viewState === 'waiting') {
+      setViewState('browsing');
+    }
+  };
+
+  const handleSwipeUp = () => {
+    // Could open notifications or settings
+    if (viewState !== 'discovery') {
+      setShowNotifications(true);
+    }
+  };
+
+  const handleSwipeDown = () => {
+    // Close overlays or go back
+    if (showNotifications) {
+      setShowNotifications(false);
+    } else if (showSettings) {
+      setShowSettings(false);
+    }
+  };
+
   return (
-    <div 
-      className="fixed inset-0 h-dvh overflow-hidden"
-      style={{
-        background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
-      }}
+    <GestureHandler
+      onSwipeUp={handleSwipeUp}
+      onSwipeDown={handleSwipeDown}
+      onSwipeLeft={handleSwipeLeft}
+      onSwipeRight={handleSwipeRight}
     >
+      <div 
+        className="fixed inset-0 h-dvh overflow-hidden"
+        style={{
+          background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+        }}
+      >
       {/* Top Bar - Minimal */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg border-b border-white/10 safe-area-top">
         <div className="max-w-7xl mx-auto px-4 py-2 sm:py-3 flex items-center justify-between">
@@ -1426,6 +1472,7 @@ export const UserPortalInnovative: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </GestureHandler>
   );
 };
