@@ -984,7 +984,7 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeRight={handleSwipeRight}
     >
       <div 
-        className="h-dvh relative overflow-hidden animate-vinyl-spin"
+        className="fixed inset-0 h-dvh overflow-hidden animate-vinyl-spin"
         style={{
           background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
         }}

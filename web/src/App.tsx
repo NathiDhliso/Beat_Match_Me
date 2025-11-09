@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFO
 
   if (loading) {
     return (
-      <div className="h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="fixed inset-0 h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-white text-2xl">Loading...</div>
       </div>
     );
@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
 // Loading Screen Component
 const LoadingScreen: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => {
   return (
-    <div className="h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+    <div className="fixed inset-0 h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
       <div className="text-center">
         <div className="text-white text-2xl mb-4">{message}</div>
         <div className="flex items-center justify-center gap-2">
