@@ -414,7 +414,7 @@ export const CircularQueueVisualizer: React.FC<QueueVisualizerProps> = React.mem
 });
 
 /**
- * Gesture Handler Component
+ * Gesture Handler Component with Peek Animation
  */
 interface GestureHandlerProps {
   onSwipeUp: () => void;
@@ -432,12 +432,34 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   children,
 }) => {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [currentDelta, setCurrentDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPeeking, setIsPeeking] = useState(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
       time: Date.now(),
+    });
+    setIsPeeking(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const currentTouch = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+
+    const deltaX = currentTouch.x - touchStart.x;
+    const deltaY = currentTouch.y - touchStart.y;
+
+    // Apply resistance effect - the further you drag, the harder it gets (like a rubber band)
+    const resistance = 0.3; // 30% of actual movement
+    setCurrentDelta({
+      x: deltaX * resistance,
+      y: deltaY * resistance,
     });
   };
 
@@ -453,6 +475,10 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     const deltaX = touchEnd.x - touchStart.x;
     const deltaY = touchEnd.y - touchStart.y;
     const deltaTime = touchEnd.time - touchStart.time;
+    
+    // Reset peek animation
+    setCurrentDelta({ x: 0, y: 0 });
+    setIsPeeking(false);
     
     // Increased threshold from 50 to 100 pixels for less sensitivity
     const distanceThreshold = 100;
@@ -489,13 +515,51 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     setTouchStart(null);
   };
 
+  // Determine swipe direction hint
+  const getSwipeHint = () => {
+    if (!isPeeking || !currentDelta) return null;
+    
+    const absX = Math.abs(currentDelta.x);
+    const absY = Math.abs(currentDelta.y);
+    
+    // Only show hint if moved more than 20px
+    if (absX < 20 && absY < 20) return null;
+    
+    if (absX > absY) {
+      return currentDelta.x > 0 ? '→' : '←';
+    } else {
+      return currentDelta.y > 0 ? '↓' : '↑';
+    }
+  };
+
+  const swipeHint = getSwipeHint();
+
   return (
     <div
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="h-full w-full"
+      className="h-full w-full relative"
+      style={{
+        transform: isPeeking ? `translate(${currentDelta.x}px, ${currentDelta.y}px)` : 'translate(0, 0)',
+        transition: isPeeking ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
     >
       {children}
+      
+      {/* Swipe Direction Indicator */}
+      {swipeHint && (
+        <div
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
+          style={{
+            animation: 'fadeIn 0.2s ease-out',
+          }}
+        >
+          <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 flex items-center justify-center">
+            <span className="text-5xl text-white animate-pulse">{swipeHint}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -27,12 +27,16 @@ import {
   submitRefund,
 } from '../services/graphql';
 import { StatusArc, CircularQueueVisualizer } from '../components/OrbitalInterface';
+import QRCode from 'react-native-qrcode-svg';
+import { LogOut } from 'lucide-react-native';
+import { getTheme } from '../theme/tokens';
+import type { ThemeMode } from '../theme/tokens';
 
 type TabView = 'queue' | 'history' | 'settings';
 
 export const DJPortalScreen: React.FC = () => {
-  const { user } = useAuth();
-  const { currentTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const { currentTheme, themeMode, setThemeMode, isDark, toggleDarkMode } = useTheme();
   const [currentTab, setCurrentTab] = useState<TabView>('queue');
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
@@ -518,6 +522,86 @@ export const DJPortalScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+
+          {/* Theme Selector */}
+          <View style={[styles.statsCard, { borderColor: currentTheme.primary + '30' }]}>
+            <Text style={[styles.statsTitle, { color: currentTheme.primary }]}>
+              🎨 Theme
+            </Text>
+            
+            <View style={styles.themeOptions}>
+              {(['BeatMatchMe', 'gold', 'platinum'] as ThemeMode[]).map((theme) => (
+                <TouchableOpacity
+                  key={theme}
+                  style={[
+                    styles.themeOption,
+                    themeMode === theme && { 
+                      borderColor: currentTheme.primary,
+                      borderWidth: 3 
+                    }
+                  ]}
+                  onPress={() => setThemeMode(theme)}
+                >
+                  <View style={[
+                    styles.themePreview,
+                    { backgroundColor: getTheme(theme).primary }
+                  ]} />
+                  <Text style={styles.themeLabel}>{theme}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.darkModeRow}>
+              <Text style={styles.darkModeLabel}>Dark Mode</Text>
+              <TouchableOpacity onPress={toggleDarkMode}>
+                <Text style={{ fontSize: 32, color: isDark ? currentTheme.primary : '#6B7280' }}>
+                  {isDark ? '🌙' : '☀️'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* QR Code */}
+          {currentEventId && (
+            <View style={[styles.statsCard, { borderColor: currentTheme.accent + '30' }]}>
+              <Text style={[styles.statsTitle, { color: currentTheme.accent }]}>
+                📱 Event QR Code
+              </Text>
+              <View style={styles.qrContainer}>
+                <QRCode
+                  value={`beatmatchme://event/${currentEventId}`}
+                  size={200}
+                  color={currentTheme.primary}
+                  backgroundColor="#FFFFFF"
+                />
+                <Text style={styles.qrText}>
+                  Scan to join this event
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Logout Button */}
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => {
+              Alert.alert(
+                'Logout',
+                'Are you sure you want to logout?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: logout
+                  }
+                ]
+              );
+            }}
+          >
+            <LogOut size={20} color="#FFFFFF" />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
         </ScrollView>
       )}
     </View>

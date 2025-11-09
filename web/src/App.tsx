@@ -9,6 +9,7 @@ import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { YocoTestPage } from './pages/YocoTestPage';
 import { OfflineBanner } from './components/StatusModals';
+import { initPullToRefreshPrevention } from './utils/preventPullToRefresh';
 
 // Phase 8: Lazy load route components for massive bundle size reduction
 const DJPortal = lazy(() => import('./pages/DJPortalOrbital').then(m => ({ default: m.DJPortalOrbital })));
@@ -117,6 +118,11 @@ function App() {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
     };
+  }, []);
+
+  // Initialize pull-to-refresh prevention on mobile
+  useEffect(() => {
+    initPullToRefreshPrevention();
   }, []);
 
   // Show loading screen until backend is validated
