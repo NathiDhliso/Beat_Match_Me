@@ -2,10 +2,7 @@ import React from 'react';
 import { useSwipeDetection } from './useSwipeDetection';
 import { usePeekPreview } from './usePeekPreview';
 import { PeekPreview } from './PeekPreview';
-import { DirectionArrow } from './DirectionArrow';
 import type { GestureHandlerProps } from './types';
-import { useInstanceTracker, useInstanceRegistry } from '../../../utils/instanceTracker';
-import { logger } from '../../../utils/debugLogger';
 
 /**
  * Gesture Handler Component with Peek Preview
@@ -19,15 +16,6 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   children,
   peekContent,
 }) => {
-  // Track component instance and check for duplicates
-  const { instanceId, renderCount } = useInstanceTracker({
-    componentName: 'GestureHandler',
-    logMounts: true,
-    logRenders: false, // Set to true only when debugging excessive renders
-    logUnmounts: true,
-  });
-
-  const { totalInstances } = useInstanceRegistry('GestureHandler');
 
   const { currentDelta, isPeeking, handlers } = useSwipeDetection({
     onSwipeUp,
@@ -37,19 +25,6 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   });
 
   const peekPreview = usePeekPreview(currentDelta, isPeeking, peekContent);
-
-  // Debug: Log state changes (only at verbose level)
-  React.useEffect(() => {
-    logger.debug('🎨 GestureHandler state:', { 
-      instanceId,
-      renderCount,
-      totalInstances,
-      isPeeking, 
-      currentDelta,
-      hasChildren: !!children,
-      hasPeekContent: !!peekContent 
-    });
-  }, [instanceId, renderCount, totalInstances, isPeeking, currentDelta, children, peekContent]);
 
   // Limit drag distance and determine dominant direction
   const getDominantTransform = () => {

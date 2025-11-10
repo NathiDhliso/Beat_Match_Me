@@ -1,5 +1,4 @@
 import type { Delta, PeekContent, PeekPreview } from './types';
-import { logger } from '../../../utils/debugLogger';
 
 /**
  * Hook to calculate peek preview state based on swipe delta
@@ -11,7 +10,6 @@ export const usePeekPreview = (
   peekContent?: PeekContent
 ): PeekPreview | null => {
   if (!isPeeking || !peekContent) {
-    logger.debug('� Idle (not swiping):', { isPeeking, hasPeekContent: !!peekContent });
     return null;
   }
   
@@ -21,7 +19,6 @@ export const usePeekPreview = (
   // Peek threshold - requires 50px movement for better feel (not too sensitive)
   const PEEK_THRESHOLD = 50;
   if (absX < PEEK_THRESHOLD && absY < PEEK_THRESHOLD) {
-    logger.debug('🚫 Movement too small:', { absX, absY, threshold: PEEK_THRESHOLD });
     return null;
   }
   
@@ -44,11 +41,7 @@ export const usePeekPreview = (
   }
   
   if (result) {
-    logger.info('✅ Showing peek:', { 
-      direction: result.direction, 
-      offset: result.offset,
-      hasContent: !!result.content 
-    });
+    return result;
   }
   
   return result;
