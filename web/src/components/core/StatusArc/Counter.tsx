@@ -14,7 +14,7 @@ export const Counter: React.FC<CounterProps> = ({
 }) => {
   return (
     <div 
-      className="bg-black/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border"
+      className="bg-gray-900/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border"
       style={{ borderColor: `${color}80` }}
     >
       <div className="flex items-center gap-1 sm:gap-2">

@@ -48,7 +48,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
       }}
     >
       <div
-        className={`rounded-full bg-black/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group relative overflow-hidden ${
+        className={`rounded-full bg-gray-900/80 backdrop-blur-lg border-2 ${borderColors[request.type]} ${glowColors[request.type]} shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-all group relative overflow-hidden ${
           isMobile ? 'w-14 h-14' : 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24'
         } ${
           isDragging && dragOffset < -50 ? 'ring-4 ring-green-500' : ''
@@ -73,7 +73,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
         )}
         
         {/* Position Badge */}
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded-full z-10">
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-gray-900/70 backdrop-blur-sm px-1.5 py-0.5 rounded-full z-10">
           <span className={`text-white font-bold ${isMobile ? 'text-xs' : 'text-xs sm:text-sm'}`}>
             #{request.position}
           </span>
@@ -95,7 +95,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
         )}
         
         {/* Tooltip */}
-        <div className="absolute -bottom-12 sm:-bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-lg rounded-lg px-2 py-1 sm:px-3 sm:py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+        <div className="absolute -bottom-12 sm:-bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-lg rounded-lg px-2 py-1 sm:px-3 sm:py-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
           <p className="text-white text-xs sm:text-sm font-semibold">{request.songTitle}</p>
           <p className="text-gray-400 text-xs">{request.artistName}</p>
           {request.userName && (

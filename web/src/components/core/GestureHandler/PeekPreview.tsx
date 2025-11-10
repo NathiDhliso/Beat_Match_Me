@@ -73,25 +73,6 @@ export const PeekPreview: React.FC<PeekPreviewProps> = ({ peekPreview }) => {
         <div className="relative z-10 h-full w-full flex items-center justify-center">
           {peekPreview.content}
         </div>
-
-        {/* Progress indicator */}
-        <div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 
-                     bg-white/20 backdrop-blur-md rounded-full px-6 py-3
-                     border-2 border-white/40 shadow-2xl"
-        >
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-3 h-3 rounded-full bg-white animate-pulse"
-              style={{
-                animationDuration: '1s',
-              }}
-            />
-            <span className="text-white font-bold text-lg">
-              {Math.round(opacity * 100)}%
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

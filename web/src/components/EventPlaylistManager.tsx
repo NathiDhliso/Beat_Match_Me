@@ -173,10 +173,10 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+    <div className="fixed inset-0 bg-gray-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
       <div className="bg-gradient-to-br from-gray-900 to-purple-900 rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden border border-purple-500/30 shadow-2xl">
         {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-purple-500/30 bg-black/30">
+        <div className="p-4 sm:p-6 border-b border-purple-500/30 bg-gray-900/30">
           {/* Live Mode Warning */}
           {isLive && (
             <div className="mb-4 p-4 bg-yellow-500/20 border-2 border-yellow-500/50 rounded-lg">
@@ -442,7 +442,7 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
 
         {/* Footer Actions */}
         {view === 'custom' && (
-          <div className="p-4 sm:p-6 border-t border-purple-500/30 bg-black/30 flex flex-col sm:flex-row gap-3">
+          <div className="p-4 sm:p-6 border-t border-purple-500/30 bg-gray-900/30 flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setShowSaveDialog(true)}
               disabled={selectedTracks.size === 0}
@@ -464,7 +464,7 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
 
         {/* Save Playlist Dialog */}
         {showSaveDialog && (
-          <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/80 flex items-center justify-center p-4">
             <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-purple-500/30">
               <h3 className="text-xl font-bold text-white mb-4">Save Playlist</h3>
               <input

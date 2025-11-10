@@ -1429,7 +1429,7 @@ export const UserPortalInnovative: React.FC = () => {
 
       {/* Payment Error Modal - Phase 8: Lazy loaded */}
       {paymentError && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+        <Suspense fallback={<div className="fixed inset-0 bg-gray-900/50 z-50" />}>
           <PaymentErrorModal
             error={paymentError}
             onRetry={() => {
@@ -1450,7 +1450,7 @@ export const UserPortalInnovative: React.FC = () => {
 
       {/* Success Confirmation Modal - Phase 8: Lazy loaded */}
       {showSuccessModal && selectedSong && successQueuePosition !== null && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+        <Suspense fallback={<div className="fixed inset-0 bg-gray-900/50 z-50" />}>
           <SuccessConfirmation
             songTitle={selectedSong.title}
             artist={selectedSong.artist}

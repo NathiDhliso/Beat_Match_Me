@@ -70,7 +70,7 @@ export const UniversalHelp: React.FC<UniversalHelpProps> = ({
 
       {/* Help Modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden border border-gray-700 animate-scale-in">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between">

@@ -87,14 +87,21 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
         minHeight: '100vh',
       }}
     >
+      {/* Peek Preview Layer - Shows behind the main content */}
+      {isPeeking && peekPreview && peekPreview.direction && (
+        <PeekPreview peekPreview={peekPreview} />
+      )}
+
       {/* Current Page Layer - Limited drag with elastic snap back */}
       <div
-        className="h-full w-full"
+        className="h-full w-full relative z-10"
         style={{
           transform: getDominantTransform(),
           transition: isPeeking ? 'none' : 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
           willChange: 'transform',
           minHeight: '100vh',
+          backgroundColor: 'var(--bg-primary)',
+          opacity: 1,
         }}
       >
         {children}

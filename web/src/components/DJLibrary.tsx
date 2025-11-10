@@ -239,7 +239,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
 
       {/* Spotify Search Modal */}
       {showSongSearch && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-700">
             {/* Header */}
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 flex items-center justify-between">
@@ -470,7 +470,7 @@ const AddTrackModal: React.FC<AddTrackModalProps> = ({ onClose, onAdd }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-white/10" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-2xl font-bold text-white mb-6">Add New Track</h3>
         
@@ -571,7 +571,7 @@ const EditTrackModal: React.FC<EditTrackModalProps> = ({ track, onClose, onSave 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-white/10" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-2xl font-bold text-white mb-6">Edit Track</h3>
         

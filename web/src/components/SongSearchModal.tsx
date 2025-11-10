@@ -66,7 +66,7 @@ export const SongSearchModal: React.FC<SongSearchModalProps> = ({ onSelectSong, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-lg z-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-gray-900 rounded-3xl border border-white/10 p-6 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

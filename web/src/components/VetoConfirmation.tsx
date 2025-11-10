@@ -69,7 +69,7 @@ export const VetoConfirmation: React.FC<VetoConfirmationProps> = ({
   const maxChars = 200;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-scale-in">
+    <div className="fixed inset-0 bg-gray-900/90 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-scale-in">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-lg w-full border border-red-500/30 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 relative">

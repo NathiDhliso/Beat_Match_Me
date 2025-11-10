@@ -98,7 +98,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   const hasWarning = showDedication && validateDedication(dedication);
 
   return (
-    <div className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${styles.lazyBlur}`}>
+    <div className={`fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${styles.lazyBlur}`}>
       <div className="bg-gray-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-6 flex justify-between items-center z-10">

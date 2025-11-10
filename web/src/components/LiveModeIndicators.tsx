@@ -111,7 +111,7 @@ export const LiveModeIndicators: React.FC<LiveModeIndicatorsProps> = ({
 
         {/* Top Right - Currently Playing */}
         {currentSong && mode === 'playing' && (
-          <div className="px-6 py-3 rounded-full bg-black/80 backdrop-blur-lg border-2 border-green-500 shadow-2xl animate-slide-in-right">
+          <div className="px-6 py-3 rounded-full bg-gray-900/80 backdrop-blur-lg border-2 border-green-500 shadow-2xl animate-slide-in-right">
             <p className="text-green-400 text-sm font-semibold">NOW PLAYING</p>
             <p className="text-white font-bold">{currentSong.title}</p>
             <p className="text-gray-400 text-sm">{currentSong.artist}</p>
@@ -172,8 +172,8 @@ export const LiveStatusBar: React.FC<LiveStatusBarProps> = ({
     >
       <div className={`${
         isLive 
-          ? 'bg-black/60 border-green-500/30' 
-          : 'bg-black/40 border-gray-500/30'
+          ? 'bg-gray-900/60 border-green-500/30' 
+          : 'bg-gray-900/40 border-gray-500/30'
         } backdrop-blur-lg border rounded-full px-4 py-2 shadow-2xl hover:shadow-green-500/20`}>
         <div className="flex items-center gap-3">
           {/* Live Indicator - Clickable */}
@@ -280,10 +280,10 @@ export const UserNowPlayingNotification: React.FC<UserNowPlayingNotificationProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
       <div className="max-w-md w-full bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl border-4 border-green-400 shadow-2xl overflow-hidden animate-bounce-in">
         {/* Header */}
-        <div className="bg-black/30 px-6 py-4 border-b border-green-400">
+        <div className="bg-gray-900/30 px-6 py-4 border-b border-green-400">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center animate-pulse">
               <Music className="w-6 h-6 text-green-600" />
@@ -362,7 +362,7 @@ export const UserNowPlayingNotification: React.FC<UserNowPlayingNotificationProp
         </div>
 
         {/* Footer */}
-        <div className="bg-black/30 px-6 py-3 border-t border-green-400 flex justify-between">
+        <div className="bg-gray-900/30 px-6 py-3 border-t border-green-400 flex justify-between">
           <button
             onClick={onDismiss}
             className="text-white/80 hover:text-white text-sm transition-colors"

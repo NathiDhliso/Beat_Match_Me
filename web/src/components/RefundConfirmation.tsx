@@ -45,7 +45,7 @@ export const RefundConfirmation: React.FC<RefundConfirmationProps> = ({
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-scale-in">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-scale-in">
       {/* Modal Container */}
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700 overflow-hidden">
         {/* Header Section */}

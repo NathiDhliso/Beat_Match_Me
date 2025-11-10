@@ -68,7 +68,7 @@ export const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-lg animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/90 backdrop-blur-lg animate-fadeIn"
       onClick={handleClose}
     >
       <div
@@ -78,7 +78,7 @@ export const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+          className="absolute top-4 right-4 z-10 p-2 bg-gray-900/50 hover:bg-gray-900/70 rounded-full transition-colors"
           aria-label="Close modal"
         >
           <X className="w-6 h-6 text-white" />
@@ -100,7 +100,7 @@ export const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
           )}
           
           {/* Position Badge */}
-          <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-2 rounded-full">
+          <div className="absolute top-4 left-4 bg-gray-900/70 backdrop-blur-sm px-3 py-2 rounded-full">
             <span className="text-white font-bold text-lg">#{request.position}</span>
           </div>
 

@@ -20,7 +20,7 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles } from 'lucide-react';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List } from 'lucide-react';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
@@ -985,19 +985,19 @@ export const DJPortalOrbital: React.FC = () => {
       peekContent={{
         left: (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Music className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">← Previous</p>
+            <DollarSign className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">Revenue</p>
           </div>
         ),
         right: (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Music className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">Next →</p>
+            <Settings className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">Settings</p>
           </div>
         ),
         up: (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Music className="w-20 h-20 text-white/80" />
+            <List className="w-20 h-20 text-white/80" />
             <p className="text-white/80 text-2xl font-bold">Queue</p>
           </div>
         ),

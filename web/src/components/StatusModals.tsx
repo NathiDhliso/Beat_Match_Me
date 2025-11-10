@@ -55,7 +55,7 @@ export const PaymentErrorModal: React.FC<PaymentErrorModalProps> = ({
   isRetrying = false
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-red-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl">
         {/* Error Icon */}
         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -139,7 +139,7 @@ export const SuccessConfirmation: React.FC<SuccessConfirmationProps> = ({
   onClose
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-green-900/90 to-emerald-900/90 border border-green-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl">
         {/* Success Animation */}
         <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-in">

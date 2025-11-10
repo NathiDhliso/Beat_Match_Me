@@ -422,7 +422,7 @@ input, textarea, [contenteditable] {
   }
 
   .modal-overlay {
-    @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4;
   }
 
   .modal-content {

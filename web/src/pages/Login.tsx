@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
     <div 
       className="fixed inset-0 h-dvh flex items-center justify-center p-4 overflow-hidden"
       style={{
-        background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+        background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)'
       }}
     >
       {/* Animated background */}
