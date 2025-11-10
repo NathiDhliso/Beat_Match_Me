@@ -982,9 +982,35 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeDown={handleSwipeDown}
       onSwipeLeft={handleSwipeLeft}
       onSwipeRight={handleSwipeRight}
+      peekContent={{
+        left: (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <Music className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">← Previous</p>
+          </div>
+        ),
+        right: (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <Music className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">Next →</p>
+          </div>
+        ),
+        up: (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <Music className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">Queue</p>
+          </div>
+        ),
+        down: (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <Music className="w-20 h-20 text-white/80" />
+            <p className="text-white/80 text-2xl font-bold">Library</p>
+          </div>
+        ),
+      }}
     >
       <div 
-        className="fixed inset-0 h-dvh animate-vinyl-spin"
+        className="absolute inset-0 h-dvh animate-vinyl-spin"
         style={{
           background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
         }}

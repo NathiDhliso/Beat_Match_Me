@@ -8,6 +8,7 @@ import { apolloClient } from './services/api';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { YocoTestPage } from './pages/YocoTestPage';
+import { PeekPreviewTest } from './pages/PeekPreviewTest';
 import { OfflineBanner } from './components/StatusModals';
 import { initPullToRefreshPrevention } from './utils/preventPullToRefresh';
 
@@ -145,6 +146,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/yoco-test" element={<YocoTestPage />} />
+                <Route path="/peek-test" element={<PeekPreviewTest />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 {/* Phase 8: Lazy loaded routes with Suspense for code splitting */}
                 <Route

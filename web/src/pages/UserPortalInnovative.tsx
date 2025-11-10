@@ -259,33 +259,55 @@ export const UserPortalInnovative: React.FC = () => {
     }
   };
 
-  // Helper: Fetch attendee count for an event
   const fetchAttendeeCount = async (eventId: string): Promise<number> => {
     try {
       const { generateClient } = await import('aws-amplify/api');
       const client = generateClient({ authMode: 'userPool' });
       
-      const response: any = await client.graphql({
+      const setsResponse: any = await client.graphql({
         query: `
-          query GetQueue($eventId: ID!) {
-            getQueue(eventId: $eventId) {
-              orderedRequests {
-                userName
-              }
+          query ListEventDJSets($eventId: ID!) {
+            listEventDJSets(eventId: $eventId) {
+              setId
             }
           }
         `,
         variables: { eventId }
       });
 
-      const requests = response.data?.getQueue?.orderedRequests || [];
+      const sets = setsResponse.data?.listEventDJSets || [];
+      if (sets.length === 0) return 0;
+
+      const allUserNames = new Set<string>();
       
-      // Count unique users (attendees)
-      const uniqueUsers = new Set(requests.map((r: any) => r.userName));
-      return uniqueUsers.size;
+      for (const set of sets) {
+        try {
+          const queueResponse: any = await client.graphql({
+            query: `
+              query GetQueue($setId: ID!) {
+                getQueue(setId: $setId) {
+                  orderedRequests {
+                    userName
+                  }
+                }
+              }
+            `,
+            variables: { setId: set.setId }
+          });
+
+          const requests = queueResponse.data?.getQueue?.orderedRequests || [];
+          requests.forEach((r: any) => {
+            if (r.userName) allUserNames.add(r.userName);
+          });
+        } catch (err) {
+          console.warn(`Failed to fetch queue for set ${set.setId}:`, err);
+        }
+      }
+      
+      return allUserNames.size;
     } catch (error) {
       console.warn(`Failed to fetch attendee count for event ${eventId}:`, error);
-      return 0; // Fallback
+      return 0;
     }
   };
 

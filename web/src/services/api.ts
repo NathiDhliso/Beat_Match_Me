@@ -110,11 +110,12 @@ export const QUERIES = {
   `,
 
   GET_QUEUE: `
-    query GetQueue($eventId: ID!) {
-      getQueue(eventId: $eventId) {
-        queueId
+    query GetQueue($setId: ID!) {
+      getQueue(setId: $setId) {
+        setId
         eventId
-        requests {
+        performerId
+        orderedRequests {
           requestId
           songTitle
           artistName
@@ -131,6 +132,7 @@ export const QUERIES = {
           }
           submittedAt
         }
+        lastUpdated
       }
     }
   `,

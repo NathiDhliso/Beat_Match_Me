@@ -197,8 +197,8 @@ export function useQueueSubscription(setId: string, eventId: string) {
         });
         
         const getQueueQuery = `
-          query GetQueue($eventId: ID!) {
-            getQueue(eventId: $eventId) {
+          query GetQueue($setId: ID!) {
+            getQueue(setId: $setId) {
               setId
               eventId
               orderedRequests {
@@ -215,7 +215,7 @@ export function useQueueSubscription(setId: string, eventId: string) {
 
         const response: any = await client.graphql({
           query: getQueueQuery,
-          variables: { eventId }
+          variables: { setId }
         });
 
         if (response.data?.getQueue) {
@@ -366,13 +366,15 @@ export function useQueueSubscription(setId: string, eventId: string) {
       const subscriptionQuery = `
         subscription OnQueueUpdate($eventId: ID!) {
           onQueueUpdate(eventId: $eventId) {
+            setId
             eventId
+            performerId
             orderedRequests {
               requestId
               queuePosition
               status
               songTitle
-              artist
+              artistName
             }
             lastUpdated
           }
