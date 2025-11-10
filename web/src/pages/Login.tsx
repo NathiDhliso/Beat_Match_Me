@@ -124,7 +124,7 @@ export const Login: React.FC = () => {
         )}
 
         {showSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900/50 backdrop-blur-sm">
             <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 shadow-2xl">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">

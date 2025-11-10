@@ -27,8 +27,12 @@
   --safe-area-right: 0px;
 }
 
-body {
+html, body {
+  background: var(--bg-primary) !important;
   margin: 0;
+}
+
+body {
   /* Account for safe areas on mobile */
   padding-top: var(--safe-area-top);
   padding-bottom: var(--safe-area-bottom);
@@ -174,19 +178,6 @@ input, textarea, [contenteditable] {
     }
   }
 
-  /* Vinyl Spin Animation */
-  .animate-vinyl-spin {
-    animation: vinylSpin 20s linear infinite;
-  }
-  
-  @keyframes vinylSpin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
 
   /* Swipe Animations */
   .animate-swipe-left {

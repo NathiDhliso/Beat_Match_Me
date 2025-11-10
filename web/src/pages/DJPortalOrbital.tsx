@@ -1010,9 +1010,14 @@ export const DJPortalOrbital: React.FC = () => {
       }}
     >
       <div 
-        className="absolute inset-0 h-dvh animate-vinyl-spin"
+        className="absolute inset-0 h-dvh"
         style={{
-          background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+          background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
         }}
       >
         {/* Status Arc - Hide when live or menu open */}
@@ -1037,7 +1042,7 @@ export const DJPortalOrbital: React.FC = () => {
         {!isLiveMode && (
           <button
             onClick={() => setShowNotifications(true)}
-            className={`relative fixed z-40 bg-black/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${
+            className={`relative fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${
               showSetSelector 
                 ? 'top-2 right-14 p-1.5 opacity-30' 
                 : 'top-2 right-14 sm:top-4 sm:right-20 p-2 sm:p-3'
@@ -1059,7 +1064,7 @@ export const DJPortalOrbital: React.FC = () => {
         {!isLiveMode && (
           <button
             onClick={logout}
-            className={`fixed z-40 bg-black/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${
+            className={`fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${
               showSetSelector 
                 ? 'top-2 right-2 p-1.5 opacity-30' 
                 : 'top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3'
@@ -1073,10 +1078,10 @@ export const DJPortalOrbital: React.FC = () => {
         )}
 
         {/* Main Content Area */}
-        <div className="h-full w-full">
+        <div className="h-full w-full relative">
           {/* Queue View - Circular Visualizer */}
           {currentView === 'queue' && (
-            <div className="h-full flex flex-col items-center justify-center">
+            <div className="h-full flex flex-col items-center justify-center relative z-10">
               {!currentSetId ? (
                 // No Set - Show Create Button
                 <div className="text-center max-w-md">
@@ -1123,7 +1128,6 @@ export const DJPortalOrbital: React.FC = () => {
               ) : (
                 // Has Event, No Requests - SIMPLIFIED CLEAN UI WITH ANIMATED MENU
                 <div className="text-center max-w-lg mx-auto space-y-8 relative">
-                  
                   {/* Page content - Fade out when menu opens */}
                   <div className={`transition-opacity duration-300 ${showSetSelector ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     {/* Event Info */}
@@ -1170,7 +1174,7 @@ export const DJPortalOrbital: React.FC = () => {
                     <div 
                       className="fixed inset-0 z-40 animate-slide-up"
                     >
-                      <div className="h-full bg-black/95 backdrop-blur-lg overflow-hidden flex flex-col">
+                      <div className="h-full bg-gray-900/95 backdrop-blur-lg overflow-hidden flex flex-col">
                         {/* Header Button - Fixed at top */}
                         <button
                           onClick={() => setShowSetSelector(false)}
@@ -1363,7 +1367,7 @@ export const DJPortalOrbital: React.FC = () => {
           {/* Library View */}
           {currentView === 'library' && (
             <div className="h-full pt-20 pb-20 px-4 overflow-hidden">
-              <div className="max-w-6xl mx-auto h-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
+              <div className="max-w-6xl mx-auto h-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
                 {/* Event Playlist Quick Access */}
                 {currentEventId && (
                   <div 
@@ -1410,7 +1414,7 @@ export const DJPortalOrbital: React.FC = () => {
           {/* Revenue View */}
           {currentView === 'revenue' && (
             <div className="h-full flex items-center justify-center px-4">
-              <div className="max-w-4xl w-full bg-black/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
+              <div className="max-w-4xl w-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
                 <h2 className="text-4xl font-bold text-white mb-8 text-center">Revenue Dashboard</h2>
                 
                 {/* Revenue Stats */}
@@ -1701,7 +1705,7 @@ export const DJPortalOrbital: React.FC = () => {
 
         {/* Gesture Hints - Bottom Center - Hide when live */}
         {!isLiveMode && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 bg-black/50 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 bg-gray-900/50 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
             <div className="flex items-center gap-4 text-xs text-gray-400">
               <span>↑ Queue</span>
               <span>↓ Library</span>
@@ -1714,7 +1718,7 @@ export const DJPortalOrbital: React.FC = () => {
         {/* Modals - Phase 8: Lazy loaded for performance */}
         {showEventCreator && (
           <Suspense fallback={
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
               <div className="text-white text-lg">Loading...</div>
             </div>
           }>
@@ -1728,7 +1732,7 @@ export const DJPortalOrbital: React.FC = () => {
         {/* Event Playlist Manager Modal */}
         {showPlaylistManager && (
           <Suspense fallback={
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
               <div className="text-white text-lg">Loading...</div>
             </div>
           }>
@@ -1814,7 +1818,7 @@ export const DJPortalOrbital: React.FC = () => {
         {/* Notification Center Modal */}
         {showNotifications && (
           <Suspense fallback={null}>
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="max-w-2xl w-full max-h-[90vh]">
                 <NotificationCenter
                   notifications={notifications}
@@ -1842,7 +1846,7 @@ export const DJPortalOrbital: React.FC = () => {
 
         {/* DJ Profile Management Modal */}
         {showProfile && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-gray-900/80 z-50 flex items-center justify-center p-4">
             <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <DJProfileScreen
                 profile={{
@@ -1910,7 +1914,7 @@ export const DJPortalOrbital: React.FC = () => {
       {/* Slide-out Panels (non-blocking) - Phase 8: Lazy loaded */}
       {showSettings && (
         <Suspense fallback={
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
         }>
           <SettingsModal
             onClose={() => setShowSettings(false)}
@@ -1921,7 +1925,7 @@ export const DJPortalOrbital: React.FC = () => {
 
       {showQRCode && currentEvent && currentEventId && (
         <Suspense fallback={
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
         }>
           <QRCodeDisplay
             eventId={currentEventId}

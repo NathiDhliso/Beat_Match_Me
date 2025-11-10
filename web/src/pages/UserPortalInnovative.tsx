@@ -842,13 +842,13 @@ export const UserPortalInnovative: React.FC = () => {
       peekContent={peekContent}
     >
       <div 
-        className="fixed inset-0 h-dvh"
+        className="absolute inset-0 h-dvh"
         style={{
-          background: `linear-gradient(to bottom right, rgb(17, 24, 39), ${currentTheme.primary}33, rgb(17, 24, 39))`
+          background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)'
         }}
       >
       {/* Top Bar - Minimal */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg border-b border-white/10 safe-area-top">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-lg border-b border-white/10 safe-area-top">
         <div className="max-w-7xl mx-auto px-4 py-2 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center flex-shrink-0`}>
@@ -1067,7 +1067,7 @@ export const UserPortalInnovative: React.FC = () => {
         {viewState === 'browsing' && (
           <div className="h-full pb-32">
             {currentEvent && (
-              <div className="bg-black/50 backdrop-blur-lg p-3 sm:p-4 mb-4 sticky top-14 sm:top-16 z-40">
+              <div className="bg-gray-900/50 backdrop-blur-lg p-3 sm:p-4 mb-4 sticky top-14 sm:top-16 z-40">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
                   <button
                     onClick={() => {
@@ -1317,7 +1317,7 @@ export const UserPortalInnovative: React.FC = () => {
 
         {/* Feature 6: Refund Confirmation Modal - Phase 8: Lazy loaded */}
         {showRefundModal && refundData && (
-          <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+          <Suspense fallback={<div className="fixed inset-0 bg-gray-900/50 z-50" />}>
             <RefundConfirmation
               refund={{
                 requestId: refundData.requestId || '',
@@ -1345,7 +1345,7 @@ export const UserPortalInnovative: React.FC = () => {
 
         {/* Phase 3: Notification Center Modal - Phase 8: Lazy loaded */}
         {showNotifications && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="max-w-2xl w-full max-h-[90vh]">
               <Suspense fallback={<LoadingState message="Loading notifications..." />}>
                 <NotificationCenter
@@ -1466,7 +1466,7 @@ export const UserPortalInnovative: React.FC = () => {
 
       {/* Settings Modal - Phase 8: Lazy loaded */}
       {showSettings && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50" />}>
+        <Suspense fallback={<div className="fixed inset-0 bg-gray-900/50 z-50" />}>
           <Settings
             onClose={() => setShowSettings(false)}
             mode="fan"
@@ -1475,7 +1475,7 @@ export const UserPortalInnovative: React.FC = () => {
       )}
 
       {/* Mobile Bottom Navigation - Phase 7 */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-t border-white/10 pb-safe sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/40 backdrop-blur-xl border-t border-white/10 pb-safe sm:hidden">
         <div className="grid grid-cols-4 gap-1 px-2 py-2">
           {/* Discover Events */}
           <button

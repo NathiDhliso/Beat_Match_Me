@@ -46,7 +46,7 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
   
   /* Gradients */
-  --gradient-bg: linear-gradient(to bottom right, #000000, #111827, #0a0a0a);
+  --gradient-bg: linear-gradient(to bottom right, #1e293b, #111827, #0f172a);
   --gradient-card: linear-gradient(to bottom right, rgba(31, 41, 55, 0.5), rgba(17, 24, 39, 0.5));
   --gradient-platinum: linear-gradient(to right, #9ca3af, #6b7280);
 }

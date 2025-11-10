@@ -51,39 +51,54 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     });
   }, [instanceId, renderCount, totalInstances, isPeeking, currentDelta, children, peekContent]);
 
+  // Limit drag distance and determine dominant direction
+  const getDominantTransform = () => {
+    if (!isPeeking) return 'translate(0, 0)';
+    
+    const absX = Math.abs(currentDelta.x);
+    const absY = Math.abs(currentDelta.y);
+    const maxDrag = 150; // Maximum pixels user can drag
+    
+    // Apply resistance - the further you drag, the harder it gets
+    const applyResistance = (value: number) => {
+      const abs = Math.abs(value);
+      if (abs > maxDrag) {
+        // Strong resistance beyond max
+        return (value > 0 ? 1 : -1) * (maxDrag + (abs - maxDrag) * 0.2);
+      }
+      return value;
+    };
+    
+    // Only move in the dominant direction with resistance
+    if (absX > absY) {
+      return `translate(${applyResistance(currentDelta.x)}px, 0)`;
+    } else {
+      return `translate(0, ${applyResistance(currentDelta.y)}px)`;
+    }
+  };
+
   return (
     <div
       {...handlers}
       className="h-full w-full"
       style={{ 
         position: 'relative',
-        overflow: 'hidden', // Prevent scrollbars and clip overflow properly
-        background: 'transparent', // Let children define their own background
+        overflow: 'hidden',
+        minHeight: '100vh',
       }}
     >
-      {/* Peek Preview Layer - Shows next page sliding in (BEHIND current page, z-0) */}
-      {peekPreview && (
-        <PeekPreview peekPreview={peekPreview} />
-      )}
-      
-      {/* Current Page Layer - Slides with finger (ON TOP of peek, z-10) */}
+      {/* Current Page Layer - Limited drag with elastic snap back */}
       <div
-        className="h-full w-full relative"
+        className="h-full w-full"
         style={{
-          transform: isPeeking ? `translate(${currentDelta.x}px, ${currentDelta.y}px)` : 'translate(0, 0)',
-          transition: isPeeking ? 'none' : 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+          transform: getDominantTransform(),
+          transition: isPeeking ? 'none' : 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
           willChange: 'transform',
-          zIndex: 10, // Explicitly high z-index to ensure it's above peek preview
-          // No background here - children provide their own
+          minHeight: '100vh',
         }}
       >
         {children}
       </div>
-      
-      {/* Direction Hint Arrow with smooth fade (z-20, above everything) */}
-      {peekPreview && (
-        <DirectionArrow direction={peekPreview.direction} />
-      )}
     </div>
   );
 };

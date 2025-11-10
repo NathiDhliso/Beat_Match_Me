@@ -11,7 +11,7 @@ export const usePeekPreview = (
   peekContent?: PeekContent
 ): PeekPreview | null => {
   if (!isPeeking || !peekContent) {
-    logger.debug('🚫 No peek preview:', { isPeeking, hasPeekContent: !!peekContent });
+    logger.debug('� Idle (not swiping):', { isPeeking, hasPeekContent: !!peekContent });
     return null;
   }
   

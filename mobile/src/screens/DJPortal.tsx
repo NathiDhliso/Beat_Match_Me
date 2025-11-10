@@ -1,18 +1,16 @@
 /**
  * DJ Portal Screen - Mobile
- * Simplified DJ interface for managing sets, queue, and requests
+ * Swipeable interface with peek previews for Queue, Library, Revenue, and Settings
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
   Alert,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -26,18 +24,18 @@ import {
   submitMarkCompleted,
   submitRefund,
 } from '../services/graphql';
-import { StatusArc, CircularQueueVisualizer } from '../components/OrbitalInterface';
-import QRCode from 'react-native-qrcode-svg';
-import { LogOut } from 'lucide-react-native';
-import { getTheme } from '../theme/tokens';
-import type { ThemeMode } from '../theme/tokens';
+import { HorizontalPager } from '../components/HorizontalPager';
+import { QueueView } from './views/QueueView';
+import { LibraryView } from './views/LibraryView';
+import { RevenueView } from './views/RevenueView';
+import { SettingsView } from './views/SettingsView';
 
-type TabView = 'queue' | 'history' | 'settings';
+type PageView = 'queue' | 'library' | 'revenue' | 'settings';
 
 export const DJPortalScreen: React.FC = () => {
   const { user, logout } = useAuth();
-  const { currentTheme, themeMode, setThemeMode, isDark, toggleDarkMode } = useTheme();
-  const [currentTab, setCurrentTab] = useState<TabView>('queue');
+  const { currentTheme } = useTheme();
+  const [currentPage, setCurrentPage] = useState<PageView>('queue');
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<any>(null);
@@ -71,6 +69,8 @@ export const DJPortalScreen: React.FC = () => {
 
   const pendingRequests = queueRequests.filter((r: any) => r.status === 'PENDING');
   const acceptedRequests = queueRequests.filter((r: any) => r.status === 'ACCEPTED');
+
+  const pageNames: PageView[] = ['queue', 'library', 'revenue', 'settings'];
   
   // Calculate total revenue
   const totalRevenue = queueRequests.reduce((sum: number, req: any) => sum + (req.price || 0), 0);
@@ -192,7 +192,6 @@ export const DJPortalScreen: React.FC = () => {
     }
   };
 
-  // Render Now Playing Banner
   const renderNowPlaying = () => {
     if (!currentlyPlaying) return null;
 
@@ -209,87 +208,6 @@ export const DJPortalScreen: React.FC = () => {
         >
           <Text style={styles.completeButtonText}>Complete</Text>
         </TouchableOpacity>
-      </View>
-    );
-  };
-
-  // Render Queue Item
-  const renderQueueItem = (request: any) => {
-    const isPending = request.status === 'PENDING';
-    const isAccepted = request.status === 'ACCEPTED';
-
-    return (
-      <View key={request.requestId} style={styles.queueItem}>
-        <View style={styles.queueItemHeader}>
-          <View style={styles.queuePosition}>
-            <Text style={styles.queuePositionText}>#{request.queuePosition}</Text>
-          </View>
-          <View style={styles.queueItemInfo}>
-            <Text style={styles.songTitle}>{request.songTitle}</Text>
-            <Text style={styles.artistName}>{request.artistName}</Text>
-            {request.userName && (
-              <Text style={styles.requestedBy}>Requested by: {request.userName}</Text>
-            )}
-          </View>
-          <View
-            style={[
-              styles.statusBadge,
-              isPending && styles.statusPending,
-              isAccepted && styles.statusAccepted,
-            ]}
-          >
-            <Text style={styles.statusText}>{request.status}</Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          {isPending && (
-            <>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.acceptButton]}
-                onPress={() => handleAcceptRequest(request)}
-              >
-                <Text style={styles.actionButtonText}>Accept</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.vetoButton]}
-                onPress={() => handleVetoRequest(request)}
-              >
-                <Text style={styles.actionButtonText}>Veto</Text>
-              </TouchableOpacity>
-            </>
-          )}
-          {isAccepted && request.queuePosition === 1 && !currentlyPlaying && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.playButton]}
-              onPress={() => handleMarkPlaying(request)}
-            >
-              <Text style={styles.actionButtonText}>Mark as Playing</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    );
-  };
-
-  // Connection Status Indicator
-  const renderConnectionStatus = () => {
-    let statusColor = '#gray';
-    let statusText = 'Disconnected';
-
-    if (connectionStatus === 'connected') {
-      statusColor = '#10b981';
-      statusText = 'Live';
-    } else if (connectionStatus === 'connecting') {
-      statusColor = '#f59e0b';
-      statusText = 'Connecting...';
-    }
-
-    return (
-      <View style={styles.connectionStatus}>
-        <View style={[styles.connectionDot, { backgroundColor: statusColor }]} />
-        <Text style={styles.connectionText}>{statusText}</Text>
       </View>
     );
   };
@@ -315,295 +233,51 @@ export const DJPortalScreen: React.FC = () => {
     );
   }
 
+  const pages = [
+    <QueueView
+      queueRequests={queueRequests}
+      totalRevenue={totalRevenue}
+      viewMode={viewMode}
+      setViewMode={setViewMode}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      currentlyPlaying={currentlyPlaying}
+      onAcceptRequest={handleAcceptRequest}
+      onVetoRequest={handleVetoRequest}
+      onMarkPlaying={handleMarkPlaying}
+    />,
+    <LibraryView />,
+    <RevenueView
+      totalRevenue={totalRevenue}
+      queueRequests={queueRequests}
+      acceptedRequests={acceptedRequests}
+      pendingRequests={pendingRequests}
+      event={event}
+    />,
+    <SettingsView
+      currentEventId={currentEventId}
+      connectionStatus={connectionStatus}
+      onLogout={logout}
+    />,
+  ];
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>DJ Portal</Text>
           {event && <Text style={styles.headerSubtitle}>{event.venueName}</Text>}
         </View>
-        {renderConnectionStatus()}
+        <Text style={styles.pageIndicator}>{currentPage.toUpperCase()}</Text>
       </View>
 
-      {/* Now Playing Banner */}
       {renderNowPlaying()}
 
-      {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, currentTab === 'queue' && styles.tabActive]}
-          onPress={() => setCurrentTab('queue')}
-        >
-          <Text style={[styles.tabText, currentTab === 'queue' && styles.tabTextActive]}>
-            Queue ({queueRequests.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, currentTab === 'history' && styles.tabActive]}
-          onPress={() => setCurrentTab('history')}
-        >
-          <Text style={[styles.tabText, currentTab === 'history' && styles.tabTextActive]}>
-            History
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, currentTab === 'settings' && styles.tabActive]}
-          onPress={() => setCurrentTab('settings')}
-        >
-          <Text style={[styles.tabText, currentTab === 'settings' && styles.tabTextActive]}>
-            Settings
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Queue View */}
-      {currentTab === 'queue' && (
-        <>
-          {/* Status Arc - Always visible in queue tab */}
-          <StatusArc revenue={totalRevenue} requestCount={queueRequests.length} />
-
-          {/* View Mode Toggle */}
-          <View style={styles.viewModeToggle}>
-            <TouchableOpacity
-              style={[styles.viewModeButton, viewMode === 'orbital' && styles.viewModeActive]}
-              onPress={() => setViewMode('orbital')}
-            >
-              <Text style={[styles.viewModeText, viewMode === 'orbital' && styles.viewModeTextActive]}>
-                Orbital
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.viewModeButton, viewMode === 'list' && styles.viewModeActive]}
-              onPress={() => setViewMode('list')}
-            >
-              <Text style={[styles.viewModeText, viewMode === 'list' && styles.viewModeTextActive]}>
-                List
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Orbital View */}
-          {viewMode === 'orbital' ? (
-            <CircularQueueVisualizer
-              requests={queueRequests}
-              onAccept={async (id) => {
-                const req = queueRequests.find((r: any) => r.requestId === id);
-                if (req) await handleAcceptRequest(req);
-              }}
-              onVeto={async (id) => {
-                const req = queueRequests.find((r: any) => r.requestId === id);
-                if (req) await handleVetoRequest(req);
-              }}
-              onRequestTap={(req) => {
-                // Show request details modal (future enhancement)
-                Alert.alert(
-                  req.songTitle,
-                  `${req.artistName}\nRequested by: ${req.userName || 'Unknown'}\nPrice: R${req.price || 0}`
-                );
-              }}
-            />
-          ) : (
-            /* List View */
-            <ScrollView
-              style={styles.queueList}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-            >
-              {queueRequests.length === 0 ? (
-                <View style={styles.emptyQueue}>
-                  <Text style={styles.emptyQueueText}>No requests yet</Text>
-                  <Text style={styles.emptyQueueSubtext}>
-                    Share your QR code with patrons to receive requests
-                  </Text>
-                </View>
-              ) : (
-                queueRequests.map(renderQueueItem)
-              )}
-            </ScrollView>
-          )}
-        </>
-      )}
-
-      {/* History Tab (Placeholder) */}
-      {currentTab === 'history' && (
-        <View style={styles.placeholderContainer}>
-          <Text style={styles.placeholderText}>History coming soon</Text>
-        </View>
-      )}
-
-      {/* Settings Tab - Revenue Dashboard */}
-      {currentTab === 'settings' && (
-        <ScrollView style={styles.settingsContainer}>
-          {/* Revenue Stats */}
-          <View style={[styles.statsCard, { borderColor: currentTheme.primary + '30' }]}>
-            <Text style={[styles.statsTitle, { color: currentTheme.primary }]}>
-              💰 Revenue Overview
-            </Text>
-            
-            <View style={[styles.revenueCard, { backgroundColor: currentTheme.primary + '20' }]}>
-              <Text style={styles.revenueLabel}>Total Earnings</Text>
-              <Text style={[styles.revenueAmount, { color: currentTheme.accent }]}>
-                R{totalRevenue.toFixed(2)}
-              </Text>
-            </View>
-
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Total Requests</Text>
-                <Text style={[styles.statValue, { color: currentTheme.primary }]}>
-                  {queueRequests.length}
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Accepted</Text>
-                <Text style={[styles.statValue, { color: '#10b981' }]}>
-                  {acceptedRequests.length}
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Pending</Text>
-                <Text style={[styles.statValue, { color: '#f59e0b' }]}>
-                  {pendingRequests.length}
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Avg Price</Text>
-                <Text style={[styles.statValue, { color: currentTheme.accent }]}>
-                  R{queueRequests.length > 0 ? (totalRevenue / queueRequests.length).toFixed(2) : '0.00'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Event Info */}
-          {event && (
-            <View style={[styles.statsCard, { borderColor: currentTheme.secondary + '30' }]}>
-              <Text style={[styles.statsTitle, { color: currentTheme.secondary }]}>
-                🎵 Event Details
-              </Text>
-              <View style={styles.eventInfo}>
-                <View style={styles.eventRow}>
-                  <Text style={styles.eventLabel}>Venue</Text>
-                  <Text style={styles.eventValue}>{event.venueName}</Text>
-                </View>
-                <View style={styles.eventRow}>
-                  <Text style={styles.eventLabel}>Status</Text>
-                  <Text style={[styles.eventValue, { color: event.status === 'LIVE' ? '#10b981' : '#6b7280' }]}>
-                    {event.status}
-                  </Text>
-                </View>
-                {event.totalRevenue !== undefined && (
-                  <View style={styles.eventRow}>
-                    <Text style={styles.eventLabel}>Event Total</Text>
-                    <Text style={[styles.eventValue, { color: currentTheme.accent }]}>
-                      R{event.totalRevenue.toFixed(2)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* Connection Status */}
-          <View style={[styles.statsCard, { borderColor: currentTheme.accent + '30' }]}>
-            <Text style={[styles.statsTitle, { color: currentTheme.accent }]}>
-              📡 Connection Status
-            </Text>
-            <View style={styles.connectionInfo}>
-              {renderConnectionStatus()}
-              <Text style={styles.connectionDescription}>
-                {connectionStatus === 'connected' 
-                  ? 'Real-time updates active' 
-                  : connectionStatus === 'connecting'
-                  ? 'Establishing connection...'
-                  : 'Offline - Pull to refresh'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Theme Selector */}
-          <View style={[styles.statsCard, { borderColor: currentTheme.primary + '30' }]}>
-            <Text style={[styles.statsTitle, { color: currentTheme.primary }]}>
-              🎨 Theme
-            </Text>
-            
-            <View style={styles.themeOptions}>
-              {(['BeatMatchMe', 'gold', 'platinum'] as ThemeMode[]).map((theme) => (
-                <TouchableOpacity
-                  key={theme}
-                  style={[
-                    styles.themeOption,
-                    themeMode === theme && { 
-                      borderColor: currentTheme.primary,
-                      borderWidth: 3 
-                    }
-                  ]}
-                  onPress={() => setThemeMode(theme)}
-                >
-                  <View style={[
-                    styles.themePreview,
-                    { backgroundColor: getTheme(theme).primary }
-                  ]} />
-                  <Text style={styles.themeLabel}>{theme}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.darkModeRow}>
-              <Text style={styles.darkModeLabel}>Dark Mode</Text>
-              <TouchableOpacity onPress={toggleDarkMode}>
-                <Text style={{ fontSize: 32, color: isDark ? currentTheme.primary : '#6B7280' }}>
-                  {isDark ? '🌙' : '☀️'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* QR Code */}
-          {currentEventId && (
-            <View style={[styles.statsCard, { borderColor: currentTheme.accent + '30' }]}>
-              <Text style={[styles.statsTitle, { color: currentTheme.accent }]}>
-                📱 Event QR Code
-              </Text>
-              <View style={styles.qrContainer}>
-                <QRCode
-                  value={`beatmatchme://event/${currentEventId}`}
-                  size={200}
-                  color={currentTheme.primary}
-                  backgroundColor="#FFFFFF"
-                />
-                <Text style={styles.qrText}>
-                  Scan to join this event
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Logout Button */}
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={() => {
-              Alert.alert(
-                'Logout',
-                'Are you sure you want to logout?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Logout',
-                    style: 'destructive',
-                    onPress: logout
-                  }
-                ]
-              );
-            }}
-          >
-            <LogOut size={20} color="#FFFFFF" />
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      )}
+      <HorizontalPager
+        pages={pages}
+        initialPage={0}
+        onPageChange={(index) => setCurrentPage(pageNames[index])}
+      />
     </View>
   );
 };
@@ -633,20 +307,11 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     marginTop: 4,
   },
-  connectionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  connectionDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  connectionText: {
+  pageIndicator: {
     fontSize: 12,
-    color: '#d1d5db',
     fontWeight: '600',
+    color: '#8b5cf6',
+    letterSpacing: 1,
   },
   nowPlayingBanner: {
     backgroundColor: '#8b5cf6',
@@ -686,134 +351,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#1f2937',
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  tabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#8b5cf6',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#9ca3af',
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: '#8b5cf6',
-    fontWeight: '600',
-  },
-  queueList: {
-    flex: 1,
-  },
-  queueItem: {
-    backgroundColor: '#1f2937',
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#374151',
-  },
-  queueItemHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  queuePosition: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#8b5cf6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  queuePositionText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  queueItemInfo: {
-    flex: 1,
-  },
-  songTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#f3f4f6',
-  },
-  artistName: {
-    fontSize: 14,
-    color: '#9ca3af',
-    marginTop: 2,
-  },
-  requestedBy: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  statusPending: {
-    backgroundColor: '#fef3c7',
-  },
-  statusAccepted: {
-    backgroundColor: '#d1fae5',
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#374151',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  acceptButton: {
-    backgroundColor: '#10b981',
-  },
-  vetoButton: {
-    backgroundColor: '#ef4444',
-  },
-  playButton: {
-    backgroundColor: '#8b5cf6',
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  emptyQueue: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyQueueText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#9ca3af',
-  },
-  emptyQueueSubtext: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 8,
-    textAlign: 'center',
-  },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
@@ -830,184 +367,6 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     marginTop: 8,
     textAlign: 'center',
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: '#9ca3af',
-  },
-  viewModeToggle: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 70,
-    marginBottom: 8,
-    backgroundColor: '#1f2937',
-    borderRadius: 8,
-    padding: 4,
-  },
-  viewModeButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  viewModeActive: {
-    backgroundColor: '#8b5cf6',
-  },
-  viewModeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#9ca3af',
-  },
-  viewModeTextActive: {
-    color: '#ffffff',
-  },
-  settingsContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  statsCard: {
-    backgroundColor: '#1F2937',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  revenueCard: {
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  revenueLabel: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  revenueAmount: {
-    fontSize: 48,
-    fontWeight: 'bold',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  statItem: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#111827',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  statLabel: {
-    color: '#9CA3AF',
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  eventInfo: {
-    gap: 12,
-  },
-  eventRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  eventLabel: {
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-  eventValue: {
-    color: '#F3F4F6',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  connectionInfo: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  connectionDescription: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  themeOptions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  themeOption: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#1F2937',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  themePreview: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginBottom: 8,
-  },
-  themeLabel: {
-    color: '#F3F4F6',
-    fontSize: 12,
-    textTransform: 'capitalize',
-  },
-  darkModeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  darkModeLabel: {
-    color: '#F3F4F6',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  qrContainer: {
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginVertical: 16,
-  },
-  qrText: {
-    color: '#6B7280',
-    fontSize: 14,
-    marginTop: 16,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EF4444',
-    marginTop: 24,
-    marginBottom: 48,
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 

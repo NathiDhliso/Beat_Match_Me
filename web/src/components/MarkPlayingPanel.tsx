@@ -144,7 +144,7 @@ export const PlayingCelebration: React.FC<PlayingCelebrationProps> = ({ request,
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 flex items-center justify-center z-50 animate-vinyl-spin">
+    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 flex items-center justify-center z-50">
       <div className="text-center relative">
         {/* Sparkle Effects */}
         <div className="absolute inset-0 pointer-events-none">
