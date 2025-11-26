@@ -5,7 +5,6 @@ frontend:
       commands:
         - npm ci --cache .npm --prefer-offline
         - echo "VITE_SPOTIFY_CLIENT_ID=$VITE_SPOTIFY_CLIENT_ID" >> web/.env
-        - echo "VITE_SPOTIFY_CLIENT_SECRET=$VITE_SPOTIFY_CLIENT_SECRET" >> web/.env
         - echo "VITE_YOCO_PUBLIC_KEY=$VITE_YOCO_PUBLIC_KEY" >> web/.env
         - echo "VITE_USER_POOL_ID=$VITE_USER_POOL_ID" >> web/.env
         - echo "VITE_USER_POOL_CLIENT_ID=$VITE_USER_POOL_CLIENT_ID" >> web/.env

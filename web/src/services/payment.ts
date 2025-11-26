@@ -1,18 +1,26 @@
 /**
- * Payment Service - Yoco Integration
- * Handles payment processing, verification, and refunds
+ * Payment Service - Yoco Integration (Production Ready)
+ * Handles payment processing, verification, and refunds via Yoco API
  */
 
 import { generateClient } from 'aws-amplify/api';
 
-const client = generateClient();
+const client = generateClient({
+  authMode: 'userPool'
+});
+
+const YOCO_PUBLIC_KEY = import.meta.env.VITE_YOCO_PUBLIC_KEY || '';
 
 interface PaymentIntentData {
   amount: number;
   songId: string;
   eventId: string;
+  setId?: string;
+  performerId?: string;
   userId?: string;
   currency?: string;
+  songTitle?: string;
+  artistName?: string;
 }
 
 interface PaymentIntent {
@@ -20,11 +28,16 @@ interface PaymentIntent {
   amount: number;
   currency: string;
   status: 'pending' | 'processing' | 'succeeded' | 'failed';
+  metadata?: {
+    songId: string;
+    eventId: string;
+    songTitle?: string;
+  };
 }
 
 interface YocoPaymentResult {
   transactionId: string;
-  chargeId: string;           // NEW: Yoco charge ID for server-side verification
+  chargeId: string;
   status: 'succeeded' | 'failed';
   amount: number;
   currency: string;
@@ -35,6 +48,7 @@ interface RefundData {
   requestId: string;
   amount: number;
   reason?: string;
+  chargeId?: string;
 }
 
 interface RefundResult {
@@ -45,163 +59,186 @@ interface RefundResult {
   estimatedDays: string;
 }
 
-/**
- * Create a payment intent for a song request
- */
+let yocoSDKInstance: any = null;
+let yocoSDKLoading: Promise<void> | null = null;
+
+async function loadYocoSDK(): Promise<void> {
+  if (yocoSDKInstance) return;
+  
+  if (yocoSDKLoading) {
+    await yocoSDKLoading;
+    return;
+  }
+  
+  yocoSDKLoading = new Promise((resolve, reject) => {
+    if (window.YocoSDK) {
+      try {
+        yocoSDKInstance = new window.YocoSDK({
+          publicKey: YOCO_PUBLIC_KEY,
+        });
+        resolve();
+      } catch (error) {
+        reject(new Error('Failed to initialize Yoco SDK'));
+      }
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://js.yoco.com/sdk/v1/yoco-sdk-web.js';
+    script.async = true;
+    
+    script.onload = () => {
+      if (window.YocoSDK) {
+        try {
+          yocoSDKInstance = new window.YocoSDK({
+            publicKey: YOCO_PUBLIC_KEY,
+          });
+          resolve();
+        } catch (error) {
+          reject(new Error('Failed to initialize Yoco SDK'));
+        }
+      } else {
+        reject(new Error('Yoco SDK not available'));
+      }
+    };
+    
+    script.onerror = () => reject(new Error('Failed to load Yoco SDK'));
+    document.body.appendChild(script);
+  });
+  
+  await yocoSDKLoading;
+}
+
 export async function createPaymentIntent(data: PaymentIntentData): Promise<PaymentIntent> {
-  try {
-    console.log('Creating payment intent:', data);
-    
-    // TODO: Replace with actual Yoco API call
-    // For now, return a mock intent for development
-    const intent: PaymentIntent = {
-      intentId: `pi_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      amount: data.amount,
-      currency: data.currency || 'ZAR',
-      status: 'pending',
-    };
-    
-    // In production, you would make an API call:
-    // const response = await fetch(`${YOCO_API_BASE}/payment-intents`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${YOCO_SECRET_KEY}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     amount: Math.round(data.amount * 100), // Yoco expects cents
-    //     currency: data.currency || 'ZAR',
-    //     metadata: {
-    //       songId: data.songId,
-    //       eventId: data.eventId,
-    //       userId: data.userId,
-    //     },
-    //   }),
-    // });
-    // const result = await response.json();
-    // return result;
-    
-    return intent;
-  } catch (error) {
-    console.error('Failed to create payment intent:', error);
-    throw new Error('Payment initialization failed. Please try again.');
-  }
+  console.log('💳 Creating payment intent:', data);
+  
+  await loadYocoSDK();
+  
+  const intent: PaymentIntent = {
+    intentId: `pi_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`,
+    amount: data.amount,
+    currency: data.currency || 'ZAR',
+    status: 'pending',
+    metadata: {
+      songId: data.songId,
+      eventId: data.eventId,
+      songTitle: data.songTitle,
+    },
+  };
+  
+  return intent;
 }
 
-/**
- * Process payment via Yoco
- */
 export async function processYocoPayment(intent: PaymentIntent): Promise<YocoPaymentResult> {
-  try {
-    console.log('Processing Yoco payment:', intent);
-    
-    // TODO: Replace with actual Yoco payment processing
-    // For development, simulate successful payment
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-    
-    const chargeId = `ch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    
-    const result: YocoPaymentResult = {
-      transactionId: `txn_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      chargeId: chargeId,  // NEW: Yoco charge ID (in production, from Yoco SDK)
-      status: 'succeeded',
-      amount: intent.amount,
-      currency: intent.currency,
-    };
-    
-    // In production, you would integrate Yoco SDK:
-    // const yoco = new window.YocoSDK({
-    //   publicKey: YOCO_PUBLIC_KEY,
-    // });
-    // 
-    // const paymentResult = await yoco.showPopup({
-    //   amountInCents: Math.round(intent.amount * 100),
-    //   currency: intent.currency,
-    //   name: 'Song Request',
-    //   description: `Request for ${intent.metadata?.songTitle}`,
-    //   callback: (result) => {
-    //     if (result.error) {
-    //       throw new Error(result.error.message);
-    //     }
-    //     return result;
-    //   },
-    // });
-    // return paymentResult;
-    
-    return result;
-  } catch (error: any) {
-    console.error('Payment processing failed:', error);
-    throw new Error(error.message || 'Payment failed. Please try again.');
+  console.log('⚡ Processing Yoco payment:', intent);
+  
+  await loadYocoSDK();
+  
+  if (!yocoSDKInstance) {
+    throw new Error('Payment system not initialized. Please refresh and try again.');
   }
+  
+  return new Promise((resolve, reject) => {
+    yocoSDKInstance.showPopup({
+      amountInCents: Math.round(intent.amount * 100),
+      currency: intent.currency || 'ZAR',
+      name: 'BeatMatchMe',
+      description: intent.metadata?.songTitle 
+        ? `Song Request: ${intent.metadata.songTitle}`
+        : 'Song Request Payment',
+      callback: (result: any) => {
+        if (result.error) {
+          console.error('❌ Yoco payment error:', result.error);
+          reject(new Error(result.error.message || 'Payment failed'));
+          return;
+        }
+        
+        if (result.id) {
+          console.log('✅ Yoco payment successful, charge ID:', result.id);
+          resolve({
+            transactionId: result.id,
+            chargeId: result.id,
+            status: 'succeeded',
+            amount: intent.amount,
+            currency: intent.currency,
+          });
+        } else {
+          reject(new Error('Payment failed - no charge ID received'));
+        }
+      },
+    });
+  });
 }
 
-/**
- * Verify payment was successful
- */
-export async function verifyPayment(transactionId: string): Promise<boolean> {
+export async function verifyPayment(chargeId: string): Promise<boolean> {
+  console.log('🔍 Verifying payment:', chargeId);
+  
   try {
-    console.log('Verifying payment:', transactionId);
+    const verifyQuery = `
+      query VerifyPayment($chargeId: String!) {
+        verifyPayment(chargeId: $chargeId) {
+          valid
+          status
+          amount
+        }
+      }
+    `;
     
-    // TODO: Replace with actual verification API call
-    // For development, always return true
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const response: any = await client.graphql({
+      query: verifyQuery,
+      variables: { chargeId }
+    });
     
-    // In production:
-    // const response = await fetch(`${YOCO_API_BASE}/charges/${transactionId}`, {
-    //   headers: {
-    //     'Authorization': `Bearer ${YOCO_SECRET_KEY}`,
-    //   },
-    // });
-    // const charge = await response.json();
-    // return charge.status === 'successful';
-    
-    return true;
+    return response.data?.verifyPayment?.valid === true;
   } catch (error) {
-    console.error('Payment verification failed:', error);
+    console.error('Payment verification error:', error);
     return false;
   }
 }
 
-/**
- * Process a refund for a vetoed or cancelled request
- */
 export async function processRefund(data: RefundData): Promise<RefundResult> {
+  console.log('💸 Processing refund:', data);
+  
+  const refundMutation = `
+    mutation ProcessRefund($requestId: ID!, $reason: String) {
+      processRefund(requestId: $requestId, reason: $reason) {
+        refundId
+        amount
+        status
+        transactionId
+        estimatedDays
+        refundedAt
+      }
+    }
+  `;
+  
   try {
-    console.log('Processing refund:', data);
+    const response: any = await client.graphql({
+      query: refundMutation,
+      variables: {
+        requestId: data.requestId,
+        reason: data.reason || 'Request cancelled',
+      }
+    });
     
-    // TODO: Replace with actual refund API call
-    // For development, return a mock refund
-    const refund: RefundResult = {
-      refundId: `rf_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      amount: data.amount,
-      status: 'completed',
-      transactionId: `txn_refund_${Date.now()}`,
-      estimatedDays: '5-10 business days',
+    const result = response.data?.processRefund;
+    
+    if (!result) {
+      throw new Error('Refund processing failed - no response from server');
+    }
+    
+    console.log('✅ Refund processed:', result);
+    
+    return {
+      refundId: result.refundId,
+      amount: result.amount,
+      status: result.status === 'COMPLETED' ? 'completed' : 'pending',
+      transactionId: result.transactionId,
+      estimatedDays: result.estimatedDays || '5-10 business days',
     };
-    
-    // In production:
-    // const response = await fetch(`${YOCO_API_BASE}/refunds`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${YOCO_SECRET_KEY}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     chargeId: data.transactionId,
-    //     amount: Math.round(data.amount * 100),
-    //     metadata: {
-    //       requestId: data.requestId,
-    //       reason: data.reason,
-    //     },
-    //   }),
-    // });
-    // const result = await response.json();
-    // return result;
-    
-    return refund;
-  } catch (error) {
-    console.error('Refund processing failed:', error);
-    throw new Error('Refund failed. Please contact support.');
+  } catch (error: any) {
+    console.error('❌ Refund failed:', error);
+    throw new Error(error.message || 'Refund failed. Please contact support.');
   }
 }
 

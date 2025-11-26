@@ -1,0 +1,14 @@
+{
+  "version": "2018-05-29",
+  "operation": "Invoke",
+  "payload": {
+    "field": "submitRequestWithPayment",
+    "arguments": $util.toJson($context.arguments),
+    "identity": {
+      "sub": "$context.identity.sub",
+      "username": "$context.identity.username",
+      "claims": $util.toJson($context.identity.claims)
+    },
+    "source": $util.toJson($context.source)
+  }
+}

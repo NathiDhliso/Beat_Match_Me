@@ -76,9 +76,35 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
     });
   }, [masterLibrary, searchQuery, selectedGenres]);
 
+  const normalizeGenre = (genre: string): string => {
+    const normalized = genre.toLowerCase().trim();
+    const genreMap: Record<string, string> = {
+      'hip-hop': 'hip hop',
+      'hip-hop/rap': 'hip hop',
+      'r&b': 'r&b',
+      'r&b/soul': 'r&b',
+      'rhythm & blues': 'r&b',
+      'dance': 'electronic',
+      'edm': 'electronic',
+      'house': 'electronic',
+      'techno': 'electronic',
+      'latin pop': 'latin',
+      'latin urban': 'reggaeton',
+      'urbano latino': 'reggaeton',
+      'tropical': 'salsa',
+      'bachata': 'salsa',
+    };
+    return genreMap[normalized] || normalized;
+  };
+
+  const genreMatches = (trackGenre: string, presetGenres: string[]): boolean => {
+    const normalizedTrackGenre = normalizeGenre(trackGenre);
+    return presetGenres.some(pg => normalizeGenre(pg) === normalizedTrackGenre);
+  };
+
   // Quick select by preset
   const handleQuickSelect = (preset: typeof PRESET_PLAYLISTS[0]) => {
-    const tracksInGenres = masterLibrary.filter(t => preset.genres.includes(t.genre));
+    const tracksInGenres = masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
     const trackIds = tracksInGenres.map(t => t.id);
     
     if (confirm(`Apply "${preset.name}" playlist?\n\n${tracksInGenres.length} songs will be available for this event.`)) {
@@ -254,7 +280,7 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {PRESET_PLAYLISTS.map((preset) => {
-                  const matchingTracks = masterLibrary.filter(t => preset.genres.includes(t.genre));
+                  const matchingTracks = masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
                   
                   return (
                     <button

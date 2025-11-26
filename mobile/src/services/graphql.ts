@@ -428,6 +428,40 @@ export const UPDATE_SET_STATUS = gql`
   }
 `;
 
+export const SUBMIT_REQUEST_WITH_PAYMENT = gql`
+  mutation SubmitRequestWithPayment($input: SubmitRequestWithPaymentInput!) {
+    submitRequestWithPayment(input: $input) {
+      success
+      request {
+        requestId
+        eventId
+        userId
+        songTitle
+        artistName
+        requestType
+        price
+        queuePosition
+        status
+        dedication
+        shoutout
+        submittedAt
+      }
+      transaction {
+        transactionId
+        amount
+        platformFee
+        performerEarnings
+        status
+        paymentProvider
+        providerTransactionId
+        createdAt
+      }
+      errorCode
+      errorMessage
+    }
+  }
+`;
+
 // ==================================
 // SUBSCRIPTIONS
 // ==================================
@@ -691,6 +725,34 @@ export async function submitUpdateEventSettings(eventId: string, settings: any) 
     variables: { eventId, settings },
   });
   return data.updateEventSettings;
+}
+
+export async function submitRequestWithPaymentVerification(input: {
+  eventId: string;
+  setId?: string;
+  songTitle: string;
+  artistName: string;
+  genre?: string;
+  requestType: string;
+  dedication?: string;
+  shoutout?: string;
+  yocoChargeId: string;
+  idempotencyKey: string;
+}) {
+  const { data } = await apolloClient.mutate({
+    mutation: SUBMIT_REQUEST_WITH_PAYMENT,
+    variables: { input },
+  });
+  
+  const result = data.submitRequestWithPayment;
+  
+  if (!result.success) {
+    const error: any = new Error(result.errorMessage || 'Request submission failed');
+    error.code = result.errorCode;
+    throw error;
+  }
+  
+  return result;
 }
 
 console.log('✅ GraphQL operations loaded');

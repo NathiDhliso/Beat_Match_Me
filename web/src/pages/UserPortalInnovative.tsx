@@ -1160,13 +1160,15 @@ export const UserPortalInnovative: React.FC = () => {
                   const idempotencyKey = crypto.randomUUID();
                   console.log('🔑 Generated idempotency key:', idempotencyKey);
                   
-                  // 1. Create payment intent
                   console.log('💳 Creating payment intent...');
                   const paymentIntent = await createPaymentIntent({
                     amount: selectedSong.basePrice,
                     songId: selectedSong.id,
                     eventId: currentEventId!,
+                    setId: currentSetId || undefined,
                     userId: user?.userId,
+                    songTitle: selectedSong.title,
+                    artistName: selectedSong.artist,
                   });
                   
                   // 2. Process payment via Yoco and get charge ID
@@ -1188,14 +1190,15 @@ export const UserPortalInnovative: React.FC = () => {
                   
                   const result = await submitRequestWithPaymentVerification({
                     eventId: currentEventId!,
+                    setId: currentSetId || undefined,
                     songTitle: selectedSong.title,
                     artistName: selectedSong.artist,
                     genre: selectedSong.genre || 'Unknown',
                     requestType: requestData.requestType || 'STANDARD',
                     dedication: requestData.dedication,
                     shoutout: requestData.shoutout,
-                    yocoChargeId: payment.chargeId,      // Server will verify this charge
-                    idempotencyKey: idempotencyKey,      // Prevents duplicate processing
+                    yocoChargeId: payment.chargeId,
+                    idempotencyKey: idempotencyKey,
                   });
                   
                   console.log('✅ Request submitted successfully:', result);

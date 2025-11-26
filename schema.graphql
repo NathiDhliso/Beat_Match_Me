@@ -361,6 +361,36 @@ input UpdateDJProfileInput {
   basePrice: Float
 }
 
+input SubmitRequestWithPaymentInput {
+  eventId: ID!
+  setId: ID
+  songTitle: String!
+  artistName: String!
+  genre: String
+  requestType: RequestType!
+  dedication: String
+  shoutout: String
+  yocoChargeId: String!
+  idempotencyKey: String!
+}
+
+type SubmitRequestWithPaymentResponse {
+  success: Boolean!
+  request: Request
+  transaction: Transaction
+  errorCode: String
+  errorMessage: String
+}
+
+type RefundResponse {
+  refundId: ID!
+  amount: Float!
+  status: String!
+  transactionId: ID!
+  estimatedDays: String
+  refundedAt: AWSTimestamp
+}
+
 type Mutation {
   createUser(email: String!, name: String!, role: UserRole!): User
   updateUser(userId: ID!, name: String, profileImage: String, phone: String): User
@@ -388,6 +418,9 @@ type Mutation {
   
   createGroupRequest(input: GroupRequestInput!): GroupRequest
   contributeToGroupRequest(groupRequestId: ID!, amount: Float!): GroupRequest
+  
+  submitRequestWithPayment(input: SubmitRequestWithPaymentInput!): SubmitRequestWithPaymentResponse!
+  processRefund(requestId: ID!, reason: String): RefundResponse
 }
 
 type Subscription {
