@@ -15,10 +15,9 @@ const Stack = createStackNavigator<AuthStackParamList>();
 const AuthStack: React.FC = () => {
   return (
     <Stack.Navigator
+      id={undefined}
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#0F172A' },
-        animationEnabled: true,
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />

@@ -30,9 +30,9 @@ const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
+        id={undefined}
         screenOptions={{
           headerShown: false,
-          animationEnabled: true,
         }}
       >
         {user ? (

@@ -19,6 +19,7 @@ export interface Song {
   upvotes?: number;
   isInQueue?: boolean;
   albumArt?: string;
+  isEnabled?: boolean;
 }
 
 export function useTracklist(eventId: string | null) {

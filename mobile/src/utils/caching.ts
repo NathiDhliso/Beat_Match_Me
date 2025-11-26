@@ -67,7 +67,7 @@ export const cacheManager = {
     fetchFn: () => Promise<T>,
     expiryMs: number = CACHE_EXPIRY_MS
   ): Promise<T> {
-    const cached = await this.get<T>(key, expiryMs);
+    const cached = await this.get(key, expiryMs) as T | null;
     if (cached !== null) {
       return cached;
     }

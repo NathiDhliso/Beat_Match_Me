@@ -4,9 +4,9 @@
  * Ported from web/src/components/OrbitalInterface.tsx
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import { PanGestureHandler, State, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Music } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -15,7 +15,7 @@ interface MenuOption {
   icon: React.ReactNode;
   label: string;
   angle: number;
-  color: string[];
+  color: readonly string[];
   onPress: () => void;
 }
 
@@ -119,7 +119,7 @@ interface RadialMenuItemProps {
   label: string;
   angle: number;
   distance: number;
-  colors: string[];
+  colors: readonly string[];
   onPress: () => void;
 }
 
@@ -145,7 +145,7 @@ const RadialMenuItem: React.FC<RadialMenuItemProps> = ({
     >
       <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
         <LinearGradient
-          colors={colors}
+          colors={colors as unknown as readonly [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.menuItemBubble}

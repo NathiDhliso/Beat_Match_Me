@@ -35,6 +35,7 @@ const MainTabs: React.FC = () => {
 
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,

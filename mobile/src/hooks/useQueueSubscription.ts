@@ -32,10 +32,11 @@ export function useQueueSubscription(setId: string, eventId: string) {
   const [error, setError] = useState<Error | null>(null);
   
   const subscriptionRef = useRef<any>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
   const isConnectedRef = useRef(true);
+  const connectSubscriptionRef = useRef<() => void>(() => {});
 
   // Polling fallback
   const startPolling = useCallback(() => {
@@ -81,7 +82,7 @@ export function useQueueSubscription(setId: string, eventId: string) {
     console.log(`[Queue Subscription] Reconnecting... (${reconnectAttemptsRef.current}/${maxReconnectAttempts}) - delay: ${delay}ms`);
     
     setTimeout(() => {
-      connectSubscription();
+      connectSubscriptionRef.current();
     }, delay);
   }, [startPolling]);
 
@@ -130,6 +131,8 @@ export function useQueueSubscription(setId: string, eventId: string) {
       reconnect();
     }
   }, [setId, eventId, reconnect, startPolling]);
+
+  connectSubscriptionRef.current = connectSubscription;
 
   // Monitor network connectivity
   useEffect(() => {

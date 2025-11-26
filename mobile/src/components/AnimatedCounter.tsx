@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, TextStyle } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedProps,
   withTiming,
   Easing,
+  runOnJS,
+  useAnimatedReaction,
 } from 'react-native-reanimated';
 
 interface AnimatedCounterProps {
@@ -16,8 +17,6 @@ interface AnimatedCounterProps {
   style?: TextStyle;
 }
 
-const AnimatedText = Animated.createAnimatedComponent(Text);
-
 export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   value,
   prefix = '',
@@ -27,20 +26,29 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   style,
 }) => {
   const animatedValue = useSharedValue(0);
+  const [displayValue, setDisplayValue] = useState(value.toFixed(decimals));
+
+  const updateDisplayValue = (val: number) => {
+    setDisplayValue(val.toFixed(decimals));
+  };
+
+  useAnimatedReaction(
+    () => animatedValue.value,
+    (currentValue) => {
+      runOnJS(updateDisplayValue)(currentValue);
+    }
+  );
 
   useEffect(() => {
     animatedValue.value = withTiming(value, {
       duration,
       easing: Easing.out(Easing.cubic),
     });
-  }, [value]);
+  }, [value, duration]);
 
-  const animatedProps = useAnimatedProps(() => {
-    const displayValue = animatedValue.value.toFixed(decimals);
-    return {
-      text: `${prefix}${displayValue}${suffix}`,
-    };
-  });
-
-  return <AnimatedText style={style} animatedProps={animatedProps} />;
+  return (
+    <Animated.Text style={style}>
+      {prefix}{displayValue}{suffix}
+    </Animated.Text>
+  );
 };

@@ -13,8 +13,9 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  FlatList,
+  ScrollView,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { Search, Music, DollarSign, ToggleLeft, ToggleRight, Plus } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useTracklist, Song } from '../hooks/useTracklist';
@@ -198,12 +199,14 @@ export const DJLibraryScreen: React.FC<DJLibraryScreenProps> = ({ eventId, perfo
 
       {/* Genre Filter */}
       <View style={styles.genreContainer}>
-        <FlashList
-          data={allGenres}
+        <ScrollView
           horizontal
-          estimatedItemSize={80}
-          renderItem={({ item }) => (
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.genreScrollContent}
+        >
+          {allGenres.map((item) => (
             <TouchableOpacity
+              key={item}
               style={[
                 styles.genreChip,
                 selectedGenre === item && { backgroundColor: currentTheme.primary },
@@ -219,16 +222,15 @@ export const DJLibraryScreen: React.FC<DJLibraryScreenProps> = ({ eventId, perfo
                 {item}
               </Text>
             </TouchableOpacity>
-          )}
-          showsHorizontalScrollIndicator={false}
-        />
+          ))}
+        </ScrollView>
       </View>
 
       {/* Track List */}
-      <FlashList
+      <FlatList
         data={filteredTracks}
         renderItem={renderTrack}
-        estimatedItemSize={120}
+        keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Music size={48} color="#6B7280" />
@@ -306,6 +308,10 @@ const styles = StyleSheet.create({
   genreContainer: {
     height: 50,
     marginBottom: 8,
+  },
+  genreScrollContent: {
+    paddingHorizontal: 12,
+    gap: 8,
   },
   genreChip: {
     backgroundColor: '#1F2937',
