@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { Music, Info, X, Zap, Shield, CheckCircle } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { HapticFeedback } from '../utils/haptics';
 import styles from './RequestConfirmation.module.css';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 import type { UserTier } from '../theme/tokens';
@@ -79,6 +80,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   };
 
   const handleConfirm = async () => {
+    HapticFeedback.buttonLongPress();
     setIsProcessing(true);
     try {
       await onConfirm({
@@ -87,8 +89,10 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
         dedication: showDedication ? dedication : undefined,
         totalAmount: calculateTotal(),
       });
+      HapticFeedback.paymentSuccess();
     } catch (error) {
       console.error('Request failed:', error);
+      HapticFeedback.paymentError();
     } finally {
       setIsProcessing(false);
     }

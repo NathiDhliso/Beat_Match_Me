@@ -5,7 +5,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Bell, HelpCircle, X, ChevronRight } from 'lucide-react';
+import { Bell, HelpCircle, X, ChevronRight, Vibrate, Moon, Sun } from 'lucide-react';
+import { HapticFeedback, getHapticIntensity, setHapticIntensity, isHapticSupported, type HapticIntensity } from '../utils/haptics';
 import { requestNotificationPermission } from '../services/notifications';
 import { useTheme } from '../context/ThemeContext';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -19,7 +20,9 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [hapticIntensity, setHapticIntensityState] = useState<HapticIntensity>('medium');
   const { currentTheme, isDark, toggleDarkMode } = useTheme();
+  const hapticSupported = isHapticSupported();
 
   // Phase 7: Swipe gesture state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -28,12 +31,20 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
   // Minimum swipe distance (in px) to trigger close
   const minSwipeDistance = 50;
 
-  // Check current notification permission status
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationsEnabled(Notification.permission === 'granted');
     }
+    setHapticIntensityState(getHapticIntensity());
   }, []);
+
+  const handleHapticChange = (intensity: HapticIntensity) => {
+    setHapticIntensity(intensity);
+    setHapticIntensityState(intensity);
+    if (intensity !== 'off') {
+      HapticFeedback.buttonPress();
+    }
+  };
 
   // Phase 4: Add ESC key listener for dismissing the panel
   useEffect(() => {
@@ -131,13 +142,24 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
 
           {/* Dark/Light Mode Toggle */}
           <div className={styles.settingCard}>
-            <div className={styles.settingRow}>
-              <div>
-                <h3 className={styles.settingTitle}>Dark Mode</h3>
-                <p className={styles.settingDescription}>Switch between dark and light interface</p>
+            <div className={styles.settingRowStart}>
+              <div className={styles.settingInfo}>
+                <div 
+                  className={styles.settingIcon}
+                  style={{ backgroundColor: isDark ? 'rgb(59 130 246 / 0.2)' : 'rgb(251 191 36 / 0.2)' }}
+                >
+                  {isDark ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-yellow-400" />}
+                </div>
+                <div className={styles.settingText}>
+                  <h3 className={styles.settingTitle}>{isDark ? 'Dark Mode' : 'Light Mode'}</h3>
+                  <p className={styles.settingDescription}>Switch between dark and light interface</p>
+                </div>
               </div>
               <button
-                onClick={toggleDarkMode}
+                onClick={() => {
+                  HapticFeedback.buttonPress();
+                  toggleDarkMode();
+                }}
                 className={`${styles.darkModeToggle} ${isDark ? '' : styles.darkModeToggleOff}`}
                 style={isDark ? { background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})` } : {}}
               >
@@ -145,6 +167,41 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
               </button>
             </div>
           </div>
+          
+          {/* Haptic Feedback Toggle */}
+          {hapticSupported && (
+            <div className={styles.settingCard}>
+              <div className={styles.settingRowStart}>
+                <div className={styles.settingInfo}>
+                  <div 
+                    className={styles.settingIcon}
+                    style={{ backgroundColor: 'rgb(168 85 247 / 0.2)' }}
+                  >
+                    <Vibrate className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className={styles.settingText}>
+                    <h3 className={styles.settingTitle}>Haptic Feedback</h3>
+                    <p className={styles.settingDescription}>Vibration on button presses and actions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                {(['off', 'low', 'medium', 'high'] as HapticIntensity[]).map((intensity) => (
+                  <button
+                    key={intensity}
+                    onClick={() => handleHapticChange(intensity)}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                      hapticIntensity === intensity
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                    }`}
+                  >
+                    {intensity.charAt(0).toUpperCase() + intensity.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Notifications Toggle */}
           <div className={styles.settingCard}>

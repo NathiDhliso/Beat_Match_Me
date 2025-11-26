@@ -12,6 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { Music, Clock, Users, TrendingUp, Sparkles } from 'lucide-react';
 import { useThemeClasses } from '../context/ThemeContext';
+import { HapticFeedback } from '../utils/haptics';
 
 interface QueueTrackerProps {
   position: number;
@@ -35,14 +36,16 @@ export const QueueTracker: React.FC<QueueTrackerProps> = ({
   const [showMilestone, setShowMilestone] = useState(false);
   const [positionImprovement, setPositionImprovement] = useState(0); // PHASE 5: Track position changes
 
-  // PHASE 5 ENHANCEMENT: Animate position changes with time saved calculation
   useEffect(() => {
     if (position < animatedPosition) {
       const improvement = animatedPosition - position;
       setPositionImprovement(improvement);
-      // Position improved - show celebration
       setShowMilestone(true);
+      HapticFeedback.milestoneReached();
       setTimeout(() => setShowMilestone(false), 3000);
+    }
+    if (position === 1 && animatedPosition !== 1) {
+      HapticFeedback.requestPlaying();
     }
     setAnimatedPosition(position);
   }, [position, animatedPosition]);

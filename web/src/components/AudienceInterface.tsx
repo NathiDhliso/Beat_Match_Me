@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Music, Heart, X, Check, Zap } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { HapticFeedback } from '../utils/haptics';
 import styles from './AudienceInterface.module.css';
 
 /**
@@ -40,9 +41,11 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
 
   const handleSwipe = (direction: 'left' | 'right') => {
     setSwipeDirection(direction);
+    HapticFeedback.buttonPress();
     
     setTimeout(() => {
       if (direction === 'right' && currentEvent) {
+        HapticFeedback.requestAccepted();
         onSelectEvent(currentEvent.id);
       } else {
         setCurrentIndex(prev => Math.min(prev + 1, events.length));
@@ -268,6 +271,7 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
   };
 
   const handleSelectSong = (song: any) => {
+    HapticFeedback.buttonPress();
     onSelectSong(song);
   };
 
@@ -349,10 +353,17 @@ interface RequestButtonProps {
 }
 
 export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, disabled, price, selectedSong }) => {
+  const handlePress = () => {
+    if (!disabled) {
+      HapticFeedback.buttonLongPress();
+      onPress();
+    }
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
       <button
-        onClick={onPress}
+        onClick={handlePress}
         disabled={disabled}
         className={`w-full h-16 sm:h-20 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-bold text-lg sm:text-2xl shadow-2xl pointer-events-auto ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-glow hover:scale-105 active:scale-95'

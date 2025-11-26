@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
-import { Check, Lock, Mail, Sparkles } from 'lucide-react';
+import { Check, Lock, Mail, Sparkles, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
@@ -22,6 +22,7 @@ export const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,63 +138,76 @@ export const Login: React.FC = () => {
         )}
 
         {mode === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-3">
-            {/* Email - Icon Only */}
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                 style={{
                   '--tw-ring-color': currentTheme.primary,
                 } as React.CSSProperties}
-                placeholder="Email"
+                placeholder="Email address"
                 required
+                autoComplete="email"
               />
             </div>
             
-            {/* Password - Icon Only */}
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+                className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                 style={{
                   '--tw-ring-color': currentTheme.primary,
                 } as React.CSSProperties}
                 placeholder="Password"
                 required
+                autoComplete="current-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
             
-            {/* Login Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 text-lg mt-4`}
+              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 text-lg mt-2 flex items-center justify-center gap-2`}
             >
-              {loading ? '...' : 'Login'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
             
-            {/* Minimal Links */}
-            <div className="flex justify-between text-xs pt-2">
+            <div className="flex justify-between items-center pt-2">
               <button
                 type="button"
                 onClick={() => navigate('/forgot-password')}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-gray-400 hover:text-white transition-colors py-2"
               >
-                Forgot?
+                Forgot password?
               </button>
               <button
                 type="button"
                 onClick={() => setMode('role-select')}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-purple-400 hover:text-purple-300 font-medium transition-colors py-2"
               >
-                Sign up
+                Create account
               </button>
             </div>
           </form>

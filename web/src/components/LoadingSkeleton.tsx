@@ -101,3 +101,28 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ message = 'Loading..
     </div>
   );
 };
+
+export const DJSetSkeleton: React.FC = () => {
+  return (
+    <div className="w-full px-6 py-4 mb-3 rounded-2xl bg-white/5 animate-pulse">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="h-5 bg-gray-700/50 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-700/50 rounded w-1/2 mb-2"></div>
+          <div className="h-5 bg-gray-700/50 rounded-full w-16"></div>
+        </div>
+        <div className="w-3 h-3 bg-gray-700/50 rounded-full"></div>
+      </div>
+    </div>
+  );
+};
+
+export const DJSetListSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <DJSetSkeleton key={i} />
+      ))}
+    </div>
+  );
+};

@@ -21,6 +21,8 @@ import {
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
 import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List } from 'lucide-react';
+import { DJSetListSkeleton } from '../components/LoadingSkeleton';
+import { HapticFeedback } from '../utils/haptics';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
@@ -57,8 +59,9 @@ export const DJPortalOrbital: React.FC = () => {
   
   // DJ Set management state
   const [showEventCreator, setShowEventCreator] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false); // Converted to slide-out panel
+  const [showQRCode, setShowQRCode] = useState(false);
   const [mySets, setMySets] = useState<any[]>([]);
+  const [setsLoading, setSetsLoading] = useState(true);
   const [showSetSelector, setShowSetSelector] = useState(false);
 
   // Features 6, 10, 12 - Accept/Veto/Playing state
@@ -149,15 +152,16 @@ export const DJPortalOrbital: React.FC = () => {
     lastQueueCountRef.current = newCount;
   }, [liveQueueData, playNotificationSound, addNotification, canNotify, currentEventId]);
 
-  // Load performer's DJ sets on mount
   useEffect(() => {
     const loadPerformerSets = async () => {
       if (!user?.userId) {
         console.log('❌ No userId available yet');
+        setSetsLoading(false);
         return;
       }
 
       console.log('🔍 Loading DJ sets for performer:', user.userId);
+      setSetsLoading(true);
 
       try {
         const { generateClient } = await import('aws-amplify/api');
@@ -246,11 +250,13 @@ export const DJPortalOrbital: React.FC = () => {
       } catch (error) {
         console.error('❌ Failed to load performer sets:', error);
         console.error('Error details:', JSON.stringify(error, null, 2));
+      } finally {
+        setSetsLoading(false);
       }
     };
 
     loadPerformerSets();
-  }, [user?.userId]); // Removed currentSetId dependency to allow reloading
+  }, [user?.userId]);
 
   // Fetch real data
   const { event: currentEvent } = useEvent(currentEventId);
@@ -1194,7 +1200,11 @@ export const DJPortalOrbital: React.FC = () => {
                           <span className="ml-3 text-white font-bold text-xl animate-fade-in">DJ Sets</span>
                         </button>
                         {/* Sets List - Scrollable content below header */}
-                        {mySets.length > 0 ? (
+                        {setsLoading ? (
+                          <div className="flex-1 overflow-y-auto p-4 pb-32">
+                            <DJSetListSkeleton count={3} />
+                          </div>
+                        ) : mySets.length > 0 ? (
                           <div className="flex-1 overflow-y-auto p-4 pb-32">
                             {mySets
                               .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime())
@@ -1206,6 +1216,7 @@ export const DJPortalOrbital: React.FC = () => {
                                   <button
                                     key={set.setId}
                                     onClick={() => {
+                                      HapticFeedback.buttonPress();
                                       setCurrentSetId(set.setId);
                                       setCurrentEventId(set.eventId);
                                       setShowSetSelector(false);
