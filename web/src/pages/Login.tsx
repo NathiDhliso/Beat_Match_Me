@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
-import { Check, Lock, Mail, Sparkles, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Check, Lock, Mail, Sparkles, Eye, EyeOff, Loader2, Headphones, Music } from 'lucide-react';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 h-dvh flex items-center justify-center p-4 overflow-hidden"
       style={{
         background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)'
@@ -96,19 +96,19 @@ export const Login: React.FC = () => {
     >
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
+        <div
           className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl animate-pulse-slow"
           style={{ backgroundColor: `${currentTheme.secondary}1A` }}
         ></div>
-        <div 
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow" 
-          style={{ 
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow"
+          style={{
             backgroundColor: `${currentTheme.primary}1A`,
             animationDelay: '1s'
           }}
         ></div>
       </div>
-      
+
       <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative z-10">
         {/* Logo & Badge Only */}
         <div className="text-center mb-6">
@@ -154,7 +154,7 @@ export const Login: React.FC = () => {
                 autoComplete="email"
               />
             </div>
-            
+
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -178,7 +178,7 @@ export const Login: React.FC = () => {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            
+
             <button
               type="submit"
               disabled={loading}
@@ -193,7 +193,7 @@ export const Login: React.FC = () => {
                 'Sign In'
               )}
             </button>
-            
+
             <div className="flex justify-between items-center pt-2">
               <button
                 type="button"
@@ -222,30 +222,42 @@ export const Login: React.FC = () => {
 
         {mode === 'role-select' && (
           <div className="space-y-3">
-            {/* MASSIVE DJ Emoji Button */}
+            {/* MASSIVE DJ Icon Button */}
             <button
               onClick={() => {
                 setSelectedRole('PERFORMER');
                 setMode('signup');
               }}
-              className={`w-full ${themeClasses.gradientPrimary} hover:opacity-90 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl`}
+              className={`w-full ${themeClasses.gradientPrimary} hover:opacity-90 text-white py-12 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl flex flex-col items-center justify-center overflow-hidden group`}
             >
-              <div className="text-8xl mb-2">🎧</div>
-              <div className="text-3xl font-bold">DJ</div>
+              <div className="relative w-40 h-40 mb-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                <img
+                  src="/assets/dj_role.png"
+                  alt="DJ Role"
+                  className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                />
+              </div>
+              <div className="text-3xl font-bold tracking-wider">DJ</div>
             </button>
-            
-            {/* MASSIVE Fan Emoji Button */}
+
+            {/* MASSIVE Fan Icon Button */}
             <button
               onClick={() => {
                 setSelectedRole('AUDIENCE');
                 setMode('signup');
               }}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white py-16 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white py-12 rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-2xl flex flex-col items-center justify-center overflow-hidden group"
             >
-              <div className="text-8xl mb-2">🎵</div>
-              <div className="text-3xl font-bold">Fan</div>
+              <div className="relative w-40 h-40 mb-2 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                <img
+                  src="/assets/fan_role.png"
+                  alt="Fan Role"
+                  className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                />
+              </div>
+              <div className="text-3xl font-bold tracking-wider">Fan</div>
             </button>
-            
+
             {/* Minimal back link */}
             <button
               type="button"
@@ -260,10 +272,11 @@ export const Login: React.FC = () => {
         {mode === 'signup' && (
           <form onSubmit={handleSignup} className="space-y-3">
             {/* Role Badge - Minimal */}
-            <div className="bg-white/5 rounded-xl p-2 mb-3 text-center">
-              <span className="text-white text-sm">{selectedRole === 'PERFORMER' ? '🎧 DJ' : '🎵 Fan'}</span>
+            <div className="bg-white/5 rounded-xl p-2 mb-3 text-center flex items-center justify-center gap-2">
+              {selectedRole === 'PERFORMER' ? <Headphones className="w-4 h-4 text-white" /> : <Music className="w-4 h-4 text-white" />}
+              <span className="text-white text-sm">{selectedRole === 'PERFORMER' ? 'DJ' : 'Fan'}</span>
             </div>
-            
+
             {/* Name Field */}
             <input
               type="text"
@@ -276,7 +289,7 @@ export const Login: React.FC = () => {
               placeholder="Full Name"
               required
             />
-            
+
             {/* Email Field */}
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -292,7 +305,7 @@ export const Login: React.FC = () => {
                 required
               />
             </div>
-            
+
             {/* Password Field with Strength Bar Only */}
             <div>
               <div className="relative">
@@ -314,7 +327,7 @@ export const Login: React.FC = () => {
               {password && (
                 <div className="mt-1.5">
                   <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full transition-all duration-300"
                       style={{
                         width: `${passwordStrength}%`,
@@ -325,7 +338,7 @@ export const Login: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Signup Button */}
             <button
               type="submit"
@@ -334,7 +347,7 @@ export const Login: React.FC = () => {
             >
               {loading ? '...' : 'Sign Up'}
             </button>
-            
+
             {/* Back Link */}
             <button
               type="button"
@@ -349,10 +362,11 @@ export const Login: React.FC = () => {
         {mode === 'confirm' && (
           <form onSubmit={handleConfirm} className="space-y-3">
             {/* Simple Info Box */}
-            <div className="bg-blue-500/10 border border-blue-500/50 rounded-xl p-3 mb-3">
-              <p className="text-blue-200 text-sm text-center">📧 Check your email</p>
+            <div className="bg-blue-500/10 border border-blue-500/50 rounded-xl p-3 mb-3 flex items-center justify-center gap-2">
+              <Mail className="w-4 h-4 text-blue-200" />
+              <p className="text-blue-200 text-sm text-center">Check your email</p>
             </div>
-            
+
             {/* Verification Code Input */}
             <input
               type="text"
@@ -366,7 +380,7 @@ export const Login: React.FC = () => {
               required
               maxLength={6}
             />
-            
+
             {/* Confirm Button */}
             <button
               type="submit"
@@ -375,7 +389,7 @@ export const Login: React.FC = () => {
             >
               {loading ? '...' : 'Confirm'}
             </button>
-            
+
             {/* Back Link */}
             <button
               type="button"

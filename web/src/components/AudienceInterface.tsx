@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Music, Heart, X, Check, Zap } from 'lucide-react';
+import { Music, Heart, X, Check, Zap, Mic, Camera } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { HapticFeedback } from '../utils/haptics';
 import styles from './AudienceInterface.module.css';
@@ -200,7 +200,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
           {/* Event Info - Minimized */}
           <div className="h-1/3 bg-black/80 backdrop-blur-lg p-6">
             <h2 className="text-3xl font-bold text-white mb-2">{currentEvent.venueName}</h2>
-            <p className="text-purple-300 font-semibold mb-3">🎤 {currentEvent.djName}</p>
+            <p className="text-purple-300 font-semibold mb-3 flex items-center gap-2"><Mic className="w-4 h-4" /> {currentEvent.djName}</p>
             <div className="flex items-center gap-4 text-sm text-gray-300">
               <span className="flex items-center gap-1">
                 <Music className="w-4 h-4" />
@@ -287,8 +287,8 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
             <button
               key={song.id}
               className={`relative group cursor-pointer focus:outline-none rounded-2xl transition-all ${isSelected
-                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-gray-900'
-                  : 'focus:ring-2 focus:ring-purple-500'
+                ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-gray-900'
+                : 'focus:ring-2 focus:ring-purple-500'
                 }`}
               style={{
                 transform: `translateY(${parallaxOffset}px) scale(${isSelected ? 1.05 : 1})`,
@@ -532,7 +532,7 @@ export const NowPlayingCelebration: React.FC<NowPlayingProps> = ({ songTitle, ar
           <p className="text-xl text-gray-300">{artist}</p>
 
           <div className="mt-8 text-sm text-gray-400">
-            <p>Screenshot this moment! 📸</p>
+            <p className="flex items-center justify-center gap-2">Screenshot this moment! <Camera className="w-4 h-4" /></p>
           </div>
         </div>
       </div>

@@ -20,7 +20,7 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List } from 'lucide-react';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List, Palette, Crown, Gem, User } from 'lucide-react';
 import { DJSetListSkeleton } from '../components/LoadingSkeleton';
 import { HapticFeedback } from '../utils/haptics';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
@@ -28,7 +28,7 @@ import { NowPlayingCard } from '../components/NowPlayingCard';
 import { DJProfileScreen } from '../components/ProfileManagement';
 import { RequestCapManager } from '../components/RequestCapManager';
 import { showUndoToast } from '../components/UndoToast';
-import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist } from '../services/graphql';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist, fetchPerformerTracklist } from '../services/graphql';
 import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
@@ -962,12 +962,15 @@ export const DJPortalOrbital: React.FC = () => {
       setCurrentSetId(null);
       setCurrentEventId(null);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to end set cleanly:', error);
+      if (error.errors) {
+        console.error('GraphQL Errors:', JSON.stringify(error.errors, null, 2));
+      }
       addNotification({
         type: 'error',
         title: '❌ End Set Failed',
-        message: 'Failed to end set properly. Contact support if needed.',
+        message: `Failed to end set: ${error.message || 'Unknown error'}`,
       });
     } finally {
       setIsProcessing(false);
@@ -1066,7 +1069,7 @@ export const DJPortalOrbital: React.FC = () => {
         }}
       >
         <div
-          className="absolute inset-0 min-h-[100dvh] pb-[env(safe-area-inset-bottom)]"
+          className="absolute inset-0 h-full overflow-hidden pb-[env(safe-area-inset-bottom)]"
           style={{
             background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
             position: 'absolute',
@@ -1198,7 +1201,7 @@ export const DJPortalOrbital: React.FC = () => {
                         }}
                         title="Switch DJ Sets"
                       >
-                        <span className="text-8xl">🎵</span>
+                        <Music className="w-24 h-24 text-white/80 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
 
                         {/* Subtle hint - only when closed */}
                         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1233,7 +1236,7 @@ export const DJPortalOrbital: React.FC = () => {
                               e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
                             }}
                           >
-                            <span className="text-4xl">🎵</span>
+                            <Music className="w-10 h-10 text-white" />
                             <span className="ml-3 text-white font-bold text-xl animate-fade-in">DJ Sets</span>
                           </button>
                           {/* Sets List - Scrollable content below header */}
@@ -1534,7 +1537,7 @@ export const DJPortalOrbital: React.FC = () => {
                   <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
                     <div className="flex items-center justify-between mb-2 sm:mb-3">
                       <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                        🎨 Theme
+                        <Palette className="w-5 h-5" /> Theme
                       </h3>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -1562,7 +1565,7 @@ export const DJPortalOrbital: React.FC = () => {
                             })
                           }}
                         >
-                          {mode === 'BeatMatchMe' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
+                          {mode === 'BeatMatchMe' ? <span className="flex items-center gap-1"><Music className="w-3 h-3" /> Purple</span> : mode === 'gold' ? <span className="flex items-center gap-1"><Crown className="w-3 h-3" /> Gold</span> : <span className="flex items-center gap-1"><Gem className="w-3 h-3" /> Platinum</span>}
                         </button>
                       ))}
                     </div>
@@ -1573,7 +1576,7 @@ export const DJPortalOrbital: React.FC = () => {
                     {/* Profile Card */}
                     <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
                       <h3 className="text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
-                        <span className="text-base sm:text-lg">👤</span>
+                        <User className="w-5 h-5" />
                         <span className="hidden sm:inline">Profile</span>
                       </h3>
                       <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">

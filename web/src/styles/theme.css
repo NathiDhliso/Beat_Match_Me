@@ -157,34 +157,34 @@ html[data-theme="BeatMatchMe"] {
 
 /* GOLD THEME - Luxury Egyptian Gold */
 html[data-theme="gold"] {
-  --theme-primary: #D4AF37;           /* Rich Gold */
-  --theme-primary-dark: #B8860B;      /* Dark Goldenrod */
-  --theme-primary-light: #FFD700;     /* Gold */
-  --theme-secondary: #F59E0B;         /* Amber-500 */
-  --theme-secondary-dark: #D97706;    /* Amber-600 */
-  --theme-secondary-light: #FBBF24;   /* Amber-400 */
-  --theme-accent: #FBBF24;            /* Amber-400 */
-  --theme-gradient: linear-gradient(to right, #D4AF37, #F59E0B);
-  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #78350f, #0a0a0a);
-  --theme-orbital-glow: rgba(212, 175, 55, 0.4);
-  --theme-border: #D4AF37;
-  --theme-shadow: rgba(212, 175, 55, 0.5);
+  --theme-primary: #B8860B;           /* Dark Goldenrod */
+  --theme-primary-dark: #8B6508;      /* Darker Goldenrod */
+  --theme-primary-light: #D4AF37;     /* Original Gold */
+  --theme-secondary: #D97706;         /* Amber-600 */
+  --theme-secondary-dark: #B45309;    /* Amber-700 */
+  --theme-secondary-light: #F59E0B;   /* Amber-500 */
+  --theme-accent: #F59E0B;            /* Amber-500 */
+  --theme-gradient: linear-gradient(to right, #B8860B, #D97706);
+  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #451a03, #0a0a0a);
+  --theme-orbital-glow: rgba(184, 134, 11, 0.4);
+  --theme-border: #B8860B;
+  --theme-shadow: rgba(184, 134, 11, 0.5);
 }
 
 /* PLATINUM THEME - Elite Platinum & Silver */
 html[data-theme="platinum"] {
-  --theme-primary: #E5E4E2;           /* Platinum */
-  --theme-primary-dark: #C0C0C0;      /* Silver */
-  --theme-primary-light: #F5F5F5;     /* Whitesmoke */
-  --theme-secondary: #94A3B8;         /* Slate-400 */
-  --theme-secondary-dark: #64748B;    /* Slate-500 */
-  --theme-secondary-light: #CBD5E1;   /* Slate-300 */
-  --theme-accent: #CBD5E1;            /* Slate-300 */
-  --theme-gradient: linear-gradient(to right, #E5E4E2, #94A3B8);
-  --theme-gradient-bg: linear-gradient(to bottom right, #111827, #1e293b, #0a0a0a);
-  --theme-orbital-glow: rgba(229, 228, 226, 0.3);
-  --theme-border: #94A3B8;
-  --theme-shadow: rgba(148, 163, 184, 0.5);
+  --theme-primary: #64748B;           /* Slate-500 */
+  --theme-primary-dark: #475569;      /* Slate-600 */
+  --theme-primary-light: #94A3B8;     /* Slate-400 */
+  --theme-secondary: #475569;         /* Slate-600 */
+  --theme-secondary-dark: #334155;    /* Slate-700 */
+  --theme-secondary-light: #64748B;   /* Slate-500 */
+  --theme-accent: #94A3B8;            /* Slate-400 */
+  --theme-gradient: linear-gradient(to right, #64748B, #475569);
+  --theme-gradient-bg: linear-gradient(to bottom right, #0f172a, #1e293b, #020617);
+  --theme-orbital-glow: rgba(100, 116, 139, 0.3);
+  --theme-border: #64748B;
+  --theme-shadow: rgba(100, 116, 139, 0.5);
 }
 
 /* ============================================

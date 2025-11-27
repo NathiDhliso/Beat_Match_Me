@@ -18,34 +18,34 @@ export interface Theme {
   id: ThemeMode;
   name: string;
   description: string;
-  
+
   // Primary Colors
   primary: string;
   primaryDark: string;
   primaryLight: string;
-  
+
   // Secondary Colors
   secondary: string;
   secondaryDark: string;
   secondaryLight: string;
-  
+
   // Gradients (Tailwind classes)
   gradientPrimary: string;
   gradientHover: string;
   gradientBackground: string;
   gradientCard: string;
-  
+
   // CSS Variables (for inline styles when Tailwind classes can't be used)
   cssVars: Record<string, string>;
-  
+
   // Accent Colors
   accent: string;
   accentMuted: string;
-  
+
   // Orbital Interface
   orbitalRing: string;
   orbitalGlow: string;
-  
+
   // Border & Shadow
   borderColor: string;
   shadowColor: string;
@@ -56,23 +56,23 @@ export const themes: Record<ThemeMode, Theme> = {
     id: 'BeatMatchMe',
     name: 'BeatMatchMe Original',
     description: 'Signature purple & pink gradients for the original BeatMatchMe experience',
-    
+
     // Primary Colors
     primary: '#8B5CF6',           // Purple-600
     primaryDark: '#7C3AED',       // Purple-700
     primaryLight: '#A78BFA',      // Purple-400
-    
+
     // Secondary Colors
     secondary: '#EC4899',         // Pink-600
     secondaryDark: '#DB2777',     // Pink-700
     secondaryLight: '#F472B6',    // Pink-400
-    
+
     // Gradients (Tailwind classes)
     gradientPrimary: 'from-purple-600 to-pink-600',
     gradientHover: 'from-purple-700 to-pink-700',
     gradientBackground: 'from-gray-900 via-purple-900 to-gray-900',
     gradientCard: 'from-purple-600/20 to-pink-600/20',
-    
+
     // CSS Variables (for inline styles)
     cssVars: {
       '--theme-primary': '#8B5CF6',
@@ -85,112 +85,112 @@ export const themes: Record<ThemeMode, Theme> = {
       '--theme-gradient-bg': 'linear-gradient(to bottom right, #111827, #581c87, #0a0a0a)',
       '--theme-orbital-glow': 'rgba(139, 92, 246, 0.3)',
     },
-    
+
     // Accent Colors
     accent: '#A78BFA',            // Purple-400 (text highlights)
     accentMuted: '#6B7280',       // Gray-500 (disabled states)
-    
+
     // Orbital Interface
     orbitalRing: 'from-purple-500 to-pink-500',
     orbitalGlow: 'rgba(139, 92, 246, 0.3)',
-    
+
     // Border & Shadow
     borderColor: '#7C3AED',
     shadowColor: 'rgba(139, 92, 246, 0.5)',
   },
-  
+
   gold: {
     id: 'gold',
     name: 'Gold Luxury',
     description: 'Rich Egyptian gold theme for elite venues and luxury events',
-    
-    // Primary Colors
-    primary: '#D4AF37',           // Rich Gold
-    primaryDark: '#B8860B',       // Dark Goldenrod
-    primaryLight: '#FFD700',      // Gold
-    
-    // Secondary Colors
-    secondary: '#F59E0B',         // Amber-500
-    secondaryDark: '#D97706',     // Amber-600
-    secondaryLight: '#FBBF24',    // Amber-400
-    
-    // Gradients (Tailwind classes)
-    gradientPrimary: 'from-yellow-500 to-amber-600',
-    gradientHover: 'from-yellow-600 to-amber-700',
-    gradientBackground: 'from-gray-900 via-amber-900 to-gray-900',
-    gradientCard: 'from-yellow-500/20 to-amber-600/20',
-    
+
+    // Primary Colors - Darkened for white text contrast
+    primary: '#B8860B',           // Dark Goldenrod (was #D4AF37)
+    primaryDark: '#8B6508',       // Darker Goldenrod
+    primaryLight: '#D4AF37',      // Original Gold as light variant
+
+    // Secondary Colors - Darkened for white text contrast
+    secondary: '#D97706',         // Amber-600 (was #F59E0B)
+    secondaryDark: '#B45309',     // Amber-700
+    secondaryLight: '#F59E0B',    // Amber-500
+
+    // Gradients (Tailwind classes) - Darker start/end points
+    gradientPrimary: 'from-yellow-600 to-amber-700',
+    gradientHover: 'from-yellow-700 to-amber-800',
+    gradientBackground: 'from-gray-900 via-amber-950 to-gray-900', // Darker background
+    gradientCard: 'from-yellow-600/20 to-amber-700/20',
+
     // CSS Variables
     cssVars: {
-      '--theme-primary': '#D4AF37',
-      '--theme-primary-dark': '#B8860B',
-      '--theme-primary-light': '#FFD700',
-      '--theme-secondary': '#F59E0B',
-      '--theme-secondary-dark': '#D97706',
-      '--theme-secondary-light': '#FBBF24',
-      '--theme-gradient': 'linear-gradient(to right, #D4AF37, #F59E0B)',
-      '--theme-gradient-bg': 'linear-gradient(to bottom right, #111827, #78350f, #0a0a0a)',
-      '--theme-orbital-glow': 'rgba(212, 175, 55, 0.4)',
+      '--theme-primary': '#B8860B',
+      '--theme-primary-dark': '#8B6508',
+      '--theme-primary-light': '#D4AF37',
+      '--theme-secondary': '#D97706',
+      '--theme-secondary-dark': '#B45309',
+      '--theme-secondary-light': '#F59E0B',
+      '--theme-gradient': 'linear-gradient(to right, #B8860B, #D97706)',
+      '--theme-gradient-bg': 'linear-gradient(to bottom right, #111827, #451a03, #0a0a0a)',
+      '--theme-orbital-glow': 'rgba(184, 134, 11, 0.4)',
     },
-    
+
     // Accent Colors
-    accent: '#FBBF24',            // Amber-400 (text highlights)
+    accent: '#F59E0B',            // Amber-500 (text highlights)
     accentMuted: '#78350F',       // Amber-900 (disabled states)
-    
+
     // Orbital Interface
-    orbitalRing: 'from-yellow-500 to-amber-500',
-    orbitalGlow: 'rgba(212, 175, 55, 0.4)',
-    
+    orbitalRing: 'from-yellow-600 to-amber-600',
+    orbitalGlow: 'rgba(184, 134, 11, 0.4)',
+
     // Border & Shadow
-    borderColor: '#D4AF37',
-    shadowColor: 'rgba(212, 175, 55, 0.5)',
+    borderColor: '#B8860B',
+    shadowColor: 'rgba(184, 134, 11, 0.5)',
   },
-  
+
   platinum: {
     id: 'platinum',
     name: 'Platinum Elite',
     description: 'Sleek platinum theme for international DJs and premium experiences',
-    
-    // Primary Colors
-    primary: '#E5E4E2',           // Platinum
-    primaryDark: '#C0C0C0',       // Silver
-    primaryLight: '#F5F5F5',      // Whitesmoke
-    
-    // Secondary Colors
-    secondary: '#94A3B8',         // Slate-400
-    secondaryDark: '#64748B',     // Slate-500
-    secondaryLight: '#CBD5E1',    // Slate-300
-    
-    // Gradients (Tailwind classes)
-    gradientPrimary: 'from-gray-300 to-slate-400',
-    gradientHover: 'from-gray-400 to-slate-500',
+
+    // Primary Colors - Darkened for white text contrast
+    primary: '#64748B',           // Slate-500 (was #E5E4E2)
+    primaryDark: '#475569',       // Slate-600
+    primaryLight: '#94A3B8',      // Slate-400
+
+    // Secondary Colors - Darkened for white text contrast
+    secondary: '#475569',         // Slate-600 (was #94A3B8)
+    secondaryDark: '#334155',     // Slate-700
+    secondaryLight: '#64748B',    // Slate-500
+
+    // Gradients (Tailwind classes) - Much darker for white text
+    gradientPrimary: 'from-slate-500 to-slate-600',
+    gradientHover: 'from-slate-600 to-slate-700',
     gradientBackground: 'from-gray-900 via-slate-900 to-gray-900',
-    gradientCard: 'from-gray-300/20 to-slate-400/20',
-    
+    gradientCard: 'from-slate-500/20 to-slate-600/20',
+
     // CSS Variables
     cssVars: {
-      '--theme-primary': '#E5E4E2',
-      '--theme-primary-dark': '#C0C0C0',
-      '--theme-primary-light': '#F5F5F5',
-      '--theme-secondary': '#94A3B8',
-      '--theme-secondary-dark': '#64748B',
-      '--theme-secondary-light': '#CBD5E1',
-      '--theme-gradient': 'linear-gradient(to right, #E5E4E2, #94A3B8)',
-      '--theme-gradient-bg': 'linear-gradient(to bottom right, #111827, #1e293b, #0a0a0a)',
-      '--theme-orbital-glow': 'rgba(229, 228, 226, 0.3)',
+      '--theme-primary': '#64748B',
+      '--theme-primary-dark': '#475569',
+      '--theme-primary-light': '#94A3B8',
+      '--theme-secondary': '#475569',
+      '--theme-secondary-dark': '#334155',
+      '--theme-secondary-light': '#64748B',
+      '--theme-gradient': 'linear-gradient(to right, #64748B, #475569)',
+      '--theme-gradient-bg': 'linear-gradient(to bottom right, #0f172a, #1e293b, #020617)',
+      '--theme-orbital-glow': 'rgba(100, 116, 139, 0.3)',
     },
-    
+
     // Accent Colors
-    accent: '#CBD5E1',            // Slate-300 (text highlights)
-    accentMuted: '#475569',       // Slate-600 (disabled states)
-    
+    accent: '#94A3B8',            // Slate-400 (text highlights)
+    accentMuted: '#334155',       // Slate-700 (disabled states)
+
     // Orbital Interface
-    orbitalRing: 'from-gray-300 to-slate-300',
-    orbitalGlow: 'rgba(229, 228, 226, 0.3)',
-    
+    orbitalRing: 'from-slate-500 to-slate-600',
+    orbitalGlow: 'rgba(100, 116, 139, 0.3)',
+
     // Border & Shadow
-    borderColor: '#94A3B8',
-    shadowColor: 'rgba(148, 163, 184, 0.5)',
+    borderColor: '#64748B',
+    shadowColor: 'rgba(100, 116, 139, 0.5)',
   },
 };
 
@@ -286,7 +286,7 @@ export function applyThemeCSSVars(mode: ThemeMode): void {
   Object.entries(theme.cssVars).forEach(([key, value]) => {
     document.documentElement.style.setProperty(key, value);
   });
-  
+
   // Also set data-theme attribute for CSS selectors
   document.documentElement.setAttribute('data-theme', mode);
 }
@@ -302,7 +302,7 @@ export function themeClass(
   type: 'gradient' | 'gradient-hover' | 'bg' | 'text' | 'border' | 'shadow'
 ): string {
   const theme = themes[mode];
-  
+
   const classMap = {
     'gradient': `bg-gradient-to-r ${theme.gradientPrimary}`,
     'gradient-hover': `bg-gradient-to-r ${theme.gradientHover}`,
@@ -311,7 +311,7 @@ export function themeClass(
     'border': `border-[${theme.primary}]`,
     'shadow': `shadow-[0_4px_12px_${theme.shadowColor}]`,
   };
-  
+
   return classMap[type];
 }
 
@@ -329,7 +329,7 @@ export function getTierBackgroundColor(tier: UserTier, opacity: number = 0.25): 
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  
+
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 

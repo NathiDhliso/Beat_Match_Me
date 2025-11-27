@@ -1,4 +1,5 @@
 import React from 'react';
+import { Medal, Crown, Gem } from 'lucide-react';
 
 export type TierType = 'bronze' | 'silver' | 'gold' | 'platinum';
 
@@ -13,25 +14,25 @@ const tierConfig = {
     label: 'Bronze',
     colors: 'bg-gradient-to-r from-amber-700 to-amber-900',
     textColor: 'text-amber-100',
-    icon: '🥉',
+    icon: <Medal className="w-3 h-3 sm:w-4 sm:h-4" />,
   },
   silver: {
     label: 'Silver',
     colors: 'bg-gradient-to-r from-gray-300 to-gray-500',
     textColor: 'text-gray-900',
-    icon: '🥈',
+    icon: <Medal className="w-3 h-3 sm:w-4 sm:h-4" />,
   },
   gold: {
     label: 'Gold',
     colors: 'bg-gradient-to-r from-yellow-400 to-yellow-600',
     textColor: 'text-yellow-900',
-    icon: '🥇',
+    icon: <Crown className="w-3 h-3 sm:w-4 sm:h-4" />,
   },
   platinum: {
     label: 'Platinum',
     colors: 'bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400',
     textColor: 'text-white',
-    icon: '💎',
+    icon: <Gem className="w-3 h-3 sm:w-4 sm:h-4" />,
   },
 };
 

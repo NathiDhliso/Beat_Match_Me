@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSwipeDetection } from './useSwipeDetection';
-import { usePeekPreview } from './usePeekPreview';
-import { PeekPreview } from './PeekPreview';
+// import { usePeekPreview } from './usePeekPreview';
+// import { PeekPreview } from './PeekPreview';
 import type { GestureHandlerProps } from './types';
 
 /**
@@ -14,7 +14,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   onSwipeLeft,
   onSwipeRight,
   children,
-  peekContent,
+  // peekContent,
   disabled,
 }) => {
 
@@ -25,7 +25,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     onSwipeRight,
   }, { disabled });
 
-  const peekPreview = usePeekPreview(currentDelta, isPeeking, peekContent);
+  // const peekPreview = usePeekPreview(currentDelta, isPeeking, peekContent);
 
   // Limit drag distance and determine dominant direction
   const getDominantTransform = () => {
@@ -60,7 +60,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '100vh',
+        minHeight: '100dvh',
         touchAction: 'none',
       }}
     >
@@ -76,7 +76,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
           transform: getDominantTransform(),
           transition: isPeeking ? 'none' : 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
           willChange: 'transform',
-          minHeight: '100vh',
+          minHeight: '100dvh',
           backgroundColor: 'var(--bg-primary)',
           opacity: 1,
         }}
