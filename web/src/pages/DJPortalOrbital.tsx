@@ -48,6 +48,15 @@ export const DJPortalOrbital: React.FC = () => {
   const themeClasses = useThemeClasses();
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Check for desktop screen to disable swipe
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
 
@@ -988,6 +997,7 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeDown={handleSwipeDown}
       onSwipeLeft={handleSwipeLeft}
       onSwipeRight={handleSwipeRight}
+      disabled={isDesktop}
       peekContent={{
         left: (
           <div className="flex flex-col items-center justify-center h-full gap-2">

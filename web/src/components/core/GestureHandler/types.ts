@@ -5,6 +5,7 @@ export interface GestureHandlerProps {
   onSwipeRight: () => void;
   children: React.ReactNode;
   peekContent?: PeekContent;
+  disabled?: boolean;
 }
 
 export interface PeekContent {

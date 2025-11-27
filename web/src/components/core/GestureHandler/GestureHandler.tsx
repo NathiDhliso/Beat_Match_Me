@@ -15,6 +15,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
   onSwipeRight,
   children,
   peekContent,
+  disabled,
 }) => {
 
   const { currentDelta, isPeeking, handlers } = useSwipeDetection({
@@ -22,18 +23,18 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     onSwipeDown,
     onSwipeLeft,
     onSwipeRight,
-  });
+  }, { disabled });
 
   const peekPreview = usePeekPreview(currentDelta, isPeeking, peekContent);
 
   // Limit drag distance and determine dominant direction
   const getDominantTransform = () => {
     if (!isPeeking) return 'translate(0, 0)';
-    
+
     const absX = Math.abs(currentDelta.x);
     const absY = Math.abs(currentDelta.y);
     const maxDrag = 150; // Maximum pixels user can drag
-    
+
     // Apply resistance - the further you drag, the harder it gets
     const applyResistance = (value: number) => {
       const abs = Math.abs(value);
@@ -43,7 +44,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
       }
       return value;
     };
-    
+
     // Only move in the dominant direction with resistance
     if (absX > absY) {
       return `translate(${applyResistance(currentDelta.x)}px, 0)`;
@@ -56,7 +57,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     <div
       {...handlers}
       className="h-full w-full"
-      style={{ 
+      style={{
         position: 'relative',
         overflow: 'hidden',
         minHeight: '100vh',
