@@ -91,7 +91,7 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   const total = calculateTotal();
 
   return (
-    <div className={`fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-end sm:items-center justify-center ${styles.lazyBlur}`}>
+    <div className={`fixed inset-0 bg-black/90 backdrop-blur-md z-40 flex items-end sm:items-center justify-center ${styles.lazyBlur}`}>
       <div className="bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[85vh] overflow-hidden">
         
         {/* Compact Header - Song Info */}

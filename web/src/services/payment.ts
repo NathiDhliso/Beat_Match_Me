@@ -388,61 +388,84 @@ export async function processSimplePayment(request: SimplePaymentRequest): Promi
 
   try {
     // 1. Load SDK (cached after first load)
+    console.log('💳 Loading Yoco SDK...');
     await loadYocoSDK();
+    console.log('💳 Yoco SDK loaded successfully');
 
     if (!yocoSDKInstance) {
+      console.error('❌ Yoco SDK instance is null after loading');
       throw new Error('Payment system unavailable. Please refresh the page.');
     }
+
+    console.log('💳 Yoco SDK instance ready, showing popup...');
 
     // 2. Show Yoco popup and process payment
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        reject(new Error('Payment timed out. Please try again.'));
+        console.error('❌ Payment popup timed out after 2 minutes');
+        console.error('💡 This may be caused by third-party cookies being blocked.');
+        console.error('💡 Try allowing cookies for yoco.com in your browser settings.');
+        reject(new Error('Payment timed out. This may be caused by browser cookie settings. Please allow cookies for yoco.com and try again.'));
       }, 120000); // 2 minute timeout
 
-      yocoSDKInstance.showPopup({
-        amountInCents: Math.round(request.amount * 100),
-        currency: 'ZAR',
-        name: 'BeatMatchMe',
-        description: `🎵 ${request.songTitle} - ${request.artistName}`,
-        metadata: {
-          songId: request.songId,
-          eventId: request.eventId,
-          setId: request.setId,
-        },
-        callback: (result: any) => {
-          clearTimeout(timeoutId);
+      console.log('💳 Calling yocoSDKInstance.showPopup with amount:', request.amount * 100, 'cents');
 
-          if (result.error) {
-            console.error('❌ Payment error:', result.error);
-            
-            // User-friendly error messages
-            let message = 'Payment failed. Please try again.';
-            if (result.error.message?.includes('cancelled')) {
-              message = 'Payment cancelled.';
-            } else if (result.error.message?.includes('declined')) {
-              message = 'Card declined. Please try a different card.';
-            } else if (result.error.message?.includes('insufficient')) {
-              message = 'Insufficient funds. Please try a different card.';
+      try {
+        yocoSDKInstance.showPopup({
+          amountInCents: Math.round(request.amount * 100),
+          currency: 'ZAR',
+          name: 'BeatMatchMe',
+          description: `🎵 ${request.songTitle} - ${request.artistName}`,
+          metadata: {
+            songId: request.songId,
+            eventId: request.eventId,
+            setId: request.setId,
+          },
+          onCancel: () => {
+            console.log('💳 Payment cancelled by user');
+            clearTimeout(timeoutId);
+            reject(new Error('Payment cancelled.'));
+          },
+          callback: (result: any) => {
+            console.log('💳 Yoco callback received:', result);
+            clearTimeout(timeoutId);
+
+            if (result.error) {
+              console.error('❌ Payment error:', result.error);
+
+              // User-friendly error messages
+              let message = 'Payment failed. Please try again.';
+              if (result.error.message?.includes('cancelled')) {
+                message = 'Payment cancelled.';
+              } else if (result.error.message?.includes('declined')) {
+                message = 'Card declined. Please try a different card.';
+              } else if (result.error.message?.includes('insufficient')) {
+                message = 'Insufficient funds. Please try a different card.';
+              }
+
+              reject(new Error(message));
+              return;
             }
-            
-            reject(new Error(message));
-            return;
-          }
 
-          if (result.id) {
-            console.log('✅ Payment successful:', result.id);
-            resolve({
-              success: true,
-              chargeId: result.id,
-              amount: request.amount,
-              message: 'Payment successful!',
-            });
-          } else {
-            reject(new Error('Payment failed - no confirmation received.'));
-          }
-        },
-      });
+            if (result.id) {
+              console.log('✅ Payment successful:', result.id);
+              resolve({
+                success: true,
+                chargeId: result.id,
+                amount: request.amount,
+                message: 'Payment successful!',
+              });
+            } else {
+              reject(new Error('Payment failed - no confirmation received.'));
+            }
+          },
+        });
+        console.log('💳 showPopup called successfully');
+      } catch (popupError: any) {
+        clearTimeout(timeoutId);
+        console.error('❌ Error showing Yoco popup:', popupError);
+        reject(new Error('Failed to open payment form. Please refresh and try again.'));
+      }
     });
 
   } catch (error: any) {
