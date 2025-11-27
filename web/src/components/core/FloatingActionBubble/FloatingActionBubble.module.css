@@ -1,0 +1,39 @@
+.bubbleItem {
+  transform-origin: bottom right;
+}
+
+.bubbleInflate {
+  animation: bubbleInflate 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.bubblePop {
+  animation: bubblePop 0.15s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes bubbleInflate {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bubblePop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}

@@ -1,60 +1,70 @@
-import React from 'react';
-import { Music } from 'lucide-react';
-import { useDraggable } from './useDraggable';
-import { RadialMenuItem } from './RadialMenuItem';
+import React, { useState, useEffect } from 'react';
+import { Music, X } from 'lucide-react';
 import type { FloatingBubbleProps } from './types';
+import styles from './FloatingActionBubble.module.css';
 
-/**
- * Floating Action Bubble - Draggable main menu control
- * Phase 8: Memoized for performance - prevents unnecessary re-renders
- */
 export const FloatingActionBubble: React.FC<FloatingBubbleProps> = React.memo(({ 
   onMenuToggle, 
   isExpanded, 
   menuOptions 
 }) => {
-  const { position, handlers } = useDraggable({ 
-    x: typeof window !== 'undefined' ? window.innerWidth - 100 : 100, 
-    y: typeof window !== 'undefined' ? window.innerHeight - 100 : 100 
-  });
+  const [showItems, setShowItems] = useState(false);
+
+  useEffect(() => {
+    if (isExpanded) {
+      setShowItems(true);
+    } else {
+      const timer = setTimeout(() => {
+        setShowItems(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isExpanded]);
 
   return (
     <div
-      className="fixed z-50 cursor-move hidden md:block"
+      className="fixed z-50 hidden md:block right-6 bottom-6"
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: 'translate(-50%, -50%)',
+        overflow: 'visible',
       }}
-      {...handlers}
     >
       <button
         onClick={onMenuToggle}
-        className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 shadow-2xl backdrop-blur-lg border-2 border-white/20 hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+        className={`relative w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 shadow-2xl backdrop-blur-lg border-2 border-white/20 hover:scale-110 transition-all duration-300 flex items-center justify-center ${isExpanded ? 'rotate-180' : ''}`}
         style={{
           boxShadow: '0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(168, 85, 247, 0.3)',
         }}
       >
-        <Music className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white animate-pulse" />
+        {isExpanded ? (
+          <X className="w-8 h-8 text-white" />
+        ) : (
+          <Music className="w-8 h-8 text-white animate-pulse" />
+        )}
         
-        {/* Pulse rings */}
-        <div className="absolute inset-0 rounded-full bg-purple-500/30 animate-ping" />
-        <div className="absolute inset-0 rounded-full bg-purple-500/20 animate-pulse" />
+        {!isExpanded && (
+          <>
+            <div className="absolute inset-0 rounded-full bg-purple-500/30 animate-ping" />
+            <div className="absolute inset-0 rounded-full bg-purple-500/20 animate-pulse" />
+          </>
+        )}
       </button>
 
-      {/* Radial Menu - Expands in circular pattern */}
-      {isExpanded && menuOptions && (
-        <div className="absolute inset-0">
+      {showItems && menuOptions && (
+        <div className="absolute bottom-20 right-0 flex flex-col gap-3 items-end">
           {menuOptions.map((option, index) => (
-            <RadialMenuItem
+            <button
               key={index}
-              icon={option.icon}
-              label={option.label}
-              angle={option.angle}
-              distance={100}
-              color={option.color}
               onClick={option.onClick}
-            />
+              className={`flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r ${option.color} shadow-lg border border-white/20 hover:scale-105 transition-transform duration-150 ${styles.bubbleItem} ${isExpanded ? styles.bubbleInflate : styles.bubblePop}`}
+              style={{
+                animationDelay: isExpanded ? `${index * 50}ms` : `${(menuOptions.length - 1 - index) * 30}ms`,
+              }}
+            >
+              <span className="text-white text-sm font-medium">{option.label}</span>
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                {option.icon}
+              </div>
+            </button>
           ))}
         </div>
       )}

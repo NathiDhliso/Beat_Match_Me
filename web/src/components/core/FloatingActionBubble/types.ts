@@ -19,6 +19,7 @@ export interface RadialMenuItemProps {
   distance: number;
   color: string;
   onClick: () => void;
+  showLabel?: boolean;
 }
 
 export interface Position {

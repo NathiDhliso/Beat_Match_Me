@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './components/DarkModeTheme';
 import { useBackend } from './context/BackendContext';
 import { apolloClient } from './services/api';
+import { LandingPage } from './pages/LandingPage';
 import { Login } from './pages/Login';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { YocoTestPage } from './pages/YocoTestPage';
@@ -226,7 +227,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<LandingPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </main>

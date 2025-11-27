@@ -11,7 +11,8 @@ export const RadialMenuItem: React.FC<RadialMenuItemProps> = ({
   angle, 
   distance, 
   color, 
-  onClick 
+  onClick,
+  showLabel = false
 }) => {
   const radians = (angle * Math.PI) / 180;
   const x = Math.cos(radians) * distance;
@@ -24,6 +25,7 @@ export const RadialMenuItem: React.FC<RadialMenuItemProps> = ({
         left: '50%',
         top: '50%',
         transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+        pointerEvents: 'auto',
       }}
     >
       <button
@@ -34,7 +36,7 @@ export const RadialMenuItem: React.FC<RadialMenuItemProps> = ({
         }}
       >
         {icon}
-        <span className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm text-white font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className={`absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm text-white font-semibold whitespace-nowrap transition-opacity ${showLabel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
           {label}
         </span>
       </button>

@@ -28,10 +28,12 @@ export const useDraggable = (
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<DragRef | null>(null);
   const animationRef = useRef<number | null>(null);
+  const hasMoved = useRef(false);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (e.button !== 0) return;
     setIsDragging(true);
+    hasMoved.current = false;
     dragRef.current = {
       startX: e.clientX - position.x,
       startY: e.clientY - position.y,
@@ -40,6 +42,7 @@ export const useDraggable = (
 
   const handlePointerMove = (e: PointerEvent) => {
     if (isDragging && dragRef.current) {
+      hasMoved.current = true;
       setPosition({
         x: e.clientX - dragRef.current.startX,
         y: e.clientY - dragRef.current.startY,
@@ -82,7 +85,10 @@ export const useDraggable = (
   const handlePointerUp = () => {
     setIsDragging(false);
     dragRef.current = null;
-    snapToNearestEdge();
+    if (hasMoved.current) {
+      snapToNearestEdge();
+    }
+    hasMoved.current = false;
   };
 
   useEffect(() => {

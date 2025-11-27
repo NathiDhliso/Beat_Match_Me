@@ -1755,7 +1755,7 @@ export const DJPortalOrbital: React.FC = () => {
           {/* Gesture Hints - Bottom Center - Hide when live */}
           {/* Gesture Hints - Bottom Center - Minimal & Subtle */}
           {!isLiveMode && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity md:hidden">
               <div className="flex items-center gap-3 text-[10px] text-gray-400 font-medium">
                 <span>↑ Queue</span>
                 <span>↓ Library</span>

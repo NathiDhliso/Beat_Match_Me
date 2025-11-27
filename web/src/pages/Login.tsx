@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 import { SocialLoginButtons } from '../components/SocialLoginButtons';
-import { Check, Lock, Mail, Sparkles, Eye, EyeOff, Loader2, Headphones, Music } from 'lucide-react';
+import { Check, Lock, Mail, Eye, EyeOff, Loader2, Headphones, Music } from 'lucide-react';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 
 type AuthMode = 'login' | 'signup' | 'confirm' | 'role-select';
@@ -112,9 +112,6 @@ export const Login: React.FC = () => {
       <div className="bg-gray-900/40 backdrop-blur-2xl rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/10 p-6 sm:p-7 w-full max-w-[420px] relative z-10">
         {/* Compact Logo & Title */}
         <div className="text-center mb-5">
-          <div className={`inline-flex items-center justify-center w-16 h-16 ${themeClasses.gradientPrimary} rounded-2xl mb-2 shadow-lg`}>
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">BeatMatchMe</h1>
         </div>
 
