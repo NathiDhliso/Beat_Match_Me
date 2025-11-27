@@ -567,6 +567,28 @@ type RefundResponse {
   refundedAt: AWSTimestamp
 }
 
+input SongInput {
+  title: String!
+  artist: String!
+  genre: String
+  basePrice: Float
+  isEnabled: Boolean
+  albumArt: String
+  duration: Int
+}
+
+type UploadTracklistResponse {
+  success: Boolean!
+  songsAdded: Int!
+  songs: [Track!]
+}
+
+type SetEventTracklistResponse {
+  success: Boolean!
+  eventId: ID!
+  songsCount: Int!
+}
+
 type Mutation {
   createUser(email: String!, name: String!, role: UserRole!): User
   updateUser(userId: ID!, name: String, profileImage: String, phone: String): User
@@ -597,6 +619,10 @@ type Mutation {
   
   submitRequestWithPayment(input: SubmitRequestWithPaymentInput!): SubmitRequestWithPaymentResponse!
   processRefund(requestId: ID!, reason: String): RefundResponse
+  
+  # Tracklist Management
+  uploadTracklist(performerId: ID!, songs: [SongInput!]!): UploadTracklistResponse!
+  setEventTracklist(eventId: ID!, songIds: [ID!]!): SetEventTracklistResponse!
   
   # Admin CRM Mutations (require Admins group)
   updateUserStatus(userId: ID!, status: String!, reason: String): AdminUser @aws_auth(cognito_groups: ["Admins"])

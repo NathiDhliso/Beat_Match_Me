@@ -1,0 +1,20 @@
+#set($songs = $context.arguments.songs)
+#set($songsWithIds = [])
+#foreach($song in $songs)
+  #set($songWithId = {
+    "id": "$util.autoId()",
+    "title": $song.title,
+    "artist": $song.artist,
+    "genre": $util.defaultIfNull($song.genre, "Unknown"),
+    "basePrice": $util.defaultIfNull($song.basePrice, 20),
+    "isEnabled": $util.defaultIfNull($song.isEnabled, true),
+    "albumArt": $util.defaultIfNullOrEmpty($song.albumArt, ""),
+    "duration": $util.defaultIfNull($song.duration, 0)
+  })
+  $util.qr($songsWithIds.add($songWithId))
+#end
+{
+  "success": true,
+  "songsAdded": $songs.size(),
+  "songs": $util.toJson($songsWithIds)
+}
