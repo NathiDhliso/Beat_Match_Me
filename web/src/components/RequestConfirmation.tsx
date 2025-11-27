@@ -1,18 +1,16 @@
 /**
  * Request Confirmation Component
- * Feature 3: Submit a Song Request with Payment
- * Comprehensive confirmation screen with pricing breakdown, tier discounts, and Fair-Play Promise
- * Phase 8: Performance - Lazy loaded album art
+ * Optimized for club environments - minimal UI with expandable details
  */
 
 import React, { useState } from 'react';
-import { Music, Info, X, Zap, Shield, CheckCircle } from 'lucide-react';
+import { Music, X, Zap, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { HapticFeedback } from '../utils/haptics';
 import styles from './RequestConfirmation.module.css';
 import { useTheme, useThemeClasses } from '../context/ThemeContext';
 import type { UserTier } from '../theme/tokens';
-import { getTierColor, getTierDiscount, getTierBackgroundColor } from '../theme/tokens';
+import { getTierColor, getTierDiscount } from '../theme/tokens';
 
 interface Song {
   id: string;
@@ -37,7 +35,7 @@ interface RequestData {
   songId: string;
   requestType: 'standard' | 'spotlight';
   dedication?: string;
-  shoutout?: string;  // NEW: Optional shoutout message
+  shoutout?: string;
   totalAmount: number;
 }
 
@@ -45,16 +43,16 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   song,
   userTier = 'BRONZE',
   estimatedQueuePosition = 8,
-  estimatedWaitTime = '~25 minutes',
+  estimatedWaitTime = '~25 min',
   onConfirm,
   onCancel,
 }) => {
   const [requestType, setRequestType] = useState<'standard' | 'spotlight'>('standard');
+  const [showDetails, setShowDetails] = useState(false);
   const [showDedication, setShowDedication] = useState(false);
   const [dedication, setDedication] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Use centralized theme system
   const { currentTheme } = useTheme();
   const themeClasses = useThemeClasses();
   const tierColor = getTierColor(userTier);
@@ -62,7 +60,6 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
 
   const SPOTLIGHT_PRICE = 75;
   const DEDICATION_PRICE = 10;
-  
   const tierDiscount = Math.round((1 - tierMultiplier) * 100);
 
   const calculateTotal = () => {
@@ -70,13 +67,6 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
     const spotlight = requestType === 'spotlight' ? SPOTLIGHT_PRICE : 0;
     const dedicationFee = showDedication ? DEDICATION_PRICE : 0;
     return discountedBase + spotlight + dedicationFee;
-  };
-
-  const validateDedication = (text: string) => {
-    const inappropriateWords = ['badword1', 'badword2']; // Add actual filter
-    return inappropriateWords.some(word => 
-      text.toLowerCase().includes(word.toLowerCase())
-    );
   };
 
   const handleConfirm = async () => {
@@ -99,374 +89,186 @@ export const RequestConfirmation: React.FC<RequestConfirmationProps> = ({
   };
 
   const total = calculateTotal();
-  const hasWarning = showDedication && validateDedication(dedication);
 
   return (
-    <div className={`fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${styles.lazyBlur}`}>
-      <div className="bg-gray-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-6 flex justify-between items-center z-10">
-          <h2 className="text-2xl font-bold text-white">Confirm Request</h2>
-          <button
-            onClick={onCancel}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6">
-          {/* Song Info with Album Art */}
-          <div className={`bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30 ${styles.lazyBlur}`}>
+    <div className={`fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-end sm:items-center justify-center ${styles.lazyBlur}`}>
+      <div className="bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[85vh] overflow-hidden">
+        
+        {/* Compact Header - Song Info */}
+        <div className="p-4 border-b border-white/10">
+          <div className="flex items-center gap-4">
+            {/* Album Art - Small */}
             {song.albumArt ? (
               <LazyLoadImage
                 src={song.albumArt}
                 alt={song.title}
-                className="w-48 h-48 mx-auto rounded-xl mb-4 object-cover"
+                className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                 effect="blur"
-                width={192}
-                height={192}
               />
             ) : (
-              <div className="w-48 h-48 mx-auto rounded-xl mb-4 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                <Music className="w-24 h-24 text-white/50" />
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                <Music className="w-8 h-8 text-white/70" />
               </div>
             )}
             
-            <h3 className="text-3xl font-bold text-white mb-2">{song.title}</h3>
-            <p className="text-xl text-gray-300 mb-3">{song.artist}</p>
-            
-            <div className="flex items-center justify-center gap-3 mb-2">
-              {song.genre && (
-                <span 
-                  className="px-3 py-1 rounded-full text-sm text-white font-semibold"
-                  style={{ backgroundColor: currentTheme.primary }}
-                >
-                  {song.genre}
-                </span>
-              )}
-              {song.duration && (
-                <span className="text-gray-400 text-sm">{song.duration}</span>
-              )}
-            </div>
-            
-            <p className="text-gray-400 text-sm">Base Price: R{song.basePrice}</p>
-          </div>
-
-          {/* User Tier Badge - Now using centralized tier colors! */}
-          <div
-            className="rounded-xl p-4 flex justify-between items-center"
-            style={{ backgroundColor: getTierBackgroundColor(userTier, 0.25) }}
-          >
-            <div>
-              <p className="text-white font-bold text-lg">{userTier} MEMBER</p>
-              <p className="text-white/80 text-sm">
-                {tierDiscount > 0 ? `${tierDiscount}% Discount` : 'No Discount'}
-              </p>
-            </div>
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: tierColor.hex }}
-            >
-              <span className="text-white font-bold text-xl">
-                {userTier.charAt(0)}
-              </span>
-            </div>
-          </div>
-
-          {/* Estimated Queue Info */}
-          <div className="bg-gray-800 rounded-xl p-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Estimated Queue Position:</span>
-              <span className="text-white font-bold">#{estimatedQueuePosition}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Estimated Wait Time:</span>
-              <span className="text-white font-bold">{estimatedWaitTime}</span>
-            </div>
-          </div>
-
-          {/* Fair-Play Promise - Inline Expandable */}
-          <details className="w-full bg-green-600/10 border border-green-600/30 rounded-xl overflow-hidden group">
-            <summary className="cursor-pointer p-4 flex items-center gap-3 hover:bg-green-600/20 transition-colors list-none">
-              <Shield className="w-6 h-6 text-green-400" />
-              <div className="flex-1 text-left">
-                <p className="text-white font-bold">Fair-Play Promise</p>
-                <p className="text-green-100 text-sm">Full refund if DJ vetoes</p>
-              </div>
-              <Info className="w-5 h-5 text-green-400 group-open:rotate-180 transition-transform" />
-            </summary>
-            
-            <div className="px-4 pb-4 pt-2 space-y-3 border-t border-green-600/20">
-              <p className="text-sm font-semibold text-green-400 mb-3">Your Money is Protected:</p>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-300 text-sm">
-                  If DJ vetoes your request for any reason, you get an automatic full refund
-                </p>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-300 text-sm">
-                  Refunds process within 5-10 business days
-                </p>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-300 text-sm">
-                  No questions asked - your satisfaction is guaranteed
-                </p>
-              </div>
-            </div>
-          </details>
-
-          <div className="border-t border-gray-700 my-6" />
-
-          {/* Request Type Selection */}
-          <div>
-            <h4 className="text-lg font-bold text-white mb-3">Request Type</h4>
-            
-            <div className="space-y-3">
-              <button
-                onClick={() => setRequestType('standard')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  requestType === 'standard'
-                    ? 'bg-opacity-30'
-                    : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                }`}
-                style={requestType === 'standard' ? {
-                  borderColor: currentTheme.primary,
-                  backgroundColor: `${currentTheme.primary}33`
-                } : {}}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="text-left">
-                    <p className="text-white font-bold">Standard Request</p>
-                    <p className="text-gray-400 text-sm">Added to queue in order</p>
-                  </div>
-                  <p 
-                    className="font-bold text-xl"
-                    style={{ color: currentTheme.accent }}
-                  >
-                    R{(song.basePrice * tierMultiplier).toFixed(2)}
-                  </p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setRequestType('spotlight')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  requestType === 'spotlight'
-                    ? 'border-yellow-500 bg-yellow-900/30'
-                    : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="text-left">
-                    <p className="text-white font-bold flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-yellow-400" />
-                      Spotlight Slot
-                    </p>
-                    <p className="text-gray-400 text-sm">Priority placement</p>
-                  </div>
-                  <p className="text-yellow-400 font-bold text-xl">+R{SPOTLIGHT_PRICE}</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Optional Add-ons */}
-          <div>
-            <h4 className="text-lg font-bold text-white mb-3">Optional Add-ons</h4>
-            
-            <div className="space-y-3">
-              <button
-                onClick={() => setShowDedication(!showDedication)}
-                className={`w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between ${
-                  showDedication
-                    ? 'border-pink-500 bg-pink-900/30'
-                    : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                }`}
-              >
-                <span className="text-white font-semibold">💝 Dedication Message</span>
-                <span className="text-pink-400 font-bold">+R{DEDICATION_PRICE}</span>
-              </button>
-
-              {showDedication && (
-                <div className="space-y-2">
-                  <textarea
-                    value={dedication}
-                    onChange={(e) => setDedication(e.target.value.substring(0, 100))}
-                    placeholder="Your dedication message (max 100 characters)"
-                    className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none resize-none ${
-                      dedication.length > 100
-                        ? 'border-red-500'
-                        : hasWarning
-                        ? 'border-yellow-500'
-                        : 'border-gray-700'
-                    }`}
-                    style={dedication.length <= 100 && !hasWarning ? {
-                      ['--tw-ring-color' as string]: currentTheme.primary,
-                    } as React.CSSProperties : {}}
-                    rows={3}
-                    maxLength={100}
-                  />
-                  
-                  <div className="flex justify-between items-center">
-                    <span className={`text-sm ${dedication.length > 100 ? 'text-red-400' : 'text-gray-400'}`}>
-                      {dedication.length}/100
-                    </span>
-                    {hasWarning && (
-                      <span className="text-yellow-400 text-sm flex items-center gap-1">
-                        ⚠️ Message may be rejected by DJ
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Enhanced Pricing Breakdown - Phase 6: Price Transparency */}
-          <div 
-            className="rounded-xl p-6 space-y-3 border-2"
-            style={{ 
-              backgroundColor: `${currentTheme.primary}08`,
-              borderColor: `${currentTheme.primary}30`
-            }}
-          >
-            <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              💰 Pricing Breakdown
-            </h4>
-            
-            {/* Base Price */}
-            <div className="flex justify-between items-center text-gray-300">
-              <div className="flex items-center gap-2">
-                <Music className="w-4 h-4 text-gray-400" />
-                <span>Base Song Price:</span>
-              </div>
-              <span className="font-semibold">R{song.basePrice.toFixed(2)}</span>
-            </div>
-            
-            {/* Tier Discount - Show savings prominently */}
-            {tierDiscount > 0 ? (
-              <div 
-                className="flex justify-between items-center p-3 rounded-lg"
-                style={{ backgroundColor: `${tierColor.hex}20` }}
-              >
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    style={{ backgroundColor: tierColor.hex }}
-                  >
-                    {userTier.charAt(0)}
-                  </div>
-                  <span className="font-semibold" style={{ color: tierColor.hex }}>
-                    {userTier} Member Discount ({tierDiscount}%):
-                  </span>
-                </div>
-                <span className="font-bold" style={{ color: tierColor.hex }}>
-                  -R{(song.basePrice * (1 - tierMultiplier)).toFixed(2)}
+            {/* Song Details */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-bold text-white truncate">{song.title}</h3>
+              <p className="text-gray-400 truncate">{song.artist}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">
+                  #{estimatedQueuePosition} • {estimatedWaitTime}
                 </span>
               </div>
-            ) : (
-              <div className="flex justify-between items-center text-gray-400 text-sm">
-                <span>💡 Upgrade your tier to unlock discounts!</span>
-              </div>
-            )}
-            
-            {/* Discounted Base Price */}
-            <div className="flex justify-between items-center text-white bg-gray-800/50 p-3 rounded-lg">
-              <span className="font-semibold">Discounted Song Price:</span>
-              <span className="font-bold text-lg">R{(song.basePrice * tierMultiplier).toFixed(2)}</span>
             </div>
             
-            {/* Spotlight Add-on */}
-            {requestType === 'spotlight' && (
-              <div className="flex justify-between items-center text-yellow-400 bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  <span className="font-semibold">Spotlight Priority:</span>
-                </div>
-                <span className="font-bold">+R{SPOTLIGHT_PRICE.toFixed(2)}</span>
-              </div>
-            )}
-            
-            {/* Dedication Add-on */}
-            {showDedication && (
-              <div className="flex justify-between items-center text-pink-400 bg-pink-900/20 p-3 rounded-lg border border-pink-500/30">
-                <div className="flex items-center gap-2">
-                  <span>💝</span>
-                  <span className="font-semibold">Dedication Message:</span>
-                </div>
-                <span className="font-bold">+R{DEDICATION_PRICE.toFixed(2)}</span>
-              </div>
-            )}
-            
-            {/* Total with prominent styling */}
-            <div className="border-t-2 border-gray-700 my-2" />
-            
-            <div 
-              className="flex justify-between items-center p-4 rounded-xl"
-              style={{ 
-                background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.accent}15)`
-              }}
-            >
-              <div>
-                <p className="text-sm text-gray-400 uppercase tracking-wide">Total Amount</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {tierDiscount > 0 && `You saved R${(song.basePrice * (1 - tierMultiplier)).toFixed(2)}!`}
-                </p>
-              </div>
-              <div className="text-right">
-                <p 
-                  className="text-4xl font-bold"
-                  style={{ color: currentTheme.accent }}
-                >
-                  R{total.toFixed(2)}
-                </p>
-                {tierDiscount === 0 && (
-                  <p className="text-xs text-gray-400 mt-1">Original Price</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={onCancel}
-              disabled={isProcessing}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-4 px-6 rounded-xl font-semibold transition-all disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            
-            <button
-              onClick={handleConfirm}
-              disabled={isProcessing}
-              className={`flex-1 text-white py-4 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${themeClasses.gradientPrimary} hover:opacity-90`}
-            >
-              {isProcessing ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5" />
-                  Confirm & Pay R{total.toFixed(2)}
-                </>
-              )}
+            {/* Close */}
+            <button onClick={onCancel} className="p-2 text-gray-400 hover:text-white">
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Fair-Play modal removed - now inline expandable section */}
+        {/* Main Content - Scrollable */}
+        <div className="p-4 space-y-4 overflow-y-auto max-h-[50vh]">
+          
+          {/* Quick Request Type Toggle */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setRequestType('standard')}
+              className={`p-3 rounded-xl border-2 transition-all ${
+                requestType === 'standard'
+                  ? 'border-purple-500 bg-purple-500/20'
+                  : 'border-gray-700 bg-gray-800'
+              }`}
+            >
+              <p className="text-white font-bold text-lg">R{(song.basePrice * tierMultiplier).toFixed(0)}</p>
+              <p className="text-gray-400 text-xs">Standard</p>
+            </button>
+            
+            <button
+              onClick={() => setRequestType('spotlight')}
+              className={`p-3 rounded-xl border-2 transition-all ${
+                requestType === 'spotlight'
+                  ? 'border-yellow-500 bg-yellow-500/20'
+                  : 'border-gray-700 bg-gray-800'
+              }`}
+            >
+              <p className="text-yellow-400 font-bold text-lg flex items-center justify-center gap-1">
+                <Zap className="w-4 h-4" />
+                R{(song.basePrice * tierMultiplier + SPOTLIGHT_PRICE).toFixed(0)}
+              </p>
+              <p className="text-gray-400 text-xs">Priority</p>
+            </button>
+          </div>
+
+          {/* Dedication Toggle - Compact */}
+          <button
+            onClick={() => setShowDedication(!showDedication)}
+            className={`w-full p-3 rounded-xl border transition-all flex items-center justify-between ${
+              showDedication ? 'border-pink-500 bg-pink-500/10' : 'border-gray-700 bg-gray-800'
+            }`}
+          >
+            <span className="text-white">💝 Add Dedication</span>
+            <span className="text-pink-400 font-bold">+R{DEDICATION_PRICE}</span>
+          </button>
+
+          {showDedication && (
+            <textarea
+              value={dedication}
+              onChange={(e) => setDedication(e.target.value.substring(0, 100))}
+              placeholder="Your message..."
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 resize-none"
+              rows={2}
+              maxLength={100}
+            />
+          )}
+
+          {/* Expandable Details */}
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="w-full flex items-center justify-between text-gray-400 text-sm py-2"
+          >
+            <span>View pricing details</span>
+            {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showDetails && (
+            <div className="bg-gray-800/50 rounded-xl p-4 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-300">
+                <span>Base price</span>
+                <span>R{song.basePrice}</span>
+              </div>
+              {tierDiscount > 0 && (
+                <div className="flex justify-between" style={{ color: tierColor.hex }}>
+                  <span>{userTier} discount ({tierDiscount}%)</span>
+                  <span>-R{(song.basePrice * (1 - tierMultiplier)).toFixed(2)}</span>
+                </div>
+              )}
+              {requestType === 'spotlight' && (
+                <div className="flex justify-between text-yellow-400">
+                  <span>Spotlight priority</span>
+                  <span>+R{SPOTLIGHT_PRICE}</span>
+                </div>
+              )}
+              {showDedication && (
+                <div className="flex justify-between text-pink-400">
+                  <span>Dedication</span>
+                  <span>+R{DEDICATION_PRICE}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-700 pt-2 mt-2">
+                <div className="flex items-center gap-2 text-green-400">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-xs">Full refund if DJ vetoes</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Fixed Bottom - Total & Pay Button */}
+        <div className="p-4 border-t border-white/10 bg-gray-900">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-gray-400 text-sm">Total</p>
+              {tierDiscount > 0 && (
+                <p className="text-xs" style={{ color: tierColor.hex }}>
+                  {tierDiscount}% off applied
+                </p>
+              )}
+            </div>
+            <p className="text-3xl font-bold" style={{ color: currentTheme.accent }}>
+              R{total.toFixed(0)}
+            </p>
+          </div>
+          
+          <button
+            onClick={handleConfirm}
+            disabled={isProcessing}
+            className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all disabled:opacity-50 ${themeClasses.gradientPrimary}`}
+          >
+            {isProcessing ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Zap className="w-5 h-5" />
+                Pay R{total.toFixed(0)}
+              </span>
+            )}
+          </button>
+          
+          <button
+            onClick={onCancel}
+            className="w-full py-2 mt-2 text-gray-400 text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
