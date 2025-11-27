@@ -36,9 +36,9 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
 
     setCurrentDelta({ x: deltaX, y: deltaY });
 
-    // Auto-snap: If scrolling for > 0.5s and threshold met, trigger immediately
-    const distanceThreshold = 60;
-    const autoSnapTime = 500;
+    // Auto-snap: Requires hard drag - higher threshold for intentional navigation
+    const distanceThreshold = 150;
+    const autoSnapTime = 400;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     if (deltaTime > autoSnapTime && distance > distanceThreshold) {
@@ -75,13 +75,13 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
     setCurrentDelta({ x: 0, y: 0 });
     setIsPeeking(false);
 
-    // Threshold for swipe detection - Quicker activation
-    const distanceThreshold = 60;
+    // Threshold for swipe detection - Requires hard/deliberate drag
+    const distanceThreshold = 150;
     const minSwipeTime = 50;
 
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const velocity = distance / deltaTime;
-    const minVelocity = 0.3;
+    const minVelocity = 0.5;
 
     // Trigger navigation if swipe meets criteria
     if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {
