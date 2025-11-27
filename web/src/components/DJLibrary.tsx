@@ -34,7 +34,7 @@ interface DJLibraryProps {
 }
 
 export const DJLibrary: React.FC<DJLibraryProps> = ({
-  tracks,
+  tracks = [],
   onAddTrack,
   onUpdateTrack,
   onDeleteTrack,
@@ -50,9 +50,11 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const [listHeight, setListHeight] = useState(0);
 
-  const genres = ['all', ...new Set(tracks.map(t => t.genre))];
+  // Ensure tracks is always an array to prevent react-window crash
+  const safeTracks = Array.isArray(tracks) ? tracks : [];
+  const genres = ['all', ...new Set(safeTracks.map(t => t.genre))];
 
-  const filteredTracks = tracks.filter(track => {
+  const filteredTracks = safeTracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       track.artist.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGenre = selectedGenre === 'all' || track.genre === selectedGenre;
@@ -162,16 +164,16 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
             <p className="text-gray-400 text-xs">Total Songs</p>
-            <p className="text-xl font-bold text-white">{tracks.length}</p>
+            <p className="text-xl font-bold text-white">{safeTracks.length}</p>
           </div>
           <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
             <p className="text-gray-400 text-xs">Enabled</p>
-            <p className="text-xl font-bold text-green-400">{tracks.filter(t => t.isEnabled).length}</p>
+            <p className="text-xl font-bold text-green-400">{safeTracks.filter(t => t.isEnabled).length}</p>
           </div>
           <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
             <p className="text-gray-400 text-xs">Avg Price</p>
             <p className="text-xl font-bold text-yellow-400">
-              R{(tracks.reduce((sum, t) => sum + t.basePrice, 0) / tracks.length || 0).toFixed(0)}
+              R{(safeTracks.reduce((sum, t) => sum + t.basePrice, 0) / (safeTracks.length || 1)).toFixed(0)}
             </p>
           </div>
         </div>
@@ -318,7 +320,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
                   // Show success notification
                   console.log(`✅ Added: ${track.title} by ${track.artist}`);
                 }}
-                existingTrackIds={new Set(tracks.map(t => t.title + t.artist))}
+                existingTrackIds={new Set(safeTracks.map(t => t.title + t.artist))}
               />
             </div>
 
