@@ -5,8 +5,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Music, Copy, Save, Search, Check, X, Sparkles, Calendar } from 'lucide-react';
-import { List } from 'react-window';
+import { Music, Copy, Save, Search, Check, X, Sparkles } from 'lucide-react';
 
 interface Track {
   id: string;
@@ -38,12 +37,13 @@ interface EventPlaylistManagerProps {
 }
 
 const PRESET_PLAYLISTS = [
-  { name: 'Corporate Holiday', emoji: '🎄', genres: ['Pop', 'Jazz', 'R&B'], description: 'Family-friendly festive vibes' },
-  { name: 'Club Night', emoji: '🔥', genres: ['Hip Hop', 'Electronic', 'R&B'], description: 'High energy dance music' },
-  { name: 'Wedding Reception', emoji: '💒', genres: ['Pop', 'R&B', 'Country', 'Rock'], description: 'Crowd pleasers for all ages' },
-  { name: 'Lounge Bar', emoji: '🍸', genres: ['Jazz', 'R&B', 'Pop'], description: 'Smooth background music' },
-  { name: 'College Party', emoji: '🎓', genres: ['Hip Hop', 'Electronic', 'Pop'], description: 'Current hits and throwbacks' },
-  { name: 'Latin Night', emoji: '💃', genres: ['Latin', 'Reggaeton', 'Salsa'], description: 'Reggaeton, salsa, bachata' },
+  { name: 'Corporate Holiday', emoji: '🎄', genres: ['pop', 'jazz', 'r&b', 'soul', 'christmas', 'holiday'], description: 'Family-friendly festive vibes' },
+  { name: 'Club Night', emoji: '🔥', genres: ['hip hop', 'hip-hop', 'electronic', 'edm', 'house', 'techno', 'dance', 'trap', 'dubstep', 'r&b'], description: 'High energy dance music' },
+  { name: 'Wedding Reception', emoji: '💒', genres: ['pop', 'r&b', 'soul', 'country', 'rock', 'love', 'ballad', 'adult contemporary'], description: 'Crowd pleasers for all ages' },
+  { name: 'Lounge Bar', emoji: '🍸', genres: ['jazz', 'r&b', 'soul', 'pop', 'chill', 'lounge', 'bossa nova', 'smooth jazz'], description: 'Smooth background music' },
+  { name: 'College Party', emoji: '🎓', genres: ['hip hop', 'hip-hop', 'electronic', 'pop', 'trap', 'rap', 'dance', 'party'], description: 'Current hits and throwbacks' },
+  { name: 'Latin Night', emoji: '💃', genres: ['latin', 'reggaeton', 'salsa', 'bachata', 'merengue', 'cumbia', 'latin pop', 'urbano'], description: 'Reggaeton, salsa, bachata' },
+  { name: 'All Songs', emoji: '🎵', genres: [], description: 'Enable your entire library', isAllSongs: true },
 ];
 
 export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
@@ -76,36 +76,30 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
     });
   }, [masterLibrary, searchQuery, selectedGenres]);
 
-  const normalizeGenre = (genre: string): string => {
-    const normalized = genre.toLowerCase().trim();
-    const genreMap: Record<string, string> = {
-      'hip-hop': 'hip hop',
-      'hip-hop/rap': 'hip hop',
-      'r&b': 'r&b',
-      'r&b/soul': 'r&b',
-      'rhythm & blues': 'r&b',
-      'dance': 'electronic',
-      'edm': 'electronic',
-      'house': 'electronic',
-      'techno': 'electronic',
-      'latin pop': 'latin',
-      'latin urban': 'reggaeton',
-      'urbano latino': 'reggaeton',
-      'tropical': 'salsa',
-      'bachata': 'salsa',
-    };
-    return genreMap[normalized] || normalized;
-  };
-
   const genreMatches = (trackGenre: string, presetGenres: string[]): boolean => {
-    const normalizedTrackGenre = normalizeGenre(trackGenre);
-    return presetGenres.some(pg => normalizeGenre(pg) === normalizedTrackGenre);
+    if (!trackGenre || presetGenres.length === 0) return presetGenres.length === 0;
+    
+    const normalizedTrackGenre = trackGenre.toLowerCase().trim();
+    
+    return presetGenres.some(presetGenre => {
+      const normalizedPreset = presetGenre.toLowerCase().trim();
+      return normalizedTrackGenre.includes(normalizedPreset) || 
+             normalizedPreset.includes(normalizedTrackGenre) ||
+             normalizedTrackGenre === normalizedPreset;
+    });
   };
 
   // Quick select by preset
-  const handleQuickSelect = (preset: typeof PRESET_PLAYLISTS[0]) => {
-    const tracksInGenres = masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
+  const handleQuickSelect = (preset: typeof PRESET_PLAYLISTS[0] & { isAllSongs?: boolean }) => {
+    const tracksInGenres = preset.isAllSongs 
+      ? masterLibrary 
+      : masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
     const trackIds = tracksInGenres.map(t => t.id);
+    
+    if (trackIds.length === 0) {
+      alert(`No songs match this preset. Try importing more songs to your library or use "All Songs".`);
+      return;
+    }
     
     if (confirm(`Apply "${preset.name}" playlist?\n\n${tracksInGenres.length} songs will be available for this event.`)) {
       onApplyPlaylist(trackIds, {
@@ -231,7 +225,7 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
               </h2>
               {currentEventName && (
                 <p className="text-gray-400 text-sm mt-1 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                  <Music className="w-4 h-4" />
                   {currentEventName}
                 </p>
               )}
@@ -274,45 +268,82 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
           {view === 'quick' ? (
             // Quick Presets View
             <div className="p-4 sm:p-6">
-              <p className="text-gray-400 text-sm mb-4">
-                Select a preset playlist based on your event type. Instantly curate your tracklist!
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PRESET_PLAYLISTS.map((preset) => {
-                  const matchingTracks = masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
+              {masterLibrary.length === 0 ? (
+                <div className="text-center py-8">
+                  <Music className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">No Songs in Library</h3>
+                  <p className="text-gray-400 mb-4">
+                    Import songs from Spotify first to use playlist presets.
+                  </p>
+                  <button
+                    onClick={onClose}
+                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium"
+                  >
+                    Go to Library
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Select a preset playlist based on your event type. Your library has {masterLibrary.length} songs.
+                  </p>
                   
-                  return (
-                    <button
-                      key={preset.name}
-                      onClick={() => handleQuickSelect(preset)}
-                      className="text-left p-4 sm:p-6 bg-gradient-to-br from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 rounded-xl border border-purple-500/30 hover:border-purple-500/50 transition-all group"
-                    >
-                      <div className="text-4xl sm:text-5xl mb-3">{preset.emoji}</div>
-                      <h3 className="text-lg sm:text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
-                        {preset.name}
-                      </h3>
-                      <p className="text-gray-400 text-xs sm:text-sm mb-3">{preset.description}</p>
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
-                        {preset.genres.map(genre => (
-                          <span
-                            key={genre}
-                            className="text-xs px-2 py-1 bg-purple-500/30 text-purple-200 rounded-full"
-                          >
-                            {genre}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Music className="w-4 h-4 text-green-400" />
-                        <span className="text-green-400 font-semibold">
-                          {matchingTracks.length} songs available
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {PRESET_PLAYLISTS.map((preset) => {
+                      const isAllSongs = 'isAllSongs' in preset && preset.isAllSongs;
+                      const matchingTracks = isAllSongs 
+                        ? masterLibrary 
+                        : masterLibrary.filter(t => genreMatches(t.genre, preset.genres));
+                      const hasMatches = matchingTracks.length > 0;
+                      
+                      return (
+                        <button
+                          key={preset.name}
+                          onClick={() => handleQuickSelect(preset as any)}
+                          className={`text-left p-4 sm:p-6 rounded-xl border transition-all group ${
+                            isAllSongs 
+                              ? 'bg-gradient-to-br from-green-600/20 to-emerald-600/20 hover:from-green-600/30 hover:to-emerald-600/30 border-green-500/30 hover:border-green-500/50'
+                              : hasMatches
+                                ? 'bg-gradient-to-br from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border-purple-500/30 hover:border-purple-500/50'
+                                : 'bg-gray-800/50 border-gray-700/50 opacity-60'
+                          }`}
+                        >
+                          <div className="text-4xl sm:text-5xl mb-3">{preset.emoji}</div>
+                          <h3 className={`text-lg sm:text-xl font-bold mb-2 transition-colors ${
+                            isAllSongs ? 'text-white group-hover:text-green-300' : 'text-white group-hover:text-purple-300'
+                          }`}>
+                            {preset.name}
+                          </h3>
+                          <p className="text-gray-400 text-xs sm:text-sm mb-3">{preset.description}</p>
+                          {!isAllSongs && preset.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+                              {preset.genres.slice(0, 3).map(genre => (
+                                <span
+                                  key={genre}
+                                  className="text-xs px-2 py-1 bg-purple-500/30 text-purple-200 rounded-full capitalize"
+                                >
+                                  {genre}
+                                </span>
+                              ))}
+                              {preset.genres.length > 3 && (
+                                <span className="text-xs px-2 py-1 bg-purple-500/30 text-purple-200 rounded-full">
+                                  +{preset.genres.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Music className={`w-4 h-4 ${hasMatches ? 'text-green-400' : 'text-gray-500'}`} />
+                            <span className={`font-semibold ${hasMatches ? 'text-green-400' : 'text-gray-500'}`}>
+                              {matchingTracks.length} songs available
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               {/* Saved Playlists */}
               {savedPlaylists.length > 0 && (
@@ -405,56 +436,46 @@ export const EventPlaylistManager: React.FC<EventPlaylistManagerProps> = ({
                 </div>
               </div>
 
-              {/* Track List - Phase 8: Virtual scrolling for performance */}
-              <div className="h-96 overflow-hidden">
+              {/* Track List */}
+              <div className="h-96 overflow-y-auto">
                 {filteredTracks.length > 0 ? (
-                  <List
-                    height={384} // 96 * 4 = 384px (max-h-96)
-                    itemCount={filteredTracks.length}
-                    itemSize={76} // Approximate height of each track item
-                    width="100%"
-                    itemData={{ tracks: filteredTracks, selectedTracks, toggleTrack }}
-                  >
-                    {/* @ts-expect-error - react-window v2 children render function type mismatch */}
-                    {({ data, index, style }: { data: any; index: number; style: React.CSSProperties }) => {
-                      const track = data.tracks[index];
-                      const isSelected = data.selectedTracks.has(track.id);
-                      
+                  <div className="space-y-2">
+                    {filteredTracks.map((track) => {
+                      const isSelected = selectedTracks.has(track.id);
                       return (
-                        <div style={style} className="pb-2">
-                          <button
-                            onClick={() => data.toggleTrack(track.id)}
-                            className={`w-full p-3 rounded-lg border transition-all text-left ${
+                        <button
+                          key={track.id}
+                          onClick={() => toggleTrack(track.id)}
+                          className={`w-full p-3 rounded-lg border transition-all text-left ${
+                            isSelected
+                              ? 'bg-purple-600/30 border-purple-500'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                               isSelected
-                                ? 'bg-purple-600/30 border-purple-500'
-                                : 'bg-white/5 border-white/10 hover:bg-white/10'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                                isSelected
-                                  ? 'bg-purple-600 border-purple-600'
-                                  : 'border-gray-400'
-                              }`}>
-                                {isSelected && (
-                                  <Check className="w-4 h-4 text-white" />
-                                )}
-                              </div>
-                              
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-white font-medium truncate">{track.title}</h4>
-                                <p className="text-gray-400 text-sm truncate">{track.artist}</p>
-                              </div>
-                              
-                              <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full flex-shrink-0">
-                                {track.genre}
-                              </span>
+                                ? 'bg-purple-600 border-purple-600'
+                                : 'border-gray-400'
+                            }`}>
+                              {isSelected && (
+                                <Check className="w-4 h-4 text-white" />
+                              )}
                             </div>
-                          </button>
-                        </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-white font-medium truncate">{track.title}</h4>
+                              <p className="text-gray-400 text-sm truncate">{track.artist}</p>
+                            </div>
+                            
+                            <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full flex-shrink-0">
+                              {track.genre}
+                            </span>
+                          </div>
+                        </button>
                       );
-                    }}
-                  </List>
+                    })}
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400">
                     <Music className="w-12 h-12 mx-auto mb-2 opacity-50" />

@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Music, Search, Filter, X, Upload, Globe, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight } from 'lucide-react';
-import { List } from 'react-window';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import styles from './DJLibrary.module.css';
 import { SpotifySearch } from './SpotifySearch';
@@ -27,6 +26,7 @@ interface Track {
 interface DJLibraryProps {
   tracks: Track[];
   onAddTrack: (track: Omit<Track, 'id'>) => void;
+  onBatchAddTracks?: (tracks: Omit<Track, 'id'>[]) => void;
   onUpdateTrack: (id: string, updates: Partial<Track>) => void;
   onDeleteTrack: (id: string) => void;
   onToggleTrack: (id: string) => void;
@@ -36,6 +36,7 @@ interface DJLibraryProps {
 export const DJLibrary: React.FC<DJLibraryProps> = ({
   tracks = [],
   onAddTrack,
+  onBatchAddTracks,
   onUpdateTrack,
   onDeleteTrack,
   onToggleTrack,
@@ -54,7 +55,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   const safeTracks = Array.isArray(tracks) ? tracks : [];
   const genres = ['all', ...new Set(safeTracks.map(t => t.genre))];
 
-  const filteredTracks = safeTracks.filter(track => {
+  const safeFilteredTracks: Track[] = safeTracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       track.artist.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGenre = selectedGenre === 'all' || track.genre === selectedGenre;
@@ -191,33 +192,19 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
           </div>
         )}
 
-        <div className="h-full p-6">
-          {filteredTracks.length > 0 ? (
-            <div className="h-full">
-              <List
-                height={computedListHeight}
-                itemCount={filteredTracks.length}
-                itemSize={100}
-                width="100%"
-                itemData={filteredTracks}
-              >
-                {/* @ts-expect-error - react-window v2 children render function type mismatch */}
-                {({ data, index, style }: { data: Track[]; index: number; style: React.CSSProperties }) => {
-                  const track = data[index];
-                  if (!track) return null;
-                  return (
-                    <div style={style} className="pr-3 pb-3">
-                      <TrackCard
-                        track={track}
-                        onEdit={() => setEditingTrack(track)}
-                        onDelete={() => onDeleteTrack(track.id)}
-                        onToggle={() => onToggleTrack(track.id)}
-                        onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
-                      />
-                    </div>
-                  );
-                }}
-              </List>
+        <div className="h-full p-6 overflow-y-auto">
+          {safeFilteredTracks.length > 0 ? (
+            <div className="space-y-3">
+              {safeFilteredTracks.map((track) => (
+                <TrackCard
+                  key={track.id}
+                  track={track}
+                  onEdit={() => setEditingTrack(track)}
+                  onDelete={() => onDeleteTrack(track.id)}
+                  onToggle={() => onToggleTrack(track.id)}
+                  onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
+                />
+              ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-gray-400">
@@ -278,20 +265,24 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
               {/* Playlist Import Section */}
               <SpotifyPlaylistImport
-                onImportTracks={(tracks) => {
-                  // Add all tracks from playlist
-                  tracks.forEach(track => {
-                    onAddTrack({
-                      title: track.title,
-                      artist: track.artist,
-                      genre: track.genre || 'Pop',
-                      basePrice: 20,
-                      isEnabled: true,
-                      albumArt: track.albumArt,
-                      duration: track.duration,
-                    });
-                  });
-                  console.log(`✅ Imported ${tracks.length} tracks from playlist`);
+                onImportTracks={(importedTracks) => {
+                  const tracksToAdd = importedTracks.map(track => ({
+                    title: track.title,
+                    artist: track.artist,
+                    genre: track.genre || 'Pop',
+                    basePrice: 20,
+                    isEnabled: true,
+                    albumArt: track.albumArt,
+                    duration: track.duration,
+                  }));
+                  
+                  if (onBatchAddTracks) {
+                    onBatchAddTracks(tracksToAdd);
+                  } else {
+                    tracksToAdd.forEach(track => onAddTrack(track));
+                  }
+                  console.log(`✅ Imported ${importedTracks.length} tracks from playlist`);
+                  setShowSongSearch(false);
                 }}
               />
 
@@ -517,16 +508,20 @@ const AddTrackModal: React.FC<AddTrackModalProps> = ({ onClose, onAdd }) => {
             <select
               value={formData.genre}
               onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              className="w-full px-4 py-3 bg-gray-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
             >
-              <option value="Pop">Pop</option>
-              <option value="Rock">Rock</option>
-              <option value="Hip Hop">Hip Hop</option>
-              <option value="R&B">R&B</option>
-              <option value="Electronic">Electronic</option>
-              <option value="Country">Country</option>
-              <option value="Jazz">Jazz</option>
-              <option value="Other">Other</option>
+              <option value="Pop" className="bg-gray-800 text-white">Pop</option>
+              <option value="Rock" className="bg-gray-800 text-white">Rock</option>
+              <option value="Hip Hop" className="bg-gray-800 text-white">Hip Hop</option>
+              <option value="R&B" className="bg-gray-800 text-white">R&B</option>
+              <option value="Electronic" className="bg-gray-800 text-white">Electronic</option>
+              <option value="Country" className="bg-gray-800 text-white">Country</option>
+              <option value="Jazz" className="bg-gray-800 text-white">Jazz</option>
+              <option value="Latin" className="bg-gray-800 text-white">Latin</option>
+              <option value="Amapiano" className="bg-gray-800 text-white">Amapiano</option>
+              <option value="Afrobeats" className="bg-gray-800 text-white">Afrobeats</option>
+              <option value="House" className="bg-gray-800 text-white">House</option>
+              <option value="Other" className="bg-gray-800 text-white">Other</option>
             </select>
           </div>
 
@@ -616,16 +611,20 @@ const EditTrackModal: React.FC<EditTrackModalProps> = ({ track, onClose, onSave 
             <select
               value={formData.genre}
               onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              className="w-full px-4 py-3 bg-gray-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
             >
-              <option value="Pop">Pop</option>
-              <option value="Rock">Rock</option>
-              <option value="Hip Hop">Hip Hop</option>
-              <option value="R&B">R&B</option>
-              <option value="Electronic">Electronic</option>
-              <option value="Country">Country</option>
-              <option value="Jazz">Jazz</option>
-              <option value="Other">Other</option>
+              <option value="Pop" className="bg-gray-800 text-white">Pop</option>
+              <option value="Rock" className="bg-gray-800 text-white">Rock</option>
+              <option value="Hip Hop" className="bg-gray-800 text-white">Hip Hop</option>
+              <option value="R&B" className="bg-gray-800 text-white">R&B</option>
+              <option value="Electronic" className="bg-gray-800 text-white">Electronic</option>
+              <option value="Country" className="bg-gray-800 text-white">Country</option>
+              <option value="Jazz" className="bg-gray-800 text-white">Jazz</option>
+              <option value="Latin" className="bg-gray-800 text-white">Latin</option>
+              <option value="Amapiano" className="bg-gray-800 text-white">Amapiano</option>
+              <option value="Afrobeats" className="bg-gray-800 text-white">Afrobeats</option>
+              <option value="House" className="bg-gray-800 text-white">House</option>
+              <option value="Other" className="bg-gray-800 text-white">Other</option>
             </select>
           </div>
 

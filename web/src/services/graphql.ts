@@ -165,10 +165,10 @@ export const getPerformerTracklist = /* GraphQL */ `
         title
         artist
         genre
+        basePrice
         duration
         albumArt
       }
-      lastUpdated
     }
   }
 `;
@@ -342,7 +342,6 @@ export const uploadTracklist = /* GraphQL */ `
     uploadTracklist(performerId: $performerId, songs: $songs) {
       success
       songsAdded
-      message
     }
   }
 `;

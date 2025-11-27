@@ -26,7 +26,7 @@ import { HapticFeedback } from '../utils/haptics';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
 import { showUndoToast } from '../components/UndoToast';
-import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist, fetchPerformerTracklist } from '../services/graphql';
+import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist } from '../services/graphql';
 import { updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
@@ -283,32 +283,23 @@ export const DJPortalOrbital: React.FC = () => {
 
   const totalRevenue = queueRequests.reduce((sum: number) => sum + 20, 0);
 
-  // Load tracks from backend (from tracklist) and apply saved playlist
+  // Mark tracks as loaded (library is managed locally since getPerformerTracklist doesn't exist)
   useEffect(() => {
-    const loadTracksAndPlaylist = async () => {
-      if (!currentSetId || !user?.userId) return;
+    if (!tracksLoaded && user?.userId) {
+      console.log('📚 DJ library ready (local state)');
+      setTracksLoaded(true);
+    }
+  }, [user?.userId, tracksLoaded]);
+
+  // Apply saved playlist when set changes
+  useEffect(() => {
+    const applySetPlaylist = async () => {
+      if (!currentSetId || tracks.length === 0) return;
 
       try {
         const client = generateClient({
           authMode: 'userPool'
         });
-
-        // 1. Load tracklist first (this contains the actual track data)
-        if (tracklist.length > 0 && !tracksLoaded) {
-          console.log(`📚 Loading ${tracklist.length} tracks from tracklist`);
-          const initialTracks = tracklist.map((t, i) => ({
-            id: `track-${i}`,
-            title: t.title,
-            artist: t.artist,
-            genre: t.genre,
-            basePrice: t.basePrice,
-            isEnabled: true,
-            duration: t.duration ? parseInt(t.duration) : undefined,
-            albumArt: t.albumArt,
-          }));
-          setTracks(initialTracks);
-          setTracksLoaded(true);
-        }
 
         // 2. Load saved playlist settings
         const response: any = await client.graphql({
@@ -361,12 +352,12 @@ export const DJPortalOrbital: React.FC = () => {
           console.log('ℹ️ No saved playlist for this set');
         }
       } catch (error) {
-        console.error('❌ Failed to load tracks/playlist:', error);
+        console.error('❌ Failed to apply set playlist:', error);
       }
     };
 
-    loadTracksAndPlaylist();
-  }, [currentSetId, tracklist, tracksLoaded, user?.userId]); // Run when set or tracklist changes
+    applySetPlaylist();
+  }, [currentSetId, tracks.length, addNotification]);
 
   // Gesture Navigation
   const handleSwipeUp = () => setCurrentView('queue');
@@ -376,80 +367,53 @@ export const DJPortalOrbital: React.FC = () => {
 
   // Track Management with Backend Sync
   const syncTracksToBackend = async (updatedTracks: Track[]) => {
-    if (!user?.userId || !currentEventId) {
-      console.warn('⚠️ Cannot sync tracks: missing userId or eventId');
-      throw new Error('Missing userId or eventId');
+    if (!user?.userId) {
+      console.warn('⚠️ Cannot sync tracks: missing userId');
+      throw new Error('Missing userId');
     }
 
-    // CRITICAL FIX: Wrapped in try-catch for error handling
     try {
       setIsSyncingTracks(true);
       console.log('💾 Syncing tracks to backend...');
+      
+      // Only send fields that match the SongInput GraphQL type
       const songs = updatedTracks.map(t => ({
         title: t.title,
         artist: t.artist,
-        genre: t.genre,
-        basePrice: t.basePrice,
-        isEnabled: t.isEnabled,
-        albumArt: t.albumArt,
-        duration: t.duration
+        genre: t.genre || 'Various',
+        basePrice: t.basePrice || 20,
+        albumArt: t.albumArt || undefined,
+        duration: t.duration || undefined
       }));
 
       // Step 1: Upload tracks to DJ's library
+      console.log('📤 Uploading songs:', songs.length);
       const uploadResult = await submitUploadTracklist(user.userId, songs);
       console.log('✅ Tracks uploaded to library:', uploadResult);
 
-      // Step 2: Fetch the REAL tracklist from backend to get the generated IDs
-      // This is crucial because uploadTracklist doesn't return the new IDs
-      const performerTracklist = await fetchPerformerTracklist(user.userId);
-
-      if (!performerTracklist || !performerTracklist.songs) {
-        throw new Error('Failed to retrieve updated tracklist from backend');
-      }
-
-      // Step 3: Merge real IDs with local enabled state
-      // We match by title+artist to preserve the isEnabled status the user just set
-      const realTracks = performerTracklist.songs.map((s: any) => {
-        const localTrack = updatedTracks.find(
-          t => t.title.toLowerCase() === s.title.toLowerCase() &&
-            t.artist.toLowerCase() === s.artist.toLowerCase()
-        );
-        return {
-          ...s,
-          // Default to true if not found (shouldn't happen for just-added tracks)
-          isEnabled: localTrack ? localTrack.isEnabled : true,
-          basePrice: localTrack ? localTrack.basePrice : s.basePrice
-        };
-      });
-
-      // Update local state with the REAL IDs immediately
-      setTracks(realTracks);
-
-      // Step 4: Link tracks to the current event using REAL IDs
-      // Only link enabled tracks
-      const songIds = realTracks
-        .filter((t: any) => t.isEnabled)
-        .map((t: any) => t.id);
-
-      const linkResult = await submitSetEventTracklist(currentEventId, songIds);
-      console.log('✅ Tracks linked to event:', linkResult);
-
-      // Step 5: Reset tracksLoaded flag
+      // Step 2: Keep local tracks (getPerformerTracklist query doesn't exist in backend)
+      // The tracks are stored in the backend but we use local state for display
       setTracksLoaded(true);
 
       addNotification({
         type: 'info',
-        title: '✅ Tracklist Synced',
-        message: `${songIds.length} songs active for this event`,
+        title: '✅ Library Updated',
+        message: `${updatedTracks.length} songs in your library`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to sync tracks:', error);
+      
+      // Log detailed GraphQL errors
+      if (error?.errors) {
+        console.error('GraphQL errors:', JSON.stringify(error.errors, null, 2));
+      }
+      
+      const errorMessage = error?.errors?.[0]?.message || error?.message || 'Unknown error';
       addNotification({
         type: 'error',
         title: '❌ Sync Failed',
-        message: 'Could not sync tracks to backend. Changes have been rolled back.',
+        message: `Could not sync tracks: ${errorMessage}`,
       });
-      // Rethrow error so calling functions can handle rollback
       throw error;
     } finally {
       setIsSyncingTracks(false);
@@ -457,16 +421,13 @@ export const DJPortalOrbital: React.FC = () => {
   };
 
   const handleAddTrack = async (track: Omit<Track, 'id'>) => {
-    // CRITICAL FIX: Capture state snapshot before optimistic update
     const previousTracks = [...tracks];
 
     try {
-      // Optimistic update
       const newTrack = { ...track, id: `track-${Date.now()}` };
       const updatedTracks = [...tracks, newTrack];
       setTracks(updatedTracks);
 
-      // Sync to backend (will throw on failure)
       await syncTracksToBackend(updatedTracks);
 
       addNotification({
@@ -475,13 +436,43 @@ export const DJPortalOrbital: React.FC = () => {
         message: `${track.title} by ${track.artist}`,
       });
     } catch (error) {
-      // ROLLBACK: Restore previous state
       console.error('❌ Track add failed, rolling back:', error);
       setTracks(previousTracks);
       addNotification({
         type: 'error',
         title: '❌ Failed to Add Track',
         message: `Could not add ${track.title}. Please try again.`,
+      });
+    }
+  };
+
+  const handleBatchAddTracks = async (newTracks: Omit<Track, 'id'>[]) => {
+    if (newTracks.length === 0) return;
+    
+    const previousTracks = [...tracks];
+
+    try {
+      const tracksWithIds = newTracks.map((track, i) => ({
+        ...track,
+        id: `track-${Date.now()}-${i}`
+      }));
+      const updatedTracks = [...tracks, ...tracksWithIds];
+      setTracks(updatedTracks);
+
+      await syncTracksToBackend(updatedTracks);
+
+      addNotification({
+        type: 'info',
+        title: '✅ Tracks Imported',
+        message: `${newTracks.length} tracks added to your library`,
+      });
+    } catch (error) {
+      console.error('❌ Batch add failed, rolling back:', error);
+      setTracks(previousTracks);
+      addNotification({
+        type: 'error',
+        title: '❌ Import Failed',
+        message: 'Could not import tracks. Please try again.',
       });
     }
   };
@@ -1504,6 +1495,7 @@ export const DJPortalOrbital: React.FC = () => {
                     tracks={tracks}
                     isLoading={isSyncingTracks}
                     onAddTrack={handleAddTrack}
+                    onBatchAddTracks={handleBatchAddTracks}
                     onUpdateTrack={handleUpdateTrack}
                     onDeleteTrack={handleDeleteTrack}
                     onToggleTrack={handleToggleTrack}
