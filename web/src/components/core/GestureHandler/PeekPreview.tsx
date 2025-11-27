@@ -47,9 +47,7 @@ export const PeekPreview: React.FC<PeekPreviewProps> = ({ peekPreview }) => {
       <div
         className="h-full w-full relative overflow-hidden"
         style={{
-          background: 'rgba(15, 23, 42, 0.8)', // Dark slate/black
-          backdropFilter: 'blur(24px)', // Heavy blur for depth
-          boxShadow: 'inset 0 0 100px rgba(0, 0, 0, 0.5)', // Inner shadow for vignette
+          background: '#0f172a', // Solid Dark Slate (Single Color)
           transform: direction === 'left' || direction === 'right'
             ? `translateX(${direction === 'left' ? -10 : 10}%)` // Subtle parallax shift
             : `translateY(${direction === 'up' ? -10 : 10}%)`,

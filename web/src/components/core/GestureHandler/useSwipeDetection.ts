@@ -31,7 +31,6 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
     const deltaX = currentTouch.x - touchStart.x;
     const deltaY = currentTouch.y - touchStart.y;
 
-
     setCurrentDelta({ x: deltaX, y: deltaY });
   };
 
@@ -48,19 +47,17 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
     const deltaY = touchEnd.y - touchStart.y;
     const deltaTime = touchEnd.time - touchStart.time;
 
-
     // Reset peek animation
     setCurrentDelta({ x: 0, y: 0 });
     setIsPeeking(false);
 
-    // Threshold for swipe detection
-    const distanceThreshold = 100;
-    const minSwipeTime = 200;
+    // Threshold for swipe detection - Quicker activation
+    const distanceThreshold = 60;
+    const minSwipeTime = 50;
 
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const velocity = distance / deltaTime;
     const minVelocity = 0.3;
-
 
     // Trigger navigation if swipe meets criteria
     if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {

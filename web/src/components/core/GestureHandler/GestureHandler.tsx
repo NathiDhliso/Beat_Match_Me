@@ -33,7 +33,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
 
     const absX = Math.abs(currentDelta.x);
     const absY = Math.abs(currentDelta.y);
-    const maxDrag = 150; // Maximum pixels user can drag
+    const maxDrag = 80; // Maximum pixels user can drag - Reduced for "slight" peek
 
     // Apply resistance - the further you drag, the harder it gets
     const applyResistance = (value: number) => {
