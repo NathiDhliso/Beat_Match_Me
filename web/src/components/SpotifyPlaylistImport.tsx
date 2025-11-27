@@ -73,14 +73,14 @@ export const SpotifyPlaylistImport: React.FC<SpotifyPlaylistImportProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-gray-700">
+    <div className="bg-white dark:bg-gradient-to-br dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-none">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center flex-shrink-0">
           <Download className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-white mb-1">Import Spotify Playlist</h3>
-          <p className="text-gray-400 text-sm">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Import Spotify Playlist</h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             Paste a Spotify playlist URL to import all tracks at once
           </p>
         </div>
@@ -95,7 +95,7 @@ export const SpotifyPlaylistImport: React.FC<SpotifyPlaylistImportProps> = ({
             value={playlistUrl}
             onChange={(e) => setPlaylistUrl(e.target.value)}
             placeholder="https://open.spotify.com/playlist/..."
-            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
             disabled={isImporting}
           />
         </div>
@@ -103,18 +103,18 @@ export const SpotifyPlaylistImport: React.FC<SpotifyPlaylistImportProps> = ({
         {/* Error Message */}
         {error && (
           <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/50 rounded-xl p-4">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <p className="text-red-400 text-sm">{error}</p>
+            <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {success !== null && (
           <div className="flex items-start gap-3 bg-green-500/10 border border-green-500/50 rounded-xl p-4 animate-scale-in">
-            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-green-400 font-semibold">✅ Successfully imported!</p>
-              <p className="text-green-300 text-sm mt-1">Added {success} tracks to your library</p>
+              <p className="text-green-600 dark:text-green-400 font-semibold">✅ Successfully imported!</p>
+              <p className="text-green-500 dark:text-green-300 text-sm mt-1">Added {success} tracks to your library</p>
             </div>
           </div>
         )}
@@ -123,7 +123,7 @@ export const SpotifyPlaylistImport: React.FC<SpotifyPlaylistImportProps> = ({
         <button
           type="submit"
           disabled={isImporting || !playlistUrl.trim()}
-          className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
         >
           {isImporting ? (
             <>
@@ -140,9 +140,9 @@ export const SpotifyPlaylistImport: React.FC<SpotifyPlaylistImportProps> = ({
       </form>
 
       {/* Help Text */}
-      <div className="mt-4 bg-gray-900/50 rounded-xl p-4 border border-gray-700">
-        <p className="text-gray-400 text-xs mb-2 font-semibold">How to import:</p>
-        <ol className="text-gray-500 text-xs space-y-1 list-decimal list-inside">
+      <div className="mt-4 bg-gray-100 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <p className="text-gray-700 dark:text-gray-400 text-xs mb-2 font-semibold">How to import:</p>
+        <ol className="text-gray-600 dark:text-gray-500 text-xs space-y-1 list-decimal list-inside">
           <li>Open Spotify and find a playlist</li>
           <li>Click Share → Copy link to playlist</li>
           <li>Paste the link above and click Import</li>
