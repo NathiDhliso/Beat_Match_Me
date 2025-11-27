@@ -1026,7 +1026,7 @@ export const DJPortalOrbital: React.FC = () => {
       }}
     >
       <div
-        className="absolute inset-0 h-dvh"
+        className="absolute inset-0 min-h-[100dvh] pb-[env(safe-area-inset-bottom)]"
         style={{
           background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
           position: 'absolute',

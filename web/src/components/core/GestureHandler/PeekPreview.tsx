@@ -7,31 +7,29 @@ interface PeekPreviewProps {
 
 /**
  * Preview layer that shows the next page sliding in during swipe
- * Simple, highly visible animation with smooth reload
+ * Premium animation with Parallax, Scale, and Blur effects
  */
 export const PeekPreview: React.FC<PeekPreviewProps> = ({ peekPreview }) => {
   const { direction, offset } = peekPreview;
   const absOffset = Math.abs(offset);
-  
-  // Calculate opacity - fade in as user swipes
-  const opacity = Math.min(absOffset / 100, 0.95);
-  
-  // Calculate transform based on swipe direction
-  // Preview now covers FULL screen and slides in from the appropriate edge
+
+  // Premium Animation Physics
+  // 1. Opacity: Smooth fade in
+  const opacity = Math.min(absOffset / 150, 1);
+
+  // 2. Scale: Content starts slightly smaller and scales up
+  // Maps 0-100 offset to 0.95-1.0 scale
+  const scale = 0.95 + (Math.min(absOffset, 100) / 100) * 0.05;
+
+  // 3. Parallax: Background moves slower than content
+  // We use this in the background transform below
+
   const getTransform = () => {
     switch (direction) {
-      case 'left':
-        // Slide in from right edge
-        return `translateX(${Math.max(0, 100 - absOffset)}%)`;
-      case 'right':
-        // Slide in from left edge
-        return `translateX(${Math.min(0, -100 + absOffset)}%)`;
-      case 'up':
-        // Slide in from bottom edge
-        return `translateY(${Math.max(0, 100 - absOffset)}%)`;
-      case 'down':
-        // Slide in from top edge
-        return `translateY(${Math.min(0, -100 + absOffset)}%)`;
+      case 'left': return `translateX(${Math.max(0, 100 - absOffset)}%)`;
+      case 'right': return `translateX(${Math.min(0, -100 + absOffset)}%)`;
+      case 'up': return `translateY(${Math.max(0, 100 - absOffset)}%)`;
+      case 'down': return `translateY(${Math.min(0, -100 + absOffset)}%)`;
     }
   };
 
@@ -45,32 +43,27 @@ export const PeekPreview: React.FC<PeekPreviewProps> = ({ peekPreview }) => {
         willChange: 'transform, opacity',
       }}
     >
-      {/* Vibrant animated background with pulsing effect */}
-      <div 
+      {/* Premium Glassmorphism Background */}
+      <div
         className="h-full w-full relative overflow-hidden"
         style={{
-          background: direction === 'left' 
-            ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.5) 100%)'
-            : direction === 'right'
-            ? 'linear-gradient(-90deg, rgba(236, 72, 153, 0.3) 0%, rgba(239, 68, 68, 0.5) 100%)'
-            : direction === 'up'
-            ? 'linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.5) 100%)'
-            : 'linear-gradient(-180deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.5) 100%)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: 'inset 0 0 100px rgba(255, 255, 255, 0.1)',
+          background: 'rgba(15, 23, 42, 0.8)', // Dark slate/black
+          backdropFilter: 'blur(24px)', // Heavy blur for depth
+          boxShadow: 'inset 0 0 100px rgba(0, 0, 0, 0.5)', // Inner shadow for vignette
+          transform: direction === 'left' || direction === 'right'
+            ? `translateX(${direction === 'left' ? -10 : 10}%)` // Subtle parallax shift
+            : `translateY(${direction === 'up' ? -10 : 10}%)`,
+          transition: 'transform 0.1s ease-out',
         }}
       >
-        {/* Animated ripple effect */}
-        <div 
-          className="absolute inset-0"
+        {/* Content Container with Scale Effect */}
+        <div
+          className="relative z-10 h-full w-full flex items-center justify-center"
           style={{
-            background: `radial-gradient(circle at center, rgba(255,255,255,${opacity * 0.2}) 0%, transparent 70%)`,
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            transform: `scale(${scale})`,
+            transition: 'transform 0.1s ease-out',
           }}
-        />
-        
-        {/* Content container */}
-        <div className="relative z-10 h-full w-full flex items-center justify-center">
+        >
           {peekPreview.content}
         </div>
       </div>
