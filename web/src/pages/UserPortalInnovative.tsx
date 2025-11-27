@@ -23,7 +23,7 @@ import { GestureHandler } from '../components/OrbitalInterface';
 import { QueueTracker } from '../components/QueueTracker';
 import { EmptyState } from '../components/EmptyState';
 import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
-import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon, AlertTriangle, Palette, Crown, Gem } from 'lucide-react';
+import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon, AlertTriangle } from 'lucide-react';
 import { createPaymentIntent, processYocoPayment, isRetryableError } from '../services/payment';
 import { submitRequestWithPaymentVerification, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';

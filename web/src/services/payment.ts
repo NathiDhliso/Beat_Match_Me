@@ -64,12 +64,12 @@ let yocoSDKLoading: Promise<void> | null = null;
 
 async function loadYocoSDK(): Promise<void> {
   if (yocoSDKInstance) return;
-  
+
   if (yocoSDKLoading) {
     await yocoSDKLoading;
     return;
   }
-  
+
   yocoSDKLoading = new Promise((resolve, reject) => {
     if (window.YocoSDK) {
       try {
@@ -77,16 +77,16 @@ async function loadYocoSDK(): Promise<void> {
           publicKey: YOCO_PUBLIC_KEY,
         });
         resolve();
-      } catch (error) {
+      } catch {
         reject(new Error('Failed to initialize Yoco SDK'));
       }
       return;
     }
-    
+
     const script = document.createElement('script');
     script.src = 'https://js.yoco.com/sdk/v1/yoco-sdk-web.js';
     script.async = true;
-    
+
     script.onload = () => {
       if (window.YocoSDK) {
         try {
@@ -94,26 +94,26 @@ async function loadYocoSDK(): Promise<void> {
             publicKey: YOCO_PUBLIC_KEY,
           });
           resolve();
-        } catch (error) {
+        } catch {
           reject(new Error('Failed to initialize Yoco SDK'));
         }
       } else {
         reject(new Error('Yoco SDK not available'));
       }
     };
-    
+
     script.onerror = () => reject(new Error('Failed to load Yoco SDK'));
     document.body.appendChild(script);
   });
-  
+
   await yocoSDKLoading;
 }
 
 export async function createPaymentIntent(data: PaymentIntentData): Promise<PaymentIntent> {
   console.log('💳 Creating payment intent:', data);
-  
+
   await loadYocoSDK();
-  
+
   const intent: PaymentIntent = {
     intentId: `pi_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`,
     amount: data.amount,
@@ -125,25 +125,25 @@ export async function createPaymentIntent(data: PaymentIntentData): Promise<Paym
       songTitle: data.songTitle,
     },
   };
-  
+
   return intent;
 }
 
 export async function processYocoPayment(intent: PaymentIntent): Promise<YocoPaymentResult> {
   console.log('⚡ Processing Yoco payment:', intent);
-  
+
   await loadYocoSDK();
-  
+
   if (!yocoSDKInstance) {
     throw new Error('Payment system not initialized. Please refresh and try again.');
   }
-  
+
   return new Promise((resolve, reject) => {
     yocoSDKInstance.showPopup({
       amountInCents: Math.round(intent.amount * 100),
       currency: intent.currency || 'ZAR',
       name: 'BeatMatchMe',
-      description: intent.metadata?.songTitle 
+      description: intent.metadata?.songTitle
         ? `Song Request: ${intent.metadata.songTitle}`
         : 'Song Request Payment',
       callback: (result: any) => {
@@ -152,7 +152,7 @@ export async function processYocoPayment(intent: PaymentIntent): Promise<YocoPay
           reject(new Error(result.error.message || 'Payment failed'));
           return;
         }
-        
+
         if (result.id) {
           console.log('✅ Yoco payment successful, charge ID:', result.id);
           resolve({
@@ -172,7 +172,7 @@ export async function processYocoPayment(intent: PaymentIntent): Promise<YocoPay
 
 export async function verifyPayment(chargeId: string): Promise<boolean> {
   console.log('🔍 Verifying payment:', chargeId);
-  
+
   try {
     const verifyQuery = `
       query VerifyPayment($chargeId: String!) {
@@ -183,12 +183,12 @@ export async function verifyPayment(chargeId: string): Promise<boolean> {
         }
       }
     `;
-    
+
     const response: any = await client.graphql({
       query: verifyQuery,
       variables: { chargeId }
     });
-    
+
     return response.data?.verifyPayment?.valid === true;
   } catch (error) {
     console.error('Payment verification error:', error);
@@ -198,7 +198,7 @@ export async function verifyPayment(chargeId: string): Promise<boolean> {
 
 export async function processRefund(data: RefundData): Promise<RefundResult> {
   console.log('💸 Processing refund:', data);
-  
+
   const refundMutation = `
     mutation ProcessRefund($requestId: ID!, $reason: String) {
       processRefund(requestId: $requestId, reason: $reason) {
@@ -211,7 +211,7 @@ export async function processRefund(data: RefundData): Promise<RefundResult> {
       }
     }
   `;
-  
+
   try {
     const response: any = await client.graphql({
       query: refundMutation,
@@ -220,15 +220,15 @@ export async function processRefund(data: RefundData): Promise<RefundResult> {
         reason: data.reason || 'Request cancelled',
       }
     });
-    
+
     const result = response.data?.processRefund;
-    
+
     if (!result) {
       throw new Error('Refund processing failed - no response from server');
     }
-    
+
     console.log('✅ Refund processed:', result);
-    
+
     return {
       refundId: result.refundId,
       amount: result.amount,
@@ -247,7 +247,7 @@ export async function processRefund(data: RefundData): Promise<RefundResult> {
  */
 export function isRetryableError(error: any): boolean {
   if (!error) return false;
-  
+
   const retryableMessages = [
     'network',
     'timeout',
@@ -258,7 +258,7 @@ export function isRetryableError(error: any): boolean {
     '503',
     '504',
   ];
-  
+
   const errorMessage = error.message?.toLowerCase() || '';
   return retryableMessages.some(msg => errorMessage.includes(msg.toLowerCase()));
 }
@@ -276,7 +276,7 @@ export async function verifyPaymentStatus(
   maxAttempts: number = 10
 ): Promise<'succeeded' | 'failed' | 'pending'> {
   console.log(`🔄 Starting payment verification polling for ${transactionId}`);
-  
+
   const getTransactionQuery = /* GraphQL */ `
     query GetTransaction($transactionId: ID!) {
       getTransaction(transactionId: $transactionId) {
@@ -291,27 +291,27 @@ export async function verifyPaymentStatus(
       }
     }
   `;
-  
+
   let attempt = 0;
   let delay = 1000; // Start with 1 second
-  
+
   while (attempt < maxAttempts) {
     attempt++;
-    
+
     try {
       console.log(`📡 Payment status poll attempt ${attempt}/${maxAttempts} (delay: ${delay}ms)`);
-      
+
       // Query Transactions table via AppSync
       const response: any = await client.graphql({
         query: getTransactionQuery,
         variables: { transactionId }
       });
-      
+
       const transaction = response.data?.getTransaction;
-      
+
       if (!transaction) {
         console.warn(`⚠️ Transaction ${transactionId} not found (attempt ${attempt})`);
-        
+
         // If transaction not found after 5 attempts, it likely doesn't exist
         if (attempt >= 5) {
           throw new Error('Transaction not found in database');
@@ -319,42 +319,42 @@ export async function verifyPaymentStatus(
       } else {
         const status = transaction.status;
         console.log(`📊 Transaction status: ${status} (attempt ${attempt})`);
-        
+
         // Terminal states - return immediately
         if (status === 'succeeded' || status === 'completed') {
           console.log(`✅ Payment verified as succeeded after ${attempt} attempts`);
           return 'succeeded';
         }
-        
+
         if (status === 'failed' || status === 'refunded') {
           console.error(`❌ Payment failed/refunded: ${transaction.failureReason || 'Unknown reason'}`);
           return 'failed';
         }
-        
+
         // Still processing
         console.log(`⏳ Payment still processing (status: ${status})`);
       }
-      
+
       // Wait before next attempt (exponential backoff: 1s → 2s → 4s → 8s → 16s → 30s cap)
       if (attempt < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, delay));
         delay = Math.min(delay * 2, 30000); // Cap at 30 seconds
       }
-      
+
     } catch (error) {
       console.error(`❌ Error polling payment status (attempt ${attempt}):`, error);
-      
+
       // If final attempt, rethrow error
       if (attempt >= maxAttempts) {
         throw new Error(`Payment verification failed after ${maxAttempts} attempts: ${error}`);
       }
-      
+
       // Wait before retry
       await new Promise(resolve => setTimeout(resolve, delay));
       delay = Math.min(delay * 2, 30000);
     }
   }
-  
+
   // Max attempts reached without terminal status
   console.error(`⏱️ Payment verification timed out after ${maxAttempts} attempts`);
   return 'pending'; // Return pending instead of throwing (graceful degradation)

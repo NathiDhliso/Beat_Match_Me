@@ -271,7 +271,7 @@ export const DJPortalOrbital: React.FC = () => {
   // Fetch real data
   const { event: currentEvent } = useEvent(currentEventId);
   const { queue: queueData } = useQueue(currentSetId);
-  const { tracklist, reload: reloadTracklist } = useTracklist(currentEventId);
+  const { tracklist } = useTracklist(currentEventId);
 
   // Transform data
   const queueRequests = queueData?.orderedRequests?.map((req: any, index: number) => ({

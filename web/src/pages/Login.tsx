@@ -109,13 +109,13 @@ export const Login: React.FC = () => {
         ></div>
       </div>
 
-      <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative z-10">
-        {/* Logo & Badge Only */}
-        <div className="text-center mb-6">
-          <div className={`inline-flex items-center justify-center w-20 h-20 ${themeClasses.gradientPrimary} rounded-full mb-3`}>
-            <Sparkles className="w-10 h-10 text-white" />
+      <div className="bg-gray-900/40 backdrop-blur-2xl rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/10 p-6 sm:p-7 w-full max-w-[420px] relative z-10">
+        {/* Compact Logo & Title */}
+        <div className="text-center mb-5">
+          <div className={`inline-flex items-center justify-center w-16 h-16 ${themeClasses.gradientPrimary} rounded-2xl mb-2 shadow-lg`}>
+            <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">BeatMatchMe</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">BeatMatchMe</h1>
         </div>
 
         {error && (
@@ -138,14 +138,14 @@ export const Login: React.FC = () => {
         )}
 
         {mode === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3">
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm"
                 style={{
                   '--tw-ring-color': currentTheme.primary,
                 } as React.CSSProperties}
@@ -156,12 +156,12 @@ export const Login: React.FC = () => {
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full pl-11 pr-11 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm"
                 style={{
                   '--tw-ring-color': currentTheme.primary,
                 } as React.CSSProperties}
@@ -172,21 +172,21 @@ export const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 tabIndex={-1}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full ${themeClasses.gradientPrimary} text-white font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 text-lg mt-2 flex items-center justify-center gap-2`}
+              className={`w-full ${themeClasses.gradientPrimary} text-white font-semibold py-3 rounded-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:hover:scale-100 shadow-lg flex items-center justify-center gap-2 mt-1`}
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Signing in...
                 </>
               ) : (

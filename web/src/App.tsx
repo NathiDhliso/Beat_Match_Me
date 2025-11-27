@@ -62,16 +62,77 @@ const Dashboard: React.FC = () => {
   return <Navigate to="/user-portal" replace />;
 };
 
-// Loading Screen Component - Subtle Buffering with Blur
+// Premium Loading Screen Component with Theme Integration
 const LoadingScreen: React.FC<{ message?: string }> = ({ message }) => {
   return (
-    <div className="fixed inset-0 h-dvh bg-gray-900/50 backdrop-blur-md flex items-center justify-center z-50">
-      <div className="flex flex-col items-center gap-4">
-        {/* Simple Spinner */}
-        <div className="w-10 h-10 border-4 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
-        {/* Optional Message - Only show if explicitly provided and not the default connection message */}
+    <div
+      className="fixed inset-0 h-dvh flex items-center justify-center z-50 overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #1e293b 0%, #8b5cf680 50%, #1e293b 100%)'
+      }}
+    >
+      {/* Animated background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-30 animate-pulse-slow"
+          style={{
+            background: 'radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)',
+            animationDuration: '4s'
+          }}
+        ></div>
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-30 animate-pulse-slow"
+          style={{
+            background: 'radial-gradient(circle, rgba(236,72,153,0.4) 0%, transparent 70%)',
+            animationDuration: '4s',
+            animationDelay: '2s'
+          }}
+        ></div>
+      </div>
+
+      {/* Loading content */}
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        {/* Animated logo/spinner */}
+        <div className="relative w-20 h-20">
+          {/* Outer ring */}
+          <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+          {/* Spinning gradient ring */}
+          <div
+            className="absolute inset-0 rounded-full animate-spin"
+            style={{
+              background: 'conic-gradient(from 0deg, transparent 0%, rgba(139,92,246,0.8) 50%, transparent 100%)',
+              maskImage: 'radial-gradient(circle, transparent 60%, black 60%)',
+              WebkitMaskImage: 'radial-gradient(circle, transparent 60%, black 60%)',
+              animationDuration: '1.5s'
+            }}
+          ></div>
+          {/* Center dot */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Loading dots */}
+        <div className="flex gap-2">
+          <div
+            className="w-2 h-2 rounded-full bg-white/60 animate-bounce"
+            style={{ animationDelay: '0ms', animationDuration: '1s' }}
+          ></div>
+          <div
+            className="w-2 h-2 rounded-full bg-white/60 animate-bounce"
+            style={{ animationDelay: '150ms', animationDuration: '1s' }}
+          ></div>
+          <div
+            className="w-2 h-2 rounded-full bg-white/60 animate-bounce"
+            style={{ animationDelay: '300ms', animationDuration: '1s' }}
+          ></div>
+        </div>
+
+        {/* Message */}
         {message && message !== 'Connecting to backend...' && (
-          <div className="text-white/80 text-sm font-medium">{message}</div>
+          <div className="text-white/90 text-sm font-medium animate-fade-in">
+            {message}
+          </div>
         )}
       </div>
     </div>
