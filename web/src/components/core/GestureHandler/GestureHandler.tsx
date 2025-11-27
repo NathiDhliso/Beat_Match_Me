@@ -61,6 +61,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
         position: 'relative',
         overflow: 'hidden',
         minHeight: '100vh',
+        touchAction: 'none',
       }}
     >
       {/* Peek Preview Layer - REMOVED as per user request */}

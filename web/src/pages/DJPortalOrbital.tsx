@@ -49,6 +49,7 @@ export const DJPortalOrbital: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isSyncingTracks, setIsSyncingTracks] = useState(false);
 
   // Check for desktop screen to disable swipe
   useEffect(() => {
@@ -376,6 +377,7 @@ export const DJPortalOrbital: React.FC = () => {
 
     // CRITICAL FIX: Wrapped in try-catch for error handling
     try {
+      setIsSyncingTracks(true);
       console.log('💾 Syncing tracks to backend...');
       const songs = updatedTracks.map(t => ({
         title: t.title,
@@ -391,22 +393,48 @@ export const DJPortalOrbital: React.FC = () => {
       const uploadResult = await submitUploadTracklist(user.userId, songs);
       console.log('✅ Tracks uploaded to library:', uploadResult);
 
-      // Step 2: Link tracks to the current event (use track titles as IDs for now)
-      // Note: In production, you'd use actual song IDs returned from uploadTracklist
-      const songIds = updatedTracks.map(t => t.id);
+      // Step 2: Fetch the REAL tracklist from backend to get the generated IDs
+      // This is crucial because uploadTracklist doesn't return the new IDs
+      const performerTracklist = await fetchPerformerTracklist(user.userId);
+
+      if (!performerTracklist || !performerTracklist.songs) {
+        throw new Error('Failed to retrieve updated tracklist from backend');
+      }
+
+      // Step 3: Merge real IDs with local enabled state
+      // We match by title+artist to preserve the isEnabled status the user just set
+      const realTracks = performerTracklist.songs.map((s: any) => {
+        const localTrack = updatedTracks.find(
+          t => t.title.toLowerCase() === s.title.toLowerCase() &&
+            t.artist.toLowerCase() === s.artist.toLowerCase()
+        );
+        return {
+          ...s,
+          // Default to true if not found (shouldn't happen for just-added tracks)
+          isEnabled: localTrack ? localTrack.isEnabled : true,
+          basePrice: localTrack ? localTrack.basePrice : s.basePrice
+        };
+      });
+
+      // Update local state with the REAL IDs immediately
+      setTracks(realTracks);
+
+      // Step 4: Link tracks to the current event using REAL IDs
+      // Only link enabled tracks
+      const songIds = realTracks
+        .filter((t: any) => t.isEnabled)
+        .map((t: any) => t.id);
+
       const linkResult = await submitSetEventTracklist(currentEventId, songIds);
       console.log('✅ Tracks linked to event:', linkResult);
 
-      // Step 3: Reset tracksLoaded and reload tracklist from backend
-      setTracksLoaded(false);
-      if (reloadTracklist) {
-        reloadTracklist();
-      }
+      // Step 5: Reset tracksLoaded flag
+      setTracksLoaded(true);
 
       addNotification({
         type: 'info',
-        title: '✅ Tracklist Updated',
-        message: `${songs.length} songs synced to event`,
+        title: '✅ Tracklist Synced',
+        message: `${songIds.length} songs active for this event`,
       });
     } catch (error) {
       console.error('❌ Failed to sync tracks:', error);
@@ -417,6 +445,8 @@ export const DJPortalOrbital: React.FC = () => {
       });
       // Rethrow error so calling functions can handle rollback
       throw error;
+    } finally {
+      setIsSyncingTracks(false);
     }
   };
 
@@ -1418,6 +1448,7 @@ export const DJPortalOrbital: React.FC = () => {
 
                   <DJLibrary
                     tracks={tracks}
+                    isLoading={isSyncingTracks}
                     onAddTrack={handleAddTrack}
                     onUpdateTrack={handleUpdateTrack}
                     onDeleteTrack={handleDeleteTrack}

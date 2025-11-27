@@ -30,6 +30,7 @@ interface DJLibraryProps {
   onUpdateTrack: (id: string, updates: Partial<Track>) => void;
   onDeleteTrack: (id: string) => void;
   onToggleTrack: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export const DJLibrary: React.FC<DJLibraryProps> = ({
@@ -38,6 +39,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   onUpdateTrack,
   onDeleteTrack,
   onToggleTrack,
+  isLoading = false,
 }) => {
   const { currentTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
@@ -176,7 +178,17 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
       </div>
 
       {/* Track List - Phase 8: Virtual scrolling for performance */}
-      <div ref={listContainerRef} className="flex-1 overflow-hidden">
+      <div ref={listContainerRef} className="flex-1 overflow-hidden relative">
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm z-10 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
+              <span className="text-white text-sm font-medium">Syncing...</span>
+            </div>
+          </div>
+        )}
+
         <div className="h-full p-6">
           {filteredTracks.length > 0 ? (
             <div className="h-full">
