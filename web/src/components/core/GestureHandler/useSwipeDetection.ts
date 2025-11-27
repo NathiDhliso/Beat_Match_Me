@@ -1,25 +1,44 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { TouchPoint, Delta, SwipeCallbacks } from './types';
 
 /**
  * Hook to detect and handle swipe gestures
- * Pure logic - no UI concerns
+ * Requires hard press + deliberate pull for navigation
  */
 export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled?: boolean } = {}) => {
   const [touchStart, setTouchStart] = useState<TouchPoint | null>(null);
   const [currentDelta, setCurrentDelta] = useState<Delta>({ x: 0, y: 0 });
   const [isPeeking, setIsPeeking] = useState(false);
   const [hasTriggered, setHasTriggered] = useState(false);
+  const [isHardPressActive, setIsHardPressActive] = useState(false);
+  const hardPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const HARD_PRESS_DURATION = 300;
+  const DISTANCE_THRESHOLD = 200;
+  const MIN_VELOCITY = 0.6;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (options.disabled) return;
-    setTouchStart({
+    
+    const startPoint = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
       time: Date.now(),
-    });
-    setIsPeeking(true);
+    };
+    
+    setTouchStart(startPoint);
     setHasTriggered(false);
+    setIsHardPressActive(false);
+    setIsPeeking(false);
+
+    if (hardPressTimer.current) {
+      clearTimeout(hardPressTimer.current);
+    }
+
+    hardPressTimer.current = setTimeout(() => {
+      setIsHardPressActive(true);
+      setIsPeeking(true);
+    }, HARD_PRESS_DURATION);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -32,16 +51,20 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
 
     const deltaX = currentTouch.x - touchStart.x;
     const deltaY = currentTouch.y - touchStart.y;
-    const deltaTime = Date.now() - touchStart.time;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (distance > 20 && hardPressTimer.current) {
+      clearTimeout(hardPressTimer.current);
+      hardPressTimer.current = null;
+    }
+
+    if (!isHardPressActive) {
+      return;
+    }
 
     setCurrentDelta({ x: deltaX, y: deltaY });
 
-    // Auto-snap: Requires hard drag - higher threshold for intentional navigation
-    const distanceThreshold = 150;
-    const autoSnapTime = 400;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    if (deltaTime > autoSnapTime && distance > distanceThreshold) {
+    if (distance > DISTANCE_THRESHOLD) {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (deltaX > 0) callbacks.onSwipeRight();
         else callbacks.onSwipeLeft();
@@ -50,16 +73,27 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
         else callbacks.onSwipeUp();
       }
 
-      // Reset and mark as triggered
       setHasTriggered(true);
       setCurrentDelta({ x: 0, y: 0 });
       setIsPeeking(false);
+      setIsHardPressActive(false);
       setTouchStart(null);
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart || hasTriggered) return;
+    if (hardPressTimer.current) {
+      clearTimeout(hardPressTimer.current);
+      hardPressTimer.current = null;
+    }
+
+    if (!touchStart || hasTriggered || !isHardPressActive) {
+      setCurrentDelta({ x: 0, y: 0 });
+      setIsPeeking(false);
+      setIsHardPressActive(false);
+      setTouchStart(null);
+      return;
+    }
 
     const touchEnd = {
       x: e.changedTouches[0].clientX,
@@ -71,20 +105,14 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
     const deltaY = touchEnd.y - touchStart.y;
     const deltaTime = touchEnd.time - touchStart.time;
 
-    // Reset peek animation
     setCurrentDelta({ x: 0, y: 0 });
     setIsPeeking(false);
-
-    // Threshold for swipe detection - Requires hard/deliberate drag
-    const distanceThreshold = 150;
-    const minSwipeTime = 50;
+    setIsHardPressActive(false);
 
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const velocity = distance / deltaTime;
-    const minVelocity = 0.5;
 
-    // Trigger navigation if swipe meets criteria
-    if (distance > distanceThreshold && deltaTime > minSwipeTime && velocity > minVelocity) {
+    if (distance > DISTANCE_THRESHOLD && velocity > MIN_VELOCITY) {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (deltaX > 0) {
           callbacks.onSwipeRight();
