@@ -1,0 +1,31 @@
+## Mutation.updateUserStatus Request Mapping Template
+## Updates user status (ACTIVE, SUSPENDED, etc.)
+## Requires Admins Cognito group membership
+
+#set($now = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "userId": $util.dynamodb.toDynamoDBJson($ctx.args.userId)
+  },
+  "update": {
+    "expression": "SET #status = :status, updatedAt = :updatedAt, lastStatusChangeAt = :lastStatusChangeAt, lastStatusChangeBy = :lastStatusChangeBy #if($ctx.args.reason), statusChangeReason = :reason #end",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":status": $util.dynamodb.toDynamoDBJson($ctx.args.status),
+      ":updatedAt": $util.dynamodb.toDynamoDBJson($now),
+      ":lastStatusChangeAt": $util.dynamodb.toDynamoDBJson($now),
+      ":lastStatusChangeBy": $util.dynamodb.toDynamoDBJson($ctx.identity.username)
+      #if($ctx.args.reason)
+        ,":reason": $util.dynamodb.toDynamoDBJson($ctx.args.reason)
+      #end
+    }
+  },
+  "condition": {
+    "expression": "attribute_exists(userId)"
+  }
+}

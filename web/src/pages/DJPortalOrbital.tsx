@@ -20,16 +20,14 @@ import {
 } from '../components/OrbitalInterface';
 import { DJLibrary } from '../components/DJLibrary';
 import type { Track } from '../components/DJLibrary';
-import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List, Palette, Crown, Gem, User } from 'lucide-react';
+import { LogOut, Music, DollarSign, Settings, Search, QrCode, Play, Bell, Sparkles, List, User, X } from 'lucide-react';
 import { DJSetListSkeleton } from '../components/LoadingSkeleton';
 import { HapticFeedback } from '../utils/haptics';
 import { MarkPlayingPanel, PlayingCelebration } from '../components/MarkPlayingPanel';
 import { NowPlayingCard } from '../components/NowPlayingCard';
-import { DJProfileScreen } from '../components/ProfileManagement';
-import { RequestCapManager } from '../components/RequestCapManager';
 import { showUndoToast } from '../components/UndoToast';
 import { submitAcceptRequest, submitVeto, submitMarkPlaying, submitMarkCompleted, submitRefund, submitUpdateSetStatus, submitUploadTracklist, submitSetEventTracklist, fetchPerformerTracklist } from '../services/graphql';
-import { updateDJSetSettings, updateDJProfile, updateSetPlaylist } from '../services/djSettings';
+import { updateSetPlaylist } from '../services/djSettings';
 // import { processRefund } from '../services/payment'; // Available for future use
 import { BusinessMetrics } from '../services/analytics';
 
@@ -40,11 +38,11 @@ const QRCodeDisplay = lazy(() => import('../components').then(m => ({ default: m
 const NotificationCenter = lazy(() => import('../components/Notifications').then(m => ({ default: m.NotificationCenter })));
 const SettingsModal = lazy(() => import('../components/Settings').then(m => ({ default: m.Settings })));
 
-type ViewMode = 'queue' | 'library' | 'revenue' | 'settings';
+type ViewMode = 'queue' | 'library' | 'revenue';
 
 export const DJPortalOrbital: React.FC = () => {
   const { user, logout } = useAuth();
-  const { currentTheme, themeMode, setThemeMode } = useTheme();
+  const { currentTheme, isDark } = useTheme();
   const themeClasses = useThemeClasses();
   const [currentView, setCurrentView] = useState<ViewMode>('queue');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
@@ -62,10 +60,8 @@ export const DJPortalOrbital: React.FC = () => {
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
 
   // Settings state
-  const [basePrice, setBasePrice] = useState(20);
-  const [requestsPerHour, setRequestsPerHour] = useState(20);
-  const [spotlightSlots, setSpotlightSlots] = useState(1);
-  const [isEditingSettings, setIsEditingSettings] = useState(false);
+  const [basePrice] = useState(20);
+  const [requestsPerHour] = useState(20);
 
   // DJ Set management state
   const [showEventCreator, setShowEventCreator] = useState(false);
@@ -337,12 +333,22 @@ export const DJPortalOrbital: React.FC = () => {
         if (set && set.playlistTracks && set.playlistTracks.length > 0) {
           console.log(`🎵 Applying saved playlist: ${set.playlistName} (${set.playlistTracks.length} songs)`);
 
+          // Extract track IDs from playlist (handles both JSON format and plain IDs)
+          const playlistTrackIds = set.playlistTracks.map((item: string) => {
+            try {
+              const parsed = JSON.parse(item);
+              return parsed.id;
+            } catch {
+              return item; // Plain ID format
+            }
+          });
+
           setTracks(prevTracks => {
             if (prevTracks.length === 0) return prevTracks;
 
             return prevTracks.map(track => ({
               ...track,
-              isEnabled: set.playlistTracks.includes(track.id)
+              isEnabled: playlistTrackIds.includes(track.id)
             }));
           });
 
@@ -366,7 +372,7 @@ export const DJPortalOrbital: React.FC = () => {
   const handleSwipeUp = () => setCurrentView('queue');
   const handleSwipeDown = () => setCurrentView('library');
   const handleSwipeLeft = () => setCurrentView('revenue');
-  const handleSwipeRight = () => setCurrentView('settings');
+  const handleSwipeRight = () => setShowSettings(true);
 
   // Track Management with Backend Sync
   const syncTracksToBackend = async (updatedTracks: Track[]) => {
@@ -959,6 +965,7 @@ export const DJPortalOrbital: React.FC = () => {
       }
 
       // 4. Clear local state
+      setIsLiveMode(false);
       setCurrentSetId(null);
       setCurrentEventId(null);
 
@@ -1071,7 +1078,7 @@ export const DJPortalOrbital: React.FC = () => {
         <div
           className="absolute inset-0 h-full overflow-hidden pb-[env(safe-area-inset-bottom)]"
           style={{
-            background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
+            background: isDark ? '#0a0a0b' : '#ffffff',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -1079,6 +1086,26 @@ export const DJPortalOrbital: React.FC = () => {
             bottom: 0,
           }}
         >
+          {/* Background orbs - adjusted for light/dark mode */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div 
+              className={`absolute top-[10%] left-[10%] w-[400px] h-[400px] rounded-full blur-[120px] ${isDark ? 'bg-purple-600/10' : 'bg-purple-400/20'}`} 
+              style={{ animation: 'float 15s ease-in-out infinite' }} 
+            />
+            <div 
+              className={`absolute bottom-[10%] right-[10%] w-[350px] h-[350px] rounded-full blur-[120px] ${isDark ? 'bg-pink-600/8' : 'bg-pink-400/15'}`} 
+              style={{ animation: 'float 12s ease-in-out infinite reverse' }} 
+            />
+            <div 
+              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[150px] ${isDark ? 'bg-orange-500/5' : 'bg-orange-300/10'}`} 
+            />
+          </div>
+          <style>{`
+            @keyframes float {
+              0%, 100% { transform: translate(0, 0); }
+              50% { transform: translate(0, -20px); }
+            }
+          `}</style>
           {/* Status Arc - Hide when live, menu open, or in revenue view (redundant) */}
           {!isLiveMode && !showSetSelector && currentView !== 'revenue' && (
             <StatusArc
@@ -1129,23 +1156,30 @@ export const DJPortalOrbital: React.FC = () => {
             {currentView === 'queue' && (
               <div className="h-full flex flex-col items-center justify-center relative z-10 pb-32">
                 {!currentSetId ? (
-                  // No Set - Show Create Button
-                  <div className="text-center max-w-md">
+                  // No Set - Show Create Button with clear instructions
+                  <div className="text-center max-w-md px-4">
                     <button
                       onClick={() => setShowEventCreator(true)}
-                      className={`w-32 h-32 mx-auto mb-6 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer`}
+                      className={`w-32 h-32 mx-auto mb-6 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer shadow-2xl`}
                       title="Create Event"
                     >
                       <span className="text-6xl">🎵</span>
                     </button>
-                    <h2 className="text-3xl font-bold text-white mb-8">Ready to Start?</h2>
+                    <h2 className={`text-3xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Ready to Start?</h2>
+                    <p className={`text-sm mb-8 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Create an event, import your playlist, and start accepting song requests from fans
+                    </p>
 
                     <button
                       onClick={() => setShowEventCreator(true)}
                       className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-full font-semibold text-lg transition-all shadow-lg`}
                     >
-                      Create Event
+                      + Create Event
                     </button>
+
+                    <div className={`mt-8 text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <p>Swipe ↓ for Library • Swipe ← for Revenue • Swipe → for Settings</p>
+                    </div>
                   </div>
                 ) : queueRequests.length > 0 ? (
                   // Has Event + Requests
@@ -1178,8 +1212,13 @@ export const DJPortalOrbital: React.FC = () => {
                     <div className={`transition-opacity duration-300 ${showSetSelector ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                       {/* Event Info */}
                       {currentEvent && !showSetSelector && (
-                        <div className="text-lg font-semibold text-white mb-6">
-                          {currentEvent.venueName}
+                        <div className="mb-6">
+                          <div className="text-lg font-semibold text-white">
+                            {currentEvent.venueName}
+                          </div>
+                          <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {isLiveMode ? '🟢 Live - Waiting for requests...' : 'Tap GO LIVE to start accepting requests'}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1352,7 +1391,7 @@ export const DJPortalOrbital: React.FC = () => {
                     {/* Other Actions - Hidden when menu is open */}
                     {!showSetSelector && (
                       <div className="space-y-6 transition-opacity duration-300">
-                        {/* Primary Action - GO LIVE Toggle */}
+                        {/* Primary Action - GO LIVE / END SET Toggle */}
                         {!isLiveMode ? (
                           <button
                             onClick={handleGoLive}
@@ -1378,13 +1417,32 @@ export const DJPortalOrbital: React.FC = () => {
                               <span className="text-green-400 font-semibold text-sm">LIVE</span>
                             </div>
 
+                            {/* End Set Button - Primary when live */}
+                            <button
+                              onClick={handleEndSet}
+                              disabled={isProcessing}
+                              className="w-full max-w-sm mx-auto py-5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-2xl font-bold text-lg transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isProcessing ? (
+                                <>
+                                  <span className="animate-spin">⏳</span>
+                                  <span>Ending...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-2xl">⏹️</span>
+                                  <span>End Set</span>
+                                </>
+                              )}
+                            </button>
+
                             {/* Pause Button - Secondary */}
                             <button
                               onClick={handlePauseLive}
                               className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 mx-auto"
                             >
                               <span>⏸️</span>
-                              <span>Pause</span>
+                              <span>Pause Requests</span>
                             </button>
                           </div>
                         )}
@@ -1397,13 +1455,6 @@ export const DJPortalOrbital: React.FC = () => {
                             title="Show QR Code"
                           >
                             <QrCode className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={handleEndSet}
-                            className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-xl text-gray-400 hover:text-red-400 transition-all text-sm"
-                            title="End Set"
-                          >
-                            End Set
                           </button>
                         </div>
                       </div>
@@ -1527,240 +1578,17 @@ export const DJPortalOrbital: React.FC = () => {
               </div>
             )}
 
-            {/* Settings View */}
-            {currentView === 'settings' && (
-              <div className="h-full w-full overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-4 sm:py-8 pb-32">
-                <div className="w-full max-w-4xl mx-auto space-y-3 sm:space-y-4">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Settings</h2>
-
-                  {/* Theme Selector - Full Width */}
-                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                    <div className="flex items-center justify-between mb-2 sm:mb-3">
-                      <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                        <Palette className="w-5 h-5" /> Theme
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(['BeatMatchMe', 'gold', 'platinum'] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          onClick={() => setThemeMode(mode)}
-                          className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${themeMode === mode
-                            ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
-                            : 'opacity-60 hover:opacity-100'
-                            }`}
-                          style={{
-                            background: mode === 'BeatMatchMe'
-                              ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
-                              : mode === 'gold'
-                                ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
-                                : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
-                            color: '#ffffff',
-                            ...(themeMode === mode && {
-                              boxShadow: mode === 'BeatMatchMe'
-                                ? '0 0 0 2px #8B5CF6'
-                                : mode === 'gold'
-                                  ? '0 0 0 2px #D4AF37'
-                                  : '0 0 0 2px #E5E4E2'
-                            })
-                          }}
-                        >
-                          {mode === 'BeatMatchMe' ? <span className="flex items-center gap-1"><Music className="w-3 h-3" /> Purple</span> : mode === 'gold' ? <span className="flex items-center gap-1"><Crown className="w-3 h-3" /> Gold</span> : <span className="flex items-center gap-1"><Gem className="w-3 h-3" /> Platinum</span>}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Profile & Event Settings - 2 Column Grid on mobile and desktop */}
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                    {/* Profile Card */}
-                    <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                      <h3 className="text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
-                        <User className="w-5 h-5" />
-                        <span className="hidden sm:inline">Profile</span>
-                      </h3>
-                      <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
-                          <span className="text-gray-400 text-[10px] sm:text-xs">Name</span>
-                          <span className="text-white font-medium truncate">{user?.name}</span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
-                          <span className="text-gray-400 text-[10px] sm:text-xs">Role</span>
-                          <span className="font-medium truncate" style={{ color: currentTheme.accent }}>
-                            {user?.role}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setShowProfile(true)}
-                          className="w-full mt-1.5 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm font-semibold transition-all hover:opacity-90"
-                          style={{ backgroundColor: currentTheme.primary }}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Event Settings Card */}
-                    <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                      <div className="flex items-center justify-between mb-2 sm:mb-3">
-                        <h3 className="text-sm sm:text-lg font-semibold text-white flex items-center gap-1 sm:gap-2">
-                          <span className="text-base sm:text-lg">⚙️</span>
-                          <span className="hidden sm:inline">Event</span>
-                        </h3>
-                        <button
-                          onClick={() => setIsEditingSettings(!isEditingSettings)}
-                          className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white text-[10px] sm:text-xs font-medium transition-all hover:opacity-90"
-                          style={{ backgroundColor: currentTheme.primary }}
-                        >
-                          {isEditingSettings ? 'Save' : 'Edit'}
-                        </button>
-                      </div>
-                      <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                          <span className="text-gray-400 text-[10px] sm:text-xs">Base Price</span>
-                          {isEditingSettings ? (
-                            <input
-                              type="number"
-                              value={basePrice}
-                              onChange={(e) => setBasePrice(Number(e.target.value))}
-                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-yellow-500"
-                            />
-                          ) : (
-                            <span className="text-yellow-400 font-semibold">R{basePrice}</span>
-                          )}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                          <span className="text-gray-400 text-[10px] sm:text-xs">Requests/Hr</span>
-                          {isEditingSettings ? (
-                            <input
-                              type="number"
-                              value={requestsPerHour}
-                              onChange={(e) => setRequestsPerHour(Number(e.target.value))}
-                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
-                            />
-                          ) : (
-                            <span className="text-blue-400 font-semibold">{requestsPerHour}</span>
-                          )}
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                          <span className="text-gray-400 text-[10px] sm:text-xs">Spotlight</span>
-                          {isEditingSettings ? (
-                            <input
-                              type="number"
-                              value={spotlightSlots}
-                              onChange={(e) => setSpotlightSlots(Number(e.target.value))}
-                              min="0"
-                              max="5"
-                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none"
-                              style={{
-                                borderColor: currentTheme.secondary,
-                              }}
-                            />
-                          ) : (
-                            <span className="font-semibold" style={{ color: currentTheme.secondary }}>
-                              {spotlightSlots}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Request Cap Manager - Compact */}
-                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
-                      📊 Request Cap
-                    </h3>
-                    <RequestCapManager
-                      currentRequestCount={queueRequests.length}
-                      requestCapPerHour={requestsPerHour}
-                      isSoldOut={false}
-                      onUpdateSettings={async (settings) => {
-                        console.log('Updating request cap settings:', settings);
-                        setRequestsPerHour(settings.requestCapPerHour);
-
-                        if (currentSetId) {
-                          try {
-                            const success = await updateDJSetSettings(currentSetId, {
-                              requestCapPerHour: settings.requestCapPerHour,
-                              isSoldOut: settings.isSoldOut
-                            });
-
-                            if (success) {
-                              addNotification({
-                                type: 'info',
-                                title: '✅ Settings Saved',
-                                message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
-                              });
-                            } else {
-                              addNotification({
-                                type: 'info',
-                                title: 'Settings Updated Locally',
-                                message: 'Backend sync pending',
-                              });
-                            }
-                          } catch (error) {
-                            console.error('Failed to save settings:', error);
-                            addNotification({
-                              type: 'error',
-                              title: '⚠️ Save Failed',
-                              message: 'Could not save to backend',
-                            });
-                          }
-                        }
-                      }}
-                    />
-                  </div>
-
-                  {/* Status Ring Guide - 3 Column Grid (single row) */}
-                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
-                      💡 Status Ring Guide
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                      {/* Blue */}
-                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                        <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></div>
-                        <div className="min-w-0 text-center sm:text-left">
-                          <p className="text-blue-400 font-semibold text-[10px] sm:text-xs">Browsing</p>
-                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">No active set</p>
-                        </div>
-                      </div>
-
-                      {/* Green */}
-                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
-                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
-                        <div className="min-w-0 text-center sm:text-left">
-                          <p className="text-green-400 font-semibold text-[10px] sm:text-xs">Active</p>
-                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">Accepting requests</p>
-                        </div>
-                      </div>
-
-                      {/* Yellow */}
-                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                        <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
-                        <div className="min-w-0 text-center sm:text-left">
-                          <p className="text-yellow-400 font-semibold text-[10px] sm:text-xs">Earning</p>
-                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">High activity</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Gesture Hints - Bottom Center - Hide when live */}
           {/* Gesture Hints - Bottom Center - Minimal & Subtle */}
           {!isLiveMode && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity md:hidden">
-              <div className="flex items-center gap-3 text-[10px] text-gray-400 font-medium">
+            <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-30 backdrop-blur-md rounded-full px-4 py-2 border opacity-60 hover:opacity-100 transition-opacity md:hidden ${isDark ? 'bg-gray-900/30 border-white/10' : 'bg-white/80 border-gray-200 shadow-lg'}`}>
+              <div className={`flex items-center gap-3 text-[10px] font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 <span>↑ Queue</span>
                 <span>↓ Library</span>
                 <span>← Revenue</span>
-                <span>→ Settings</span>
+                <span>→ ⚙️</span>
               </div>
             </div>
           )}
@@ -1794,19 +1622,30 @@ export const DJPortalOrbital: React.FC = () => {
                 onApplyPlaylist={async (trackIds, playlistInfo) => {
                   console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
 
-                  // 1. Save playlist to backend
+                  // 1. Save playlist to backend with full track data for users to see
                   if (currentSetId) {
                     try {
+                      // Get full track data for selected tracks
+                      const selectedTracks = tracks
+                        .filter(t => trackIds.includes(t.id))
+                        .map(t => JSON.stringify({
+                          id: t.id,
+                          title: t.title,
+                          artist: t.artist,
+                          genre: t.genre || 'Various',
+                          albumArt: t.albumArt,
+                          duration: t.duration,
+                        }));
+
                       await updateSetPlaylist(currentSetId, {
                         playlistType: playlistInfo.type,
                         playlistId: playlistInfo.id,
                         playlistName: playlistInfo.name,
-                        playlistTracks: trackIds
+                        playlistTracks: selectedTracks
                       });
-                      console.log('✅ Playlist saved to backend successfully');
+                      console.log('✅ Playlist saved to backend successfully with track data');
                     } catch (error) {
                       console.error('❌ Failed to save playlist to backend:', error);
-                      // Continue anyway - playlist still applied locally
                     }
                   }
 
@@ -1894,70 +1733,121 @@ export const DJPortalOrbital: React.FC = () => {
             </Suspense>
           )}
 
-          {/* DJ Profile Management Modal */}
+          {/* DJ Profile Management - Slide-out Panel */}
           {showProfile && (
-            <div className="fixed inset-0 bg-gray-900/80 z-50 flex items-center justify-center p-4">
-              <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <DJProfileScreen
-                  profile={{
-                    userId: user?.userId || '',
-                    name: user?.name || 'DJ',
-                    email: user?.email || '',
-                    photo: undefined,
-                    tier: (user?.tier as any) || 'BRONZE',
-                    bio: '',
-                    genres: [],
-                    basePrice: basePrice,
-                    stats: undefined,
-                  }}
-                  onUpdateProfile={async (updates) => {
-                    console.log('Save DJ profile updates:', updates);
+            <>
+              <div 
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                onClick={() => setShowProfile(false)}
+              />
+              <div className={`fixed top-0 right-0 h-full w-full max-w-md border-l z-50 overflow-y-auto animate-[slideInRight_0.3s_ease-out] ${isDark ? 'bg-[#0a0a0b] border-white/10' : 'bg-white border-gray-200'}`}>
+                <style>{`
+                  @keyframes slideInRight {
+                    from { transform: translateX(100%); }
+                    to { transform: translateX(0); }
+                  }
+                `}</style>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Edit Profile</h2>
+                    <button
+                      onClick={() => setShowProfile(false)}
+                      className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
+                    >
+                      <X className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${themeClasses.gradientPrimary} flex items-center justify-center`}>
+                        <User className="w-10 h-10 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">
+                          {user?.tier || 'BRONZE'}
+                        </span>
+                      </div>
+                    </div>
 
-                    if (user?.userId) {
-                      try {
-                        const success = await updateDJProfile(user.userId, {
-                          name: updates.name,
-                          bio: updates.bio,
-                          genres: updates.genres,
-                          basePrice: updates.basePrice,
-                        });
+                    <div className="space-y-4">
+                      <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                        <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Display Name</label>
+                        <input
+                          type="text"
+                          defaultValue={user?.name || 'DJ'}
+                          className={`w-full rounded-lg px-3 py-2 focus:outline-none focus:border-purple-500 ${isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                          placeholder="Your DJ name"
+                        />
+                      </div>
 
-                        if (success) {
-                          addNotification({
-                            type: 'info',
-                            title: '✅ Profile Updated',
-                            message: 'Your profile changes were saved successfully.'
-                          });
-                        } else {
-                          addNotification({
-                            type: 'info',
-                            title: 'Profile Updated Locally',
-                            message: 'Backend sync pending - changes will persist after deployment'
-                          });
-                        }
+                      <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                        <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Email</label>
+                        <input
+                          type="email"
+                          defaultValue={user?.email || ''}
+                          className={`w-full rounded-lg px-3 py-2 focus:outline-none focus:border-purple-500 ${isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                          placeholder="your@email.com"
+                          disabled
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                      </div>
 
-                        setShowProfile(false);
-                      } catch (error) {
-                        console.error('Failed to update profile:', error);
+                      <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                        <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Bio</label>
+                        <textarea
+                          className={`w-full rounded-lg px-3 py-2 focus:outline-none focus:border-purple-500 resize-none ${isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                          rows={3}
+                          placeholder="Tell fans about yourself..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                          <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Base Price (R)</label>
+                          <input
+                            type="number"
+                            defaultValue={basePrice}
+                            className={`w-full rounded-lg px-3 py-2 focus:outline-none focus:border-purple-500 ${isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                            min="0"
+                          />
+                        </div>
+
+                        <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                          <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Requests/Hr</label>
+                          <input
+                            type="number"
+                            defaultValue={requestsPerHour}
+                            className={`w-full rounded-lg px-3 py-2 focus:outline-none focus:border-purple-500 ${isDark ? 'bg-white/5 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                            min="1"
+                            max="100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className={`rounded-xl p-4 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                        <label className={`text-sm mb-2 block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Total Sets</label>
+                        <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{mySets.length}</div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
                         addNotification({
-                          type: 'error',
-                          title: '⚠️ Update Failed',
-                          message: 'Could not save profile. Please try again.'
+                          type: 'info',
+                          title: '✅ Profile Saved',
+                          message: 'Your profile has been updated'
                         });
-                      }
-                    }
-                  }}
-                  onUpgradeTier={(tier) => {
-                    console.log('Upgrade to tier:', tier);
-                    addNotification({
-                      type: 'info',
-                      title: 'Upgrade Requested',
-                      message: `Requested upgrade to ${tier}. Contact support to complete.`
-                    });
-                  }}
-                />
+                        setShowProfile(false);
+                      }}
+                      className={`w-full py-3 bg-gradient-to-r ${themeClasses.gradientPrimary} text-white rounded-xl font-semibold transition-all hover:opacity-90`}
+                    >
+                      Save Profile
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
 

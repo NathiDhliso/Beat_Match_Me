@@ -1,0 +1,31 @@
+## Mutation.resolveDispute Request Mapping Template
+## Resolves a dispute with specified action (REFUND or RELEASE)
+## Requires Admins Cognito group membership
+
+#set($now = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "disputeId": $util.dynamodb.toDynamoDBJson($ctx.args.disputeId)
+  },
+  "update": {
+    "expression": "SET #status = :newStatus, resolution = :resolution, resolvedAt = :resolvedAt, resolvedBy = :resolvedBy, resolutionAction = :action, updatedAt = :updatedAt",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":newStatus": $util.dynamodb.toDynamoDBJson("RESOLVED"),
+      ":resolution": $util.dynamodb.toDynamoDBJson($ctx.args.resolution),
+      ":resolvedAt": $util.dynamodb.toDynamoDBJson($now),
+      ":resolvedBy": $util.dynamodb.toDynamoDBJson($ctx.identity.username),
+      ":action": $util.dynamodb.toDynamoDBJson($ctx.args.action),
+      ":updatedAt": $util.dynamodb.toDynamoDBJson($now),
+      ":resolvedStatus": $util.dynamodb.toDynamoDBJson("RESOLVED")
+    }
+  },
+  "condition": {
+    "expression": "attribute_exists(disputeId) AND #status <> :resolvedStatus"
+  }
+}

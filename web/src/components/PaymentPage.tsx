@@ -126,7 +126,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
                   <span className="text-white font-medium">{displayInfo.customerPays}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Platform fee (15%)</span>
+                  <span className="text-gray-400">Platform fee (30%)</span>
                   <span className="text-gray-400">-{displayInfo.platformFee}</span>
                 </div>
                 <div className="h-px bg-gray-700 my-2"></div>

@@ -174,7 +174,7 @@ export const PayoutDashboard: React.FC<PayoutDashboardProps> = ({
                 <span className="text-gray-400">-R{example.processingFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Platform fee (15%)</span>
+                <span className="text-gray-400">Platform fee (30%)</span>
                 <span className="text-gray-400">-R{example.platformFee.toFixed(2)}</span>
               </div>
               <div className="h-px bg-gray-700"></div>

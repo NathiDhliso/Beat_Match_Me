@@ -1,0 +1,12 @@
+## Mutation.resolveDispute Response Mapping Template
+## Returns the resolved dispute
+
+#if($ctx.error)
+  #if($ctx.error.type == "DynamoDB:ConditionalCheckFailedException")
+    $util.error("Dispute not found or already resolved", "INVALID_STATE")
+  #else
+    $util.error($ctx.error.message, $ctx.error.type)
+  #end
+#end
+
+$util.toJson($ctx.result)

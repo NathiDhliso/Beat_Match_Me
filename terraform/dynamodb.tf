@@ -22,9 +22,26 @@ resource "aws_dynamodb_table" "users" {
     type = "S"
   }
 
+  attribute {
+    name = "role"
+    type = "S"
+  }
+
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "email-index"
     hash_key        = "email"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "role-status-index"
+    hash_key        = "role"
+    range_key       = "status"
     projection_type = "ALL"
   }
 
@@ -215,6 +232,11 @@ resource "aws_dynamodb_table" "transactions" {
     type = "N"
   }
 
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "userId-createdAt-index"
     hash_key        = "userId"
@@ -225,6 +247,13 @@ resource "aws_dynamodb_table" "transactions" {
   global_secondary_index {
     name            = "eventId-createdAt-index"
     hash_key        = "eventId"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "status-createdAt-index"
+    hash_key        = "status"
     range_key       = "createdAt"
     projection_type = "ALL"
   }
@@ -340,5 +369,113 @@ resource "aws_dynamodb_table" "upvotes" {
 
   tags = {
     Name = "${local.table_prefix}-upvotes"
+  }
+}
+
+# ============================================
+# ADMIN CRM TABLES
+# ============================================
+
+# Disputes Table
+resource "aws_dynamodb_table" "disputes" {
+  name           = "${local.table_prefix}-disputes"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "disputeId"
+
+  attribute {
+    name = "disputeId"
+    type = "S"
+  }
+
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "N"
+  }
+
+  attribute {
+    name = "transactionId"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "status-createdAt-index"
+    hash_key        = "status"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "transactionId-index"
+    hash_key        = "transactionId"
+    projection_type = "ALL"
+  }
+
+  point_in_time_recovery {
+    enabled = var.environment == "production"
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  tags = {
+    Name = "${local.table_prefix}-disputes"
+  }
+}
+
+# Payouts Table
+resource "aws_dynamodb_table" "payouts" {
+  name           = "${local.table_prefix}-payouts"
+  billing_mode   = var.dynamodb_billing_mode
+  hash_key       = "payoutId"
+
+  attribute {
+    name = "payoutId"
+    type = "S"
+  }
+
+  attribute {
+    name = "performerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name            = "performerId-index"
+    hash_key        = "performerId"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "status-createdAt-index"
+    hash_key        = "status"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
+
+  point_in_time_recovery {
+    enabled = var.environment == "production"
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  tags = {
+    Name = "${local.table_prefix}-payouts"
   }
 }

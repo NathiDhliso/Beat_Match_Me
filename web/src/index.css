@@ -7,7 +7,185 @@
 
 :root {
   font-family: 'Inter', system-ui, sans-serif;
+  color-scheme: dark light;
+}
+
+/* Light mode support for daytime DJing */
+html.light {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --text-primary: #1d1d1f;
+  --text-secondary: #424245;
+  --text-muted: #6e6e73;
+  --border-color: rgba(0, 0, 0, 0.12);
+}
+
+html.dark {
   color-scheme: dark;
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #1a1a1b;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode text overrides */
+html.light .text-white {
+  color: var(--text-primary) !important;
+}
+
+html.light .text-gray-400,
+html.light .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+html.light .text-gray-300 {
+  color: var(--text-secondary) !important;
+}
+
+/* Light mode backgrounds */
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/20 {
+  border-color: var(--border-color) !important;
+}
+
+html.light .bg-gray-800 {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .bg-gray-900 {
+  background-color: #f5f5f7 !important;
+}
+
+html.light .bg-gray-900\/30,
+html.light .bg-gray-900\/40,
+html.light .bg-gray-900\/80 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.light .bg-\[\#0a0a0b\] {
+  background-color: #ffffff !important;
+}
+
+/* Light mode cards and panels */
+html.light .backdrop-blur-lg,
+html.light .backdrop-blur-md,
+html.light .backdrop-blur-sm {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Light mode specific element fixes */
+html.light .text-white\/60 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+html.light .text-white\/80 {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Light mode - stronger text contrast for readability in sunlight */
+html.light .text-purple-400,
+html.light .text-pink-400,
+html.light .text-orange-400 {
+  filter: brightness(0.7) saturate(1.2);
+}
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light p {
+  color: #1d1d1f;
+}
+
+/* Light mode navigation text */
+html.light nav span,
+html.light .text-xs {
+  color: #424245 !important;
+}
+
+/* Light mode button and interactive element fixes */
+html.light .bg-gray-700 {
+  background-color: #e5e5e7 !important;
+  color: #1d1d1f !important;
+}
+
+html.light .bg-gray-700:hover {
+  background-color: #d1d1d6 !important;
+}
+
+html.light .bg-gray-600 {
+  background-color: #d1d1d6 !important;
+}
+
+html.light .hover\:bg-gray-600:hover {
+  background-color: #c7c7cc !important;
+}
+
+html.light .hover\:bg-gray-700:hover {
+  background-color: #d1d1d6 !important;
+}
+
+/* Light mode for slide-out panels */
+html.light .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Light mode input fields */
+html.light input,
+html.light textarea {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1d1d1f !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #86868b !important;
+}
+
+html.light input:focus,
+html.light textarea:focus {
+  border-color: var(--theme-primary, #8B5CF6) !important;
+}
+
+/* Light mode for specific dark backgrounds */
+html.light [style*="background: #0a0a0b"],
+html.light [style*="background:#0a0a0b"] {
+  background: #ffffff !important;
+}
+
+/* Light mode orbital and status elements */
+html.light .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+html.light .bg-red-500\/20 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+html.light .bg-yellow-500\/20 {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+}
+
+html.light .bg-purple-500\/20 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
 }
 
 /* Mobile browser safe area support */

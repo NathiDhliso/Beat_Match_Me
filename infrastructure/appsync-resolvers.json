@@ -210,6 +210,86 @@
       "fieldName": "listPerformerSets",
       "dataSourceName": "DJSetsDataSource",
       "kind": "UNIT"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "getAdminStats",
+      "dataSourceName": "AdminOperationsLambda",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Query.getAdminStats.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Query.getAdminStats.res.vtl"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listAllUsers",
+      "dataSourceName": "DynamoDBUsers",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Query.listAllUsers.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Query.listAllUsers.res.vtl"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listAllTransactions",
+      "dataSourceName": "DynamoDBTransactions",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Query.listAllTransactions.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Query.listAllTransactions.res.vtl"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listAllDisputes",
+      "dataSourceName": "DynamoDBDisputes",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Query.listAllDisputes.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Query.listAllDisputes.res.vtl"
+    },
+    {
+      "typeName": "Query",
+      "fieldName": "listAllPayouts",
+      "dataSourceName": "DynamoDBPayouts",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Query.listAllPayouts.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Query.listAllPayouts.res.vtl"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "updateUserStatus",
+      "dataSourceName": "DynamoDBUsers",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Mutation.updateUserStatus.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Mutation.updateUserStatus.res.vtl"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "releaseEscrowFunds",
+      "dataSourceName": "DynamoDBTransactions",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Mutation.releaseEscrowFunds.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Mutation.releaseEscrowFunds.res.vtl"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "refundTransaction",
+      "dataSourceName": "AdminOperationsLambda",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Mutation.refundTransaction.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Mutation.refundTransaction.res.vtl"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "resolveDispute",
+      "dataSourceName": "DynamoDBDisputes",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Mutation.resolveDispute.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Mutation.resolveDispute.res.vtl"
+    },
+    {
+      "typeName": "Mutation",
+      "fieldName": "processAdminPayout",
+      "dataSourceName": "AdminOperationsLambda",
+      "kind": "UNIT",
+      "requestMappingTemplateFile": "resolvers/Mutation.processAdminPayout.req.vtl",
+      "responseMappingTemplateFile": "resolvers/Mutation.processAdminPayout.res.vtl"
     }
   ],
   "dataSources": [
@@ -295,6 +375,41 @@
       "type": "AWS_LAMBDA",
       "config": {
         "functionName": "beatmatchme-updateEventStatus"
+      }
+    },
+    {
+      "name": "DynamoDBUsers",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-users"
+      }
+    },
+    {
+      "name": "DynamoDBTransactions",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-transactions"
+      }
+    },
+    {
+      "name": "DynamoDBDisputes",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-disputes"
+      }
+    },
+    {
+      "name": "DynamoDBPayouts",
+      "type": "AMAZON_DYNAMODB",
+      "config": {
+        "tableName": "beatmatchme-payouts"
+      }
+    },
+    {
+      "name": "AdminOperationsLambda",
+      "type": "AWS_LAMBDA",
+      "config": {
+        "functionName": "beatmatchme-adminOperations"
       }
     }
   ]

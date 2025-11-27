@@ -1,0 +1,12 @@
+## Mutation.updateUserStatus Response Mapping Template
+## Returns the updated user
+
+#if($ctx.error)
+  #if($ctx.error.type == "DynamoDB:ConditionalCheckFailedException")
+    $util.error("User not found", "NOT_FOUND")
+  #else
+    $util.error($ctx.error.message, $ctx.error.type)
+  #end
+#end
+
+$util.toJson($ctx.result)

@@ -111,6 +111,13 @@ resource "aws_cognito_user_pool_group" "audience" {
   precedence   = 2
 }
 
+resource "aws_cognito_user_pool_group" "admins" {
+  name         = "Admins"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Platform administrators with access to Admin CRM"
+  precedence   = 0
+}
+
 # Identity Pool
 resource "aws_cognito_identity_pool" "main" {
   identity_pool_name               = "${local.table_prefix}-identity-pool"

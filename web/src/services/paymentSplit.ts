@@ -1,12 +1,12 @@
 /**
  * Payment Split & Commission Service
- * Handles BeatMatchMe's 15% platform fee and performer payout calculations
+ * Handles BeatMatchMe's 30% platform fee and performer payout calculations
  */
 
 export interface PaymentBreakdown {
   grossAmount: number;           // Total amount paid by customer
-  platformFee: number;            // 15% BeatMatchMe commission
-  performerEarnings: number;      // 85% to performer
+  platformFee: number;            // 30% BeatMatchMe commission
+  performerEarnings: number;      // 70% to performer
   processingFee: number;          // Yoco/payment gateway fees (~2.9% + R1)
   netToPerformer: number;         // Final amount performer receives
   netToPlatform: number;          // Final amount platform receives
@@ -27,8 +27,8 @@ export interface PerformerPayout {
 }
 
 // Platform configuration
-const PLATFORM_COMMISSION_RATE = 0.15; // 15%
-const PERFORMER_SHARE_RATE = 0.85;     // 85%
+const PLATFORM_COMMISSION_RATE = 0.30; // 30%
+const PERFORMER_SHARE_RATE = 0.70;     // 70%
 const YOCO_RATE = 0.029;                // 2.9%
 const YOCO_FIXED_FEE = 1.00;            // R1.00 per transaction
 
@@ -42,10 +42,10 @@ export function calculatePaymentBreakdown(grossAmount: number): PaymentBreakdown
   // Net amount after payment processing
   const netAmount = grossAmount - processingFee;
   
-  // Platform commission (15% of net amount)
+  // Platform commission (30% of net amount)
   const platformFee = netAmount * PLATFORM_COMMISSION_RATE;
   
-  // Performer earnings (85% of net amount)
+  // Performer earnings (70% of net amount)
   const performerEarnings = netAmount * PERFORMER_SHARE_RATE;
   
   return {
@@ -103,10 +103,10 @@ export function getPaymentDisplayInfo(amount: number) {
     customerPays: `R${breakdown.grossAmount.toFixed(2)}`,
     performerGets: `R${breakdown.netToPerformer.toFixed(2)}`,
     platformFee: `R${breakdown.platformFee.toFixed(2)}`,
-    feePercentage: '15%',
+    feePercentage: '30%',
     trust: {
       icon: '🔒',
-      message: '85% goes directly to your DJ',
+      message: '70% goes directly to your DJ',
       submessage: 'Transparent, instant payments'
     }
   };
@@ -162,8 +162,8 @@ export function getCommissionExplanation(): {
   benefits: string[];
 } {
   return {
-    platformCut: '15%',
-    performerCut: '85%',
+    platformCut: '30%',
+    performerCut: '70%',
     why: 'Covers secure payments, real-time queue management, and platform maintenance',
     benefits: [
       'Instant payment processing',

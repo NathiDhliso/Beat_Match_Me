@@ -1,0 +1,15 @@
+## Mutation.refundTransaction Request Mapping Template
+## Invokes Lambda to process refund via payment provider
+## Requires Admins Cognito group membership
+
+{
+  "version": "2017-02-28",
+  "operation": "Invoke",
+  "payload": {
+    "action": "refundTransaction",
+    "transactionId": "$ctx.args.transactionId",
+    "reason": "$ctx.args.reason",
+    "adminUser": "$ctx.identity.username",
+    "identity": $util.toJson($ctx.identity)
+  }
+}

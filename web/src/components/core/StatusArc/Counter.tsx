@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../../context/ThemeContext';
 import type { CounterProps } from './types';
 
 /**
@@ -12,9 +13,11 @@ export const Counter: React.FC<CounterProps> = ({
   prefix = '',
   label 
 }) => {
+  const { isDark } = useTheme();
+  
   return (
     <div 
-      className="bg-gray-900/50 backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border"
+      className={`backdrop-blur-lg rounded-full px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 border ${isDark ? 'bg-gray-900/50' : 'bg-white/80 shadow-md'}`}
       style={{ borderColor: `${color}80` }}
     >
       <div className="flex items-center gap-1 sm:gap-2">
@@ -27,7 +30,7 @@ export const Counter: React.FC<CounterProps> = ({
         </span>
       </div>
       {label && (
-        <p className="text-xs text-gray-400 text-center mt-0.5">{label}</p>
+        <p className={`text-xs text-center mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{label}</p>
       )}
     </div>
   );

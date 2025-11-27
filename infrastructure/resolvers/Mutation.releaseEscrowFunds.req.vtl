@@ -1,0 +1,29 @@
+## Mutation.releaseEscrowFunds Request Mapping Template
+## Releases held funds to the performer
+## Requires Admins Cognito group membership
+
+#set($now = $util.time.nowEpochMilliSeconds())
+
+{
+  "version": "2017-02-28",
+  "operation": "UpdateItem",
+  "key": {
+    "transactionId": $util.dynamodb.toDynamoDBJson($ctx.args.transactionId)
+  },
+  "update": {
+    "expression": "SET #status = :newStatus, releasedAt = :releasedAt, releasedBy = :releasedBy, updatedAt = :updatedAt",
+    "expressionNames": {
+      "#status": "status"
+    },
+    "expressionValues": {
+      ":newStatus": $util.dynamodb.toDynamoDBJson("RELEASED"),
+      ":releasedAt": $util.dynamodb.toDynamoDBJson($now),
+      ":releasedBy": $util.dynamodb.toDynamoDBJson($ctx.identity.username),
+      ":updatedAt": $util.dynamodb.toDynamoDBJson($now),
+      ":heldStatus": $util.dynamodb.toDynamoDBJson("HELD")
+    }
+  },
+  "condition": {
+    "expression": "attribute_exists(transactionId) AND #status = :heldStatus"
+  }
+}

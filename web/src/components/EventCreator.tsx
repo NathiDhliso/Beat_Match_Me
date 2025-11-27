@@ -117,8 +117,8 @@ export const EventCreator: React.FC<EventCreatorProps> = ({ onClose, onEventCrea
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-lg z-50 flex items-center justify-center p-3 sm:p-4 md:p-6">
-      <div className="max-w-md w-full bg-gray-900 rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8">
+    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-lg z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+      <div className="max-w-md w-full bg-gray-900 rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8 my-auto max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-white">🎉 New Event</h2>

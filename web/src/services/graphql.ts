@@ -636,7 +636,6 @@ export const updateSetStatus = /* GraphQL */ `
     updateSetStatus(setId: $setId, status: $status) {
       setId
       status
-      endedAt
     }
   }
 `;
@@ -674,4 +673,283 @@ export async function submitSetEventTracklist(eventId: string, songIds: string[]
 export async function submitUpdateEventSettings(eventId: string, settings: any) {
   const response: any = await client.graphql({ query: updateEventSettings, variables: { eventId, settings } });
   return response.data.updateEventSettings;
+}
+
+// ============================================
+// ADMIN CRM QUERIES
+// ============================================
+
+export const listAllEvents = /* GraphQL */ `
+  query ListAllEvents($limit: Int, $nextToken: String) {
+    listAllEvents(limit: $limit, nextToken: $nextToken) {
+      items {
+        eventId
+        createdBy
+        venueName
+        venueLocation {
+          address
+          city
+          province
+        }
+        startTime
+        endTime
+        status
+        totalRevenue
+        totalRequests
+        createdAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const listAllUsers = /* GraphQL */ `
+  query ListAllUsers($role: String, $limit: Int, $nextToken: String) {
+    listAllUsers(role: $role, limit: $limit, nextToken: $nextToken) {
+      items {
+        userId
+        email
+        name
+        role
+        tier
+        status
+        totalSpent
+        totalEarnings
+        totalRequests
+        totalEvents
+        rating
+        createdAt
+        lastActiveAt
+        verificationStatus
+      }
+      nextToken
+    }
+  }
+`;
+
+export const listAllTransactions = /* GraphQL */ `
+  query ListAllTransactions($status: String, $limit: Int, $nextToken: String) {
+    listAllTransactions(status: $status, limit: $limit, nextToken: $nextToken) {
+      items {
+        transactionId
+        requestId
+        userId
+        userName
+        performerId
+        performerName
+        eventId
+        eventName
+        songTitle
+        artistName
+        amount
+        platformFee
+        performerEarnings
+        status
+        paymentProvider
+        providerTransactionId
+        createdAt
+        releasedAt
+        refundedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const listAllDisputes = /* GraphQL */ `
+  query ListAllDisputes($status: String, $limit: Int, $nextToken: String) {
+    listAllDisputes(status: $status, limit: $limit, nextToken: $nextToken) {
+      items {
+        disputeId
+        transactionId
+        raisedBy
+        raisedById
+        raisedByName
+        reason
+        description
+        status
+        priority
+        assignedTo
+        resolution
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const listAllPayouts = /* GraphQL */ `
+  query ListAllPayouts($status: String, $limit: Int, $nextToken: String) {
+    listAllPayouts(status: $status, limit: $limit, nextToken: $nextToken) {
+      items {
+        payoutId
+        performerId
+        performerName
+        amount
+        transactionCount
+        status
+        bankName
+        accountNumber
+        reference
+        createdAt
+        processedAt
+        failureReason
+      }
+      nextToken
+    }
+  }
+`;
+
+export const getAdminStats = /* GraphQL */ `
+  query GetAdminStats {
+    getAdminStats {
+      totalDJs
+      activeDJs
+      totalFans
+      activeFans
+      totalTransactions
+      heldFunds
+      releasedToday
+      pendingPayouts
+      openDisputes
+      platformRevenue
+      platformRevenueToday
+    }
+  }
+`;
+
+export const resolveDispute = /* GraphQL */ `
+  mutation ResolveDispute($disputeId: ID!, $resolution: String!, $action: String!) {
+    resolveDispute(disputeId: $disputeId, resolution: $resolution, action: $action) {
+      disputeId
+      status
+      resolution
+      resolvedAt
+    }
+  }
+`;
+
+export const processAdminPayout = /* GraphQL */ `
+  mutation ProcessAdminPayout($payoutId: ID!) {
+    processAdminPayout(payoutId: $payoutId) {
+      payoutId
+      status
+      processedAt
+    }
+  }
+`;
+
+export const updateUserStatus = /* GraphQL */ `
+  mutation UpdateUserStatus($userId: ID!, $status: String!, $reason: String) {
+    updateUserStatus(userId: $userId, status: $status, reason: $reason) {
+      userId
+      status
+    }
+  }
+`;
+
+export const releaseEscrowFunds = /* GraphQL */ `
+  mutation ReleaseEscrowFunds($transactionId: ID!) {
+    releaseEscrowFunds(transactionId: $transactionId) {
+      transactionId
+      status
+      releasedAt
+    }
+  }
+`;
+
+export const refundTransaction = /* GraphQL */ `
+  mutation RefundTransaction($transactionId: ID!, $reason: String!) {
+    refundTransaction(transactionId: $transactionId, reason: $reason) {
+      transactionId
+      status
+      refundedAt
+    }
+  }
+`;
+
+export async function fetchAdminStats() {
+  const response: any = await client.graphql({ query: getAdminStats });
+  return response.data.getAdminStats;
+}
+
+export async function fetchAllEvents(limit?: number, nextToken?: string) {
+  const response: any = await client.graphql({ 
+    query: listAllEvents, 
+    variables: { limit, nextToken } 
+  });
+  return response.data.listAllEvents;
+}
+
+export async function fetchAllUsers(role?: string, limit?: number, nextToken?: string) {
+  const response: any = await client.graphql({ 
+    query: listAllUsers, 
+    variables: { role, limit, nextToken } 
+  });
+  return response.data.listAllUsers;
+}
+
+export async function fetchAllTransactions(status?: string, limit?: number, nextToken?: string) {
+  const response: any = await client.graphql({ 
+    query: listAllTransactions, 
+    variables: { status, limit, nextToken } 
+  });
+  return response.data.listAllTransactions;
+}
+
+export async function fetchAllDisputes(status?: string, limit?: number, nextToken?: string) {
+  const response: any = await client.graphql({ 
+    query: listAllDisputes, 
+    variables: { status, limit, nextToken } 
+  });
+  return response.data.listAllDisputes;
+}
+
+export async function fetchAllPayouts(status?: string, limit?: number, nextToken?: string) {
+  const response: any = await client.graphql({ 
+    query: listAllPayouts, 
+    variables: { status, limit, nextToken } 
+  });
+  return response.data.listAllPayouts;
+}
+
+export async function submitResolveDispute(disputeId: string, resolution: string, action: string) {
+  const response: any = await client.graphql({ 
+    query: resolveDispute, 
+    variables: { disputeId, resolution, action } 
+  });
+  return response.data.resolveDispute;
+}
+
+export async function submitProcessPayout(payoutId: string) {
+  const response: any = await client.graphql({ 
+    query: processAdminPayout, 
+    variables: { payoutId } 
+  });
+  return response.data.processAdminPayout;
+}
+
+export async function submitUpdateUserStatus(userId: string, status: string, reason?: string) {
+  const response: any = await client.graphql({ 
+    query: updateUserStatus, 
+    variables: { userId, status, reason } 
+  });
+  return response.data.updateUserStatus;
+}
+
+export async function submitReleaseEscrow(transactionId: string) {
+  const response: any = await client.graphql({ 
+    query: releaseEscrowFunds, 
+    variables: { transactionId } 
+  });
+  return response.data.releaseEscrowFunds;
+}
+
+export async function submitRefundTransaction(transactionId: string, reason: string) {
+  const response: any = await client.graphql({ 
+    query: refundTransaction, 
+    variables: { transactionId, reason } 
+  });
+  return response.data.refundTransaction;
 }

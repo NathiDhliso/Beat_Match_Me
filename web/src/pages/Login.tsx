@@ -88,31 +88,47 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div
-      className="fixed inset-0 h-dvh flex items-center justify-center p-4 overflow-hidden"
-      style={{
-        background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)'
-      }}
-    >
-      {/* Animated background */}
+    <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden bg-[#0a0a0b]">
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(0, -20px); }
+        }
+        @keyframes float-reverse {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(0, 20px); }
+        }
+        .login-title {
+          background: linear-gradient(135deg, #fff 0%, #a855f7 40%, #ec4899 70%, #f97316 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          background-size: 200% auto;
+          animation: gradientMove 6s ease infinite;
+        }
+        @keyframes gradientMove {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
+
+      {/* Background orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl animate-pulse-slow"
-          style={{ backgroundColor: `${currentTheme.secondary}1A` }}
-        ></div>
+          className="absolute top-[20%] left-[20%] w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-[120px]"
+          style={{ animation: 'float 12s ease-in-out infinite' }}
+        />
         <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow"
-          style={{
-            backgroundColor: `${currentTheme.primary}1A`,
-            animationDelay: '1s'
-          }}
-        ></div>
+          className="absolute bottom-[20%] right-[20%] w-[350px] h-[350px] bg-pink-600/10 rounded-full blur-[120px]"
+          style={{ animation: 'float-reverse 10s ease-in-out infinite' }}
+        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/5 rounded-full blur-[150px]" />
       </div>
 
-      <div className="bg-gray-900/40 backdrop-blur-2xl rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/10 p-6 sm:p-7 w-full max-w-[420px] relative z-10">
-        {/* Compact Logo & Title */}
-        <div className="text-center mb-5">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">BeatMatchMe</h1>
+      <div className="bg-white/[0.02] backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] border border-white/[0.06] p-6 sm:p-8 w-full max-w-[420px] relative z-10">
+        {/* Logo & Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold login-title">BeatMatchMe</h1>
         </div>
 
         {error && (

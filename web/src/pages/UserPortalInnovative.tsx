@@ -23,8 +23,8 @@ import { GestureHandler } from '../components/OrbitalInterface';
 import { QueueTracker } from '../components/QueueTracker';
 import { EmptyState } from '../components/EmptyState';
 import { EventCardSkeleton, SongCardSkeleton, LoadingState } from '../components/LoadingSkeleton';
-import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon, AlertTriangle } from 'lucide-react';
-import { createPaymentIntent, processYocoPayment, isRetryableError } from '../services/payment';
+import { LogOut, User, Star, ArrowLeft, Bell, Calendar, Music, Settings as SettingsIcon, AlertTriangle, CheckCircle, PauseCircle } from 'lucide-react';
+import { processSimplePayment, isRetryableError } from '../services/payment';
 import { submitRequestWithPaymentVerification, fetchUserActiveRequests, fetchDJSet } from '../services/graphql';
 import { requestRateLimiter } from '../services/rateLimiter';
 import { BusinessMetrics } from '../services/analytics';
@@ -51,7 +51,7 @@ type ViewState = 'discovery' | 'lineup' | 'browsing' | 'requesting' | 'waiting' 
 
 export const UserPortalInnovative: React.FC = () => {
   const { user, logout } = useAuth();
-  const { currentTheme } = useTheme();
+  const { currentTheme, isDark } = useTheme();
   const themeClasses = useThemeClasses();
   const [viewState, setViewState] = useState<ViewState>('discovery');
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
@@ -163,7 +163,7 @@ export const UserPortalInnovative: React.FC = () => {
   // Fetch real data
   const { event: currentEvent, loading: eventLoading, error: eventError } = useEvent(currentEventId);
   const { queue } = useQueue(currentSetId);
-  const { tracklist, loading: tracklistLoading } = useTracklist(currentEventId);
+  const { tracklist, loading: tracklistLoading } = useTracklist(currentEventId, currentSetId);
 
   // Fetch active events from backend
   const [events, setEvents] = useState<any[]>([]);
@@ -843,10 +843,28 @@ export const UserPortalInnovative: React.FC = () => {
     >
       <div
         className="absolute inset-0 h-dvh"
-        style={{
-          background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)'
-        }}
+        style={{ background: isDark ? '#0a0a0b' : '#ffffff' }}
       >
+        {/* Background orbs - adjusted for light/dark mode */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div 
+            className={`absolute top-[10%] left-[10%] w-[400px] h-[400px] rounded-full blur-[120px] ${isDark ? 'bg-purple-600/10' : 'bg-purple-400/20'}`} 
+            style={{ animation: 'float 15s ease-in-out infinite' }} 
+          />
+          <div 
+            className={`absolute bottom-[10%] right-[10%] w-[350px] h-[350px] rounded-full blur-[120px] ${isDark ? 'bg-pink-600/8' : 'bg-pink-400/15'}`} 
+            style={{ animation: 'float 12s ease-in-out infinite reverse' }} 
+          />
+          <div 
+            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[150px] ${isDark ? 'bg-orange-500/5' : 'bg-orange-300/10'}`} 
+          />
+        </div>
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(0, -20px); }
+          }
+        `}</style>
         {/* Top Bar - Minimal */}
         <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-lg border-b border-white/10 safe-area-top">
           <div className="max-w-7xl mx-auto px-4 py-2 sm:py-3 flex items-center justify-between">
@@ -1156,35 +1174,29 @@ export const UserPortalInnovative: React.FC = () => {
                 estimatedWaitTime={myRequestPosition ? `~${myRequestPosition * 3} minutes` : '~25 minutes'}
                 onConfirm={async (requestData) => {
                   const handleConfirmRequest = async (retryCount = 0): Promise<void> => {
-                    const MAX_RETRIES = 3;
+                    const MAX_RETRIES = 2;
                     setIsProcessing(true);
                     setPaymentError(null);
 
                     try {
-                      // CRITICAL FIX: Generate idempotency key to prevent double charges
                       const idempotencyKey = crypto.randomUUID();
-                      console.log('🔑 Generated idempotency key:', idempotencyKey);
 
-                      console.log('💳 Creating payment intent...');
-                      const paymentIntent = await createPaymentIntent({
-                        amount: selectedSong.basePrice,
+                      // SIMPLIFIED: One-call payment processing
+                      console.log('💳 Processing payment...');
+                      const payment = await processSimplePayment({
+                        amount: requestData.totalAmount || selectedSong.basePrice,
+                        songTitle: selectedSong.title,
+                        artistName: selectedSong.artist,
                         songId: selectedSong.id,
                         eventId: currentEventId!,
                         setId: currentSetId || undefined,
-                        userId: user?.userId,
-                        songTitle: selectedSong.title,
-                        artistName: selectedSong.artist,
                       });
 
-                      // 2. Process payment via Yoco and get charge ID
-                      console.log('⚡ Processing payment...');
-                      const payment = await processYocoPayment(paymentIntent);
-
-                      if (payment.status !== 'succeeded' || !payment.chargeId) {
-                        throw new Error('Payment failed or charge ID not received');
+                      if (!payment.success || !payment.chargeId) {
+                        throw new Error(payment.message || 'Payment failed');
                       }
 
-                      console.log('✅ Payment succeeded, charge ID:', payment.chargeId);
+                      console.log('✅ Payment succeeded:', payment.chargeId);
 
                       // 3. Submit request with payment verification (NEW SECURE FLOW)
                       console.log('📤 Submitting request with payment verification...');
@@ -1203,7 +1215,7 @@ export const UserPortalInnovative: React.FC = () => {
                         dedication: requestData.dedication,
                         shoutout: requestData.shoutout,
                         yocoChargeId: payment.chargeId,
-                        idempotencyKey: idempotencyKey,
+                        idempotencyKey,
                       });
 
                       console.log('✅ Request submitted successfully:', result);

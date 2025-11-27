@@ -1,0 +1,12 @@
+## Mutation.releaseEscrowFunds Response Mapping Template
+## Returns the updated transaction
+
+#if($ctx.error)
+  #if($ctx.error.type == "DynamoDB:ConditionalCheckFailedException")
+    $util.error("Transaction not found or not in HELD status", "INVALID_STATE")
+  #else
+    $util.error($ctx.error.message, $ctx.error.type)
+  #end
+#end
+
+$util.toJson($ctx.result)

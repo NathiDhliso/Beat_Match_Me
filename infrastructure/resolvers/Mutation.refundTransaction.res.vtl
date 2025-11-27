@@ -1,0 +1,12 @@
+## Mutation.refundTransaction Response Mapping Template
+## Returns the updated transaction after refund
+
+#if($ctx.error)
+  $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#if($ctx.result.error)
+  $util.error($ctx.result.error, "RefundError")
+#end
+
+$util.toJson($ctx.result)

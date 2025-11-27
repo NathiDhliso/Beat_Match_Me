@@ -359,3 +359,94 @@ export async function verifyPaymentStatus(
   console.error(`⏱️ Payment verification timed out after ${maxAttempts} attempts`);
   return 'pending'; // Return pending instead of throwing (graceful degradation)
 }
+
+/**
+ * SIMPLIFIED PAYMENT FLOW
+ * One-call function that handles the entire payment process
+ * 
+ * @param songRequest - Song request details
+ * @returns Payment result with charge ID or throws error
+ */
+export interface SimplePaymentRequest {
+  amount: number;
+  songTitle: string;
+  artistName: string;
+  songId: string;
+  eventId: string;
+  setId?: string;
+}
+
+export interface SimplePaymentResult {
+  success: boolean;
+  chargeId: string;
+  amount: number;
+  message: string;
+}
+
+export async function processSimplePayment(request: SimplePaymentRequest): Promise<SimplePaymentResult> {
+  console.log('💳 Starting simplified payment flow for:', request.songTitle);
+
+  try {
+    // 1. Load SDK (cached after first load)
+    await loadYocoSDK();
+
+    if (!yocoSDKInstance) {
+      throw new Error('Payment system unavailable. Please refresh the page.');
+    }
+
+    // 2. Show Yoco popup and process payment
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Payment timed out. Please try again.'));
+      }, 120000); // 2 minute timeout
+
+      yocoSDKInstance.showPopup({
+        amountInCents: Math.round(request.amount * 100),
+        currency: 'ZAR',
+        name: 'BeatMatchMe',
+        description: `🎵 ${request.songTitle} - ${request.artistName}`,
+        metadata: {
+          songId: request.songId,
+          eventId: request.eventId,
+          setId: request.setId,
+        },
+        callback: (result: any) => {
+          clearTimeout(timeoutId);
+
+          if (result.error) {
+            console.error('❌ Payment error:', result.error);
+            
+            // User-friendly error messages
+            let message = 'Payment failed. Please try again.';
+            if (result.error.message?.includes('cancelled')) {
+              message = 'Payment cancelled.';
+            } else if (result.error.message?.includes('declined')) {
+              message = 'Card declined. Please try a different card.';
+            } else if (result.error.message?.includes('insufficient')) {
+              message = 'Insufficient funds. Please try a different card.';
+            }
+            
+            reject(new Error(message));
+            return;
+          }
+
+          if (result.id) {
+            console.log('✅ Payment successful:', result.id);
+            resolve({
+              success: true,
+              chargeId: result.id,
+              amount: request.amount,
+              message: 'Payment successful!',
+            });
+          } else {
+            reject(new Error('Payment failed - no confirmation received.'));
+          }
+        },
+      });
+    });
+
+  } catch (error: any) {
+    console.error('❌ Payment flow error:', error);
+    throw new Error(error.message || 'Payment failed. Please try again.');
+  }
+}

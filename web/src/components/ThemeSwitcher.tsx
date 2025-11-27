@@ -12,6 +12,13 @@ import { getAllThemes } from '../theme/tokens';
 import type { ThemeMode } from '../theme/tokens';
 import { Music, Crown, Award } from 'lucide-react';
 
+const getLightModeClasses = (isDark: boolean, isActive: boolean) => {
+  if (isActive) return '';
+  return isDark 
+    ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border-2 border-gray-700/50'
+    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border-2 border-gray-200';
+};
+
 interface ThemeSwitcherProps {
   compact?: boolean;
   className?: string;
@@ -25,7 +32,7 @@ const themeIcons = {
 };
 
 export default function ThemeSwitcher({ compact = false, className = '' }: ThemeSwitcherProps) {
-  const { themeMode, setThemeMode, currentTheme } = useTheme();
+  const { themeMode, setThemeMode, currentTheme, isDark } = useTheme();
   const themes = getAllThemes();
 
   const handleThemeChange = (mode: ThemeMode) => {
@@ -68,7 +75,7 @@ export default function ThemeSwitcher({ compact = false, className = '' }: Theme
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <label className="text-sm font-semibold text-gray-300">
+      <label className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
         Theme
       </label>
       
@@ -86,7 +93,7 @@ export default function ThemeSwitcher({ compact = false, className = '' }: Theme
                 transition-all duration-300 text-left
                 ${isActive 
                   ? 'bg-gradient-to-r ' + currentTheme.gradientPrimary + ' text-white shadow-xl scale-[1.02] border-2 border-white/20' 
-                  : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border-2 border-gray-700/50'
+                  : getLightModeClasses(isDark, isActive)
                 }
               `}
               aria-label={`Switch to ${theme.name} theme`}
@@ -97,7 +104,7 @@ export default function ThemeSwitcher({ compact = false, className = '' }: Theme
                 flex items-center justify-center w-12 h-12 rounded-lg
                 ${isActive 
                   ? 'bg-white/20' 
-                  : 'bg-gray-700/50'
+                  : isDark ? 'bg-gray-700/50' : 'bg-gray-200'
                 }
               `}>
                 <Icon className="w-6 h-6" />
@@ -106,7 +113,7 @@ export default function ThemeSwitcher({ compact = false, className = '' }: Theme
               {/* Content */}
               <div className="flex-1">
                 <div className="font-bold text-base">{theme.name}</div>
-                <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-400'}`}>
+                <div className={`text-xs ${isActive ? 'text-white/80' : isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   {theme.description}
                 </div>
               </div>
@@ -123,9 +130,9 @@ export default function ThemeSwitcher({ compact = false, className = '' }: Theme
       </div>
       
       {/* Theme Preview Info */}
-      <div className="mt-4 p-3 rounded-lg bg-gray-800/30 border border-gray-700/50">
-        <div className="text-xs text-gray-400">
-          <span className="font-semibold text-gray-300">Current: </span>
+      <div className={`mt-4 p-3 rounded-lg ${isDark ? 'bg-gray-800/30 border-gray-700/50' : 'bg-gray-100 border-gray-200'} border`}>
+        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Current: </span>
           {currentTheme.name}
         </div>
       </div>

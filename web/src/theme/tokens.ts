@@ -29,6 +29,9 @@ export interface Theme {
   secondaryDark: string;
   secondaryLight: string;
 
+  // Tertiary Color (optional)
+  tertiary?: string;
+
   // Gradients (Tailwind classes)
   gradientPrimary: string;
   gradientHover: string;
@@ -55,7 +58,7 @@ export const themes: Record<ThemeMode, Theme> = {
   BeatMatchMe: {
     id: 'BeatMatchMe',
     name: 'BeatMatchMe Original',
-    description: 'Signature purple & pink gradients for the original BeatMatchMe experience',
+    description: 'Premium purple, pink & orange gradients for the BeatMatchMe experience',
 
     // Primary Colors
     primary: '#8B5CF6',           // Purple-600
@@ -67,11 +70,14 @@ export const themes: Record<ThemeMode, Theme> = {
     secondaryDark: '#DB2777',     // Pink-700
     secondaryLight: '#F472B6',    // Pink-400
 
+    // Accent (Orange for tri-color gradient)
+    tertiary: '#F97316',          // Orange-500
+
     // Gradients (Tailwind classes)
-    gradientPrimary: 'from-purple-600 to-pink-600',
-    gradientHover: 'from-purple-700 to-pink-700',
-    gradientBackground: 'from-gray-900 via-purple-900 to-gray-900',
-    gradientCard: 'from-purple-600/20 to-pink-600/20',
+    gradientPrimary: 'from-purple-600 via-pink-600 to-orange-500',
+    gradientHover: 'from-purple-700 via-pink-700 to-orange-600',
+    gradientBackground: 'from-[#0a0a0b] via-[#0a0a0b] to-[#0a0a0b]',
+    gradientCard: 'from-purple-600/10 to-pink-600/10',
 
     // CSS Variables (for inline styles)
     cssVars: {
@@ -81,9 +87,11 @@ export const themes: Record<ThemeMode, Theme> = {
       '--theme-secondary': '#EC4899',
       '--theme-secondary-dark': '#DB2777',
       '--theme-secondary-light': '#F472B6',
-      '--theme-gradient': 'linear-gradient(to right, #8B5CF6, #EC4899)',
-      '--theme-gradient-bg': 'linear-gradient(to bottom right, #111827, #581c87, #0a0a0a)',
-      '--theme-orbital-glow': 'rgba(139, 92, 246, 0.3)',
+      '--theme-tertiary': '#F97316',
+      '--theme-gradient': 'linear-gradient(135deg, #8B5CF6, #EC4899, #F97316)',
+      '--theme-gradient-bg': '#0a0a0b',
+      '--theme-orbital-glow': 'rgba(139, 92, 246, 0.4)',
+      '--theme-bg': '#0a0a0b',
     },
 
     // Accent Colors
@@ -91,11 +99,11 @@ export const themes: Record<ThemeMode, Theme> = {
     accentMuted: '#6B7280',       // Gray-500 (disabled states)
 
     // Orbital Interface
-    orbitalRing: 'from-purple-500 to-pink-500',
-    orbitalGlow: 'rgba(139, 92, 246, 0.3)',
+    orbitalRing: 'from-purple-600 via-pink-600 to-orange-500',
+    orbitalGlow: 'rgba(139, 92, 246, 0.4)',
 
     // Border & Shadow
-    borderColor: '#7C3AED',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     shadowColor: 'rgba(139, 92, 246, 0.5)',
   },
 

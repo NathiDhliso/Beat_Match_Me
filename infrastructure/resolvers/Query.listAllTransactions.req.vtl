@@ -1,0 +1,38 @@
+## Query.listAllTransactions Request Mapping Template
+## Scans transactions table with optional status filter
+## Requires Admins Cognito group membership
+
+#set($limit = $util.defaultIfNull($ctx.args.limit, 50))
+
+#if($ctx.args.status)
+  ## Use GSI when filtering by status
+  {
+    "version": "2017-02-28",
+    "operation": "Query",
+    "query": {
+      "expression": "#status = :status",
+      "expressionNames": {
+        "#status": "status"
+      },
+      "expressionValues": {
+        ":status": $util.dynamodb.toDynamoDBJson($ctx.args.status)
+      }
+    },
+    "index": "status-createdAt-index",
+    "limit": $limit,
+    "scanIndexForward": false
+    #if($ctx.args.nextToken)
+      ,"nextToken": "$ctx.args.nextToken"
+    #end
+  }
+#else
+  ## Full table scan when no status filter
+  {
+    "version": "2017-02-28",
+    "operation": "Scan",
+    "limit": $limit
+    #if($ctx.args.nextToken)
+      ,"nextToken": "$ctx.args.nextToken"
+    #end
+  }
+#end

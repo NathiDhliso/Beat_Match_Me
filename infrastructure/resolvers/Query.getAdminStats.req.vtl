@@ -1,0 +1,12 @@
+## Query.getAdminStats Request Mapping Template
+## Invokes Lambda function to aggregate admin statistics from multiple tables
+## Requires Admins Cognito group membership
+
+{
+  "version": "2017-02-28",
+  "operation": "Invoke",
+  "payload": {
+    "action": "getAdminStats",
+    "identity": $util.toJson($ctx.identity)
+  }
+}

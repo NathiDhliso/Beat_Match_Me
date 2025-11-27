@@ -1,6 +1,90 @@
 {
-  "description": "DynamoDB Global Secondary Indexes for idempotency and payment deduplication",
+  "description": "DynamoDB Global Secondary Indexes for idempotency, payment deduplication, and admin CRM",
   "tables": {
+    "beatmatchme-disputes": {
+      "tableName": "beatmatchme-disputes",
+      "primaryKey": {
+        "partitionKey": "disputeId",
+        "sortKey": null
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "status-createdAt-index",
+          "partitionKey": "status",
+          "sortKey": "createdAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query disputes by status sorted by creation date. Supports admin CRM dispute management."
+        },
+        {
+          "indexName": "transactionId-index",
+          "partitionKey": "transactionId",
+          "sortKey": null,
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Lookup disputes by transaction. Supports linking disputes to transactions."
+        }
+      ],
+      "attributes": {
+        "disputeId": "S",
+        "transactionId": "S",
+        "raisedBy": "S",
+        "raisedById": "S",
+        "raisedByName": "S",
+        "reason": "S",
+        "description": "S",
+        "status": "S",
+        "priority": "S",
+        "assignedTo": "S",
+        "resolution": "S",
+        "createdAt": "N",
+        "updatedAt": "N",
+        "resolvedAt": "N"
+      }
+    },
+    "beatmatchme-payouts": {
+      "tableName": "beatmatchme-payouts",
+      "primaryKey": {
+        "partitionKey": "payoutId",
+        "sortKey": null
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "performerId-index",
+          "partitionKey": "performerId",
+          "sortKey": null,
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query payouts by performer. Supports DJ payout history."
+        },
+        {
+          "indexName": "status-createdAt-index",
+          "partitionKey": "status",
+          "sortKey": "createdAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query payouts by status sorted by date. Supports admin CRM payout processing."
+        }
+      ],
+      "attributes": {
+        "payoutId": "S",
+        "performerId": "S",
+        "performerName": "S",
+        "amount": "N",
+        "transactionCount": "N",
+        "status": "S",
+        "bankName": "S",
+        "accountNumber": "S",
+        "reference": "S",
+        "createdAt": "N",
+        "processedAt": "N",
+        "failureReason": "S"
+      }
+    },
     "beatmatchme-transactions": {
       "tableName": "beatmatchme-transactions",
       "primaryKey": {
@@ -34,8 +118,26 @@
           "readCapacityUnits": 5,
           "writeCapacityUnits": 5,
           "description": "Query user transaction history sorted by date. Supports payment status pages."
+        },
+        {
+          "indexName": "status-createdAt-index",
+          "partitionKey": "status",
+          "sortKey": "createdAt",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query transactions by escrow status sorted by date. Supports admin CRM escrow management."
         }
-      ]
+      ],
+      "additionalAttributes": {
+        "platformFee": "N",
+        "performerEarnings": "N",
+        "userName": "S",
+        "performerName": "S",
+        "eventName": "S",
+        "releasedAt": "N",
+        "refundedAt": "N"
+      }
     },
     "beatmatchme-requests": {
       "tableName": "beatmatchme-requests",
@@ -74,6 +176,44 @@
       ]
     }
   },
+    "beatmatchme-users": {
+      "tableName": "beatmatchme-users-dev",
+      "primaryKey": {
+        "partitionKey": "userId",
+        "sortKey": null
+      },
+      "globalSecondaryIndexes": [
+        {
+          "indexName": "role-status-index",
+          "partitionKey": "role",
+          "sortKey": "status",
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Query users by role and status. Supports admin CRM user management."
+        },
+        {
+          "indexName": "email-index",
+          "partitionKey": "email",
+          "sortKey": null,
+          "projectionType": "ALL",
+          "readCapacityUnits": 5,
+          "writeCapacityUnits": 5,
+          "description": "Lookup users by email. Supports authentication and user search."
+        }
+      ],
+      "additionalAttributes": {
+        "status": "S",
+        "totalSpent": "N",
+        "totalEarnings": "N",
+        "totalRequests": "N",
+        "totalEvents": "N",
+        "rating": "N",
+        "lastActiveAt": "N",
+        "verificationStatus": "S"
+      }
+    }
+  },
   "awsRegion": "us-east-1",
   "billingMode": "PROVISIONED",
   "notes": [
@@ -83,6 +223,12 @@
     "userId-submittedAt-index: Used in P0-3 (Pre-Creation Validation) for rate limiting",
     "eventId-userId-index: Used in P1-4 (Request Deduplication)",
     "Adjust capacity units based on traffic patterns after deployment",
-    "Consider switching to PAY_PER_REQUEST billing mode for cost optimization"
+    "Consider switching to PAY_PER_REQUEST billing mode for cost optimization",
+    "",
+    "Admin CRM Tables and GSIs:",
+    "beatmatchme-disputes: New table for dispute management",
+    "beatmatchme-payouts: New table for DJ payout processing",
+    "status-createdAt-index on transactions: Query by escrow status",
+    "role-status-index on users: Query users by role and status for admin management"
   ]
 }

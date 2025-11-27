@@ -16,6 +16,7 @@ import { initPullToRefreshPrevention } from './utils/preventPullToRefresh';
 // Phase 8: Lazy load route components for massive bundle size reduction
 const DJPortal = lazy(() => import('./pages/DJPortalOrbital').then(m => ({ default: m.DJPortalOrbital })));
 const UserPortal = lazy(() => import('./pages/UserPortalInnovative').then(m => ({ default: m.UserPortalInnovative })));
+const AdminCRM = lazy(() => import('./pages/AdminCRM').then(m => ({ default: m.AdminCRM })));
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFORMER' | 'AUDIENCE' }> = ({
@@ -205,6 +206,14 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/yoco-test" element={<YocoTestPage />} />
                 <Route path="/peek-test" element={<PeekPreviewTest />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <Suspense fallback={<LoadingScreen message="Loading Admin CRM..." />}>
+                      <AdminCRM />
+                    </Suspense>
+                  } 
+                />
                 <Route path="/dashboard" element={<Dashboard />} />
                 {/* Phase 8: Lazy loaded routes with Suspense for code splitting */}
                 <Route

@@ -251,6 +251,175 @@ enum GroupRequestStatus {
   COMPLETED
 }
 
+# ============================================
+# ADMIN CRM ENUMS
+# ============================================
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  FLAGGED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum EscrowStatus {
+  PENDING
+  HELD
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum DisputeRaiser {
+  FAN
+  DJ
+}
+
+enum DisputeReason {
+  SONG_NOT_PLAYED
+  WRONG_SONG
+  POOR_QUALITY
+  EXCESSIVE_WAIT
+  PAYMENT_ISSUE
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  INVESTIGATING
+  ESCALATED
+  RESOLVED
+}
+
+enum DisputePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+# ============================================
+# ADMIN CRM TYPES
+# ============================================
+
+type AdminStats {
+  totalDJs: Int!
+  activeDJs: Int!
+  totalFans: Int!
+  activeFans: Int!
+  totalTransactions: Int!
+  heldFunds: Float!
+  releasedToday: Float!
+  pendingPayouts: Float!
+  openDisputes: Int!
+  platformRevenue: Float!
+  platformRevenueToday: Float!
+}
+
+type AdminUser {
+  userId: ID!
+  email: String!
+  name: String!
+  role: UserRole!
+  tier: UserTier!
+  status: UserStatus!
+  totalSpent: Float
+  totalEarnings: Float
+  totalRequests: Int!
+  totalEvents: Int
+  rating: Float
+  createdAt: AWSTimestamp!
+  lastActiveAt: AWSTimestamp
+  verificationStatus: VerificationStatus
+}
+
+type AdminUserConnection {
+  items: [AdminUser!]!
+  nextToken: String
+}
+
+type AdminTransaction {
+  transactionId: ID!
+  requestId: ID!
+  userId: ID!
+  userName: String!
+  performerId: ID!
+  performerName: String!
+  eventId: ID!
+  eventName: String
+  songTitle: String!
+  artistName: String!
+  amount: Float!
+  platformFee: Float!
+  performerEarnings: Float!
+  status: EscrowStatus!
+  paymentProvider: PaymentProvider!
+  providerTransactionId: String!
+  createdAt: AWSTimestamp!
+  releasedAt: AWSTimestamp
+  refundedAt: AWSTimestamp
+}
+
+type AdminTransactionConnection {
+  items: [AdminTransaction!]!
+  nextToken: String
+}
+
+type Dispute {
+  disputeId: ID!
+  transactionId: ID!
+  raisedBy: DisputeRaiser!
+  raisedById: ID!
+  raisedByName: String!
+  reason: DisputeReason!
+  description: String!
+  status: DisputeStatus!
+  priority: DisputePriority!
+  assignedTo: String
+  resolution: String
+  createdAt: AWSTimestamp!
+  updatedAt: AWSTimestamp!
+  resolvedAt: AWSTimestamp
+}
+
+type DisputeConnection {
+  items: [Dispute!]!
+  nextToken: String
+}
+
+type Payout {
+  payoutId: ID!
+  performerId: ID!
+  performerName: String!
+  amount: Float!
+  transactionCount: Int!
+  status: PayoutStatus!
+  bankName: String!
+  accountNumber: String!
+  reference: String!
+  createdAt: AWSTimestamp!
+  processedAt: AWSTimestamp
+  failureReason: String
+}
+
+type PayoutConnection {
+  items: [Payout!]!
+  nextToken: String
+}
+
 type EventConnection {
   items: [Event!]!
   nextToken: String
@@ -290,6 +459,13 @@ type Query {
   getAchievements(userId: ID!): Achievement
   getGroupRequest(groupRequestId: ID!): GroupRequest
   listActiveGroupRequests(eventId: ID!): [GroupRequest!]!
+  
+  # Admin CRM Queries (require Admins group)
+  getAdminStats: AdminStats @aws_auth(cognito_groups: ["Admins"])
+  listAllUsers(role: String, limit: Int, nextToken: String): AdminUserConnection @aws_auth(cognito_groups: ["Admins"])
+  listAllTransactions(status: String, limit: Int, nextToken: String): AdminTransactionConnection @aws_auth(cognito_groups: ["Admins"])
+  listAllDisputes(status: String, limit: Int, nextToken: String): DisputeConnection @aws_auth(cognito_groups: ["Admins"])
+  listAllPayouts(status: String, limit: Int, nextToken: String): PayoutConnection @aws_auth(cognito_groups: ["Admins"])
 }
 
 input VenueLocationInput {
@@ -421,6 +597,13 @@ type Mutation {
   
   submitRequestWithPayment(input: SubmitRequestWithPaymentInput!): SubmitRequestWithPaymentResponse!
   processRefund(requestId: ID!, reason: String): RefundResponse
+  
+  # Admin CRM Mutations (require Admins group)
+  updateUserStatus(userId: ID!, status: String!, reason: String): AdminUser @aws_auth(cognito_groups: ["Admins"])
+  releaseEscrowFunds(transactionId: ID!): AdminTransaction @aws_auth(cognito_groups: ["Admins"])
+  refundTransaction(transactionId: ID!, reason: String!): AdminTransaction @aws_auth(cognito_groups: ["Admins"])
+  resolveDispute(disputeId: ID!, resolution: String!, action: String!): Dispute @aws_auth(cognito_groups: ["Admins"])
+  processAdminPayout(payoutId: ID!): Payout @aws_auth(cognito_groups: ["Admins"])
 }
 
 type Subscription {

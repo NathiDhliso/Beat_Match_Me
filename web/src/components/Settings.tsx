@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Bell, HelpCircle, X, ChevronRight, Vibrate, Moon, Sun } from 'lucide-react';
+import { Bell, X, ChevronRight, Vibrate, Moon, Sun, BookOpen, ChevronDown } from 'lucide-react';
 import { HapticFeedback, getHapticIntensity, setHapticIntensity, isHapticSupported, type HapticIntensity } from '../utils/haptics';
 import { requestNotificationPermission } from '../services/notifications';
 import { useTheme } from '../context/ThemeContext';
@@ -21,6 +21,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const [hapticIntensity, setHapticIntensityState] = useState<HapticIntensity>('medium');
+  const [showGuide, setShowGuide] = useState(false);
   const { currentTheme, isDark, toggleDarkMode } = useTheme();
   const hapticSupported = isHapticSupported();
 
@@ -244,26 +245,86 @@ export const Settings: React.FC<SettingsProps> = ({ onClose, mode = 'fan' }) => 
             )}
           </div>
 
-          {/* Help & Support */}
+          {/* How It Works Guide */}
           <div className={styles.settingCard}>
             <button 
-              onClick={() => {
-                // Open help in new window or show help modal
-                window.open('mailto:support@beatmatchme.com', '_blank');
-              }}
+              onClick={() => setShowGuide(!showGuide)}
               className={styles.helpButton}
             >
               <div className={styles.settingInfo}>
-                <div className={styles.settingIcon} style={{ backgroundColor: 'rgb(59 130 246 / 0.2)' }}>
-                  <HelpCircle className="w-5 h-5 text-blue-400" />
+                <div className={styles.settingIcon} style={{ backgroundColor: 'rgb(168 85 247 / 0.2)' }}>
+                  <BookOpen className="w-5 h-5 text-purple-400" />
                 </div>
                 <div className={styles.settingText}>
-                  <h3 className={styles.settingTitle}>Help & Support</h3>
-                  <p className={styles.settingDescription}>Get help or contact support</p>
+                  <h3 className={styles.settingTitle}>How It Works</h3>
+                  <p className={styles.settingDescription}>Quick guide for {mode === 'dj' ? 'DJs' : 'fans'}</p>
+                </div>
+              </div>
+              <ChevronDown className={`${styles.chevronIcon} transition-transform ${showGuide ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showGuide && (
+              <div className="mt-4 space-y-4 text-sm">
+                {mode === 'dj' ? (
+                  <>
+                    <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                      <h4 className="font-semibold text-purple-400 mb-2">1. Create Event</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Tap the music icon → Enter venue name and time → Create</p>
+                    </div>
+                    <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <h4 className="font-semibold text-blue-400 mb-2">2. Import Playlist</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Swipe down to Library → Import from Spotify → Select songs fans can request</p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                      <h4 className="font-semibold text-green-400 mb-2">3. Go Live</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Tap GO LIVE → Share QR code → Accept/veto requests as they come in</p>
+                    </div>
+                    <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                      <h4 className="font-semibold text-orange-400 mb-2">4. Get Paid</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Payments go directly to your account. Swipe left to see revenue stats.</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                      <h4 className="font-semibold text-purple-400 mb-2">1. Find Event</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Scan the DJ's QR code or browse nearby events</p>
+                    </div>
+                    <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <h4 className="font-semibold text-blue-400 mb-2">2. Pick a Song</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Browse the DJ's playlist → Tap a song to select it</p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                      <h4 className="font-semibold text-green-400 mb-2">3. Request & Pay</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Tap REQUEST → Pay with card → Your song joins the queue!</p>
+                    </div>
+                    <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                      <h4 className="font-semibold text-orange-400 mb-2">4. Track Your Request</h4>
+                      <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Watch your position in the queue. Get notified when your song plays!</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Contact */}
+          <div className={styles.settingCard}>
+            <a 
+              href="tel:0614509800"
+              className={styles.helpButton}
+            >
+              <div className={styles.settingInfo}>
+                <div className={styles.settingIcon} style={{ backgroundColor: 'rgb(34 197 94 / 0.2)' }}>
+                  <span className="text-green-400 text-lg">📞</span>
+                </div>
+                <div className={styles.settingText}>
+                  <h3 className={styles.settingTitle}>Contact</h3>
+                  <p className={styles.settingDescription}>061 450 9800</p>
                 </div>
               </div>
               <ChevronRight className={styles.chevronIcon} />
-            </button>
+            </a>
           </div>
 
           {/* App Version */}

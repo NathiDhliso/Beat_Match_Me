@@ -52,12 +52,16 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         aws_dynamodb_table.achievements.arn,
         aws_dynamodb_table.group_requests.arn,
         aws_dynamodb_table.upvotes.arn,
+        aws_dynamodb_table.disputes.arn,
+        aws_dynamodb_table.payouts.arn,
         "${aws_dynamodb_table.users.arn}/index/*",
         "${aws_dynamodb_table.events.arn}/index/*",
         "${aws_dynamodb_table.requests.arn}/index/*",
         "${aws_dynamodb_table.transactions.arn}/index/*",
         "${aws_dynamodb_table.group_requests.arn}/index/*",
-        "${aws_dynamodb_table.upvotes.arn}/index/*"
+        "${aws_dynamodb_table.upvotes.arn}/index/*",
+        "${aws_dynamodb_table.disputes.arn}/index/*",
+        "${aws_dynamodb_table.payouts.arn}/index/*"
       ]
     }]
   })
@@ -114,7 +118,8 @@ locals {
     "checkAchievements",
     "vetoRequest",
     "createEvent",
-    "updateEventStatus"
+    "updateEventStatus",
+    "adminOperations"
   ]
 }
 

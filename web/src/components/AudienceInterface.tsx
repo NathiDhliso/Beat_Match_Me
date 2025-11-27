@@ -358,7 +358,12 @@ export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, di
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-30">
+    <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent pointer-events-none z-30">
+      {!selectedSong && (
+        <p className="text-center text-gray-400 text-sm mb-3 pointer-events-none">
+          👆 Tap a song above to select it
+        </p>
+      )}
       <button
         onClick={handlePress}
         disabled={disabled}
@@ -372,12 +377,12 @@ export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, di
       >
         <div className="flex items-center gap-2 sm:gap-3">
           <Zap className="w-6 h-6 sm:w-8 sm:h-8" />
-          <span className="hidden sm:inline">Request Song - R{price}</span>
-          <span className="sm:hidden text-base">Request - R{price}</span>
+          <span className="hidden sm:inline">{selectedSong ? `Request "${selectedSong}" - R${price}` : 'Select a Song'}</span>
+          <span className="sm:hidden text-base">{selectedSong ? `R${price}` : 'Select Song'}</span>
           <Zap className="w-6 h-6 sm:w-8 sm:h-8" />
         </div>
         {selectedSong && (
-          <span className="text-xs sm:text-sm text-purple-200 truncate max-w-[200px] sm:max-w-xs">
+          <span className="text-xs sm:text-sm text-purple-200 truncate max-w-[200px] sm:max-w-xs sm:hidden">
             {selectedSong}
           </span>
         )}

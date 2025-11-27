@@ -1,0 +1,12 @@
+## Query.getAdminStats Response Mapping Template
+## Returns aggregated admin statistics
+
+#if($ctx.error)
+  $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#if($ctx.result.error)
+  $util.error($ctx.result.error, "AdminStatsError")
+#end
+
+$util.toJson($ctx.result)

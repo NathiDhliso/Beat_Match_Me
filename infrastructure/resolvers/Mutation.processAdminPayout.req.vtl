@@ -1,0 +1,14 @@
+## Mutation.processAdminPayout Request Mapping Template
+## Invokes Lambda to process payout via bank transfer
+## Requires Admins Cognito group membership
+
+{
+  "version": "2017-02-28",
+  "operation": "Invoke",
+  "payload": {
+    "action": "processAdminPayout",
+    "payoutId": "$ctx.args.payoutId",
+    "adminUser": "$ctx.identity.username",
+    "identity": $util.toJson($ctx.identity)
+  }
+}
