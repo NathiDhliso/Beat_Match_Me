@@ -119,7 +119,8 @@ locals {
     "vetoRequest",
     "createEvent",
     "updateEventStatus",
-    "adminOperations"
+    "adminOperations",
+    "submitRequestWithPayment"
   ]
 }
 
