@@ -101,12 +101,12 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
     <div className={`h-full flex flex-col ${styles.libraryRoot}`}>
       {/* Header */}
       <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-white/10 space-y-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <h2 className="text-xl sm:text-2xl font-bold text-white">My Library</h2>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowSongSearch(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90 min-w-[120px]"
               style={{
                 background: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.secondary})`
               }}
@@ -116,7 +116,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-white text-xs sm:text-sm font-semibold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-1.5 sm:gap-2 hover:opacity-90 min-w-[120px]"
               style={{
                 background: `linear-gradient(to right, ${currentTheme.secondary}, ${currentTheme.accent})`
               }}
@@ -128,7 +128,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         </div>
 
         {/* Search and Filter */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -145,7 +145,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
             <select
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
-              className="pl-10 pr-7 py-2.5 bg-white/5 border border-white/10 rounded-full text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none cursor-pointer text-sm"
+              className="w-full sm:w-auto pl-10 pr-7 py-2.5 bg-white/5 border border-white/10 rounded-full text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none cursor-pointer text-sm"
             >
               {genres.map(genre => (
                 <option key={genre} value={genre} className="bg-gray-900">
@@ -157,16 +157,16 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
-            <p className="text-gray-400 text-xs">Total</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
+            <p className="text-gray-400 text-xs">Total Songs</p>
             <p className="text-xl font-bold text-white">{tracks.length}</p>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
             <p className="text-gray-400 text-xs">Enabled</p>
             <p className="text-xl font-bold text-green-400">{tracks.filter(t => t.isEnabled).length}</p>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm">
+          <div className="bg-white/5 rounded-lg p-3 border border-white/10 text-sm flex items-center justify-between sm:block">
             <p className="text-gray-400 text-xs">Avg Price</p>
             <p className="text-xl font-bold text-yellow-400">
               R{(tracks.reduce((sum, t) => sum + t.basePrice, 0) / tracks.length || 0).toFixed(0)}

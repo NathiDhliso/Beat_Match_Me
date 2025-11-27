@@ -64,18 +64,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      
+
       // Add timeout protection for Cognito calls
       const timeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Auth check timeout')), 10000)
       );
-      
+
       const authCheck = async () => {
         const currentUser = await getCurrentUser();
         const attributes = await fetchUserAttributes();
         return { currentUser, attributes };
       };
-      
+
       const { currentUser, attributes } = await Promise.race([authCheck(), timeout]) as any;
 
       setUser({

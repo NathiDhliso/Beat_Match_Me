@@ -50,13 +50,13 @@ export const DJPortalOrbital: React.FC = () => {
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [currentSetId, setCurrentSetId] = useState<string | null>(null);
   const [currentEventId, setCurrentEventId] = useState<string | null>(null);
-  
+
   // Settings state
   const [basePrice, setBasePrice] = useState(20);
   const [requestsPerHour, setRequestsPerHour] = useState(20);
   const [spotlightSlots, setSpotlightSlots] = useState(1);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
-  
+
   // DJ Set management state
   const [showEventCreator, setShowEventCreator] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -168,9 +168,9 @@ export const DJPortalOrbital: React.FC = () => {
         const client = generateClient({
           authMode: 'userPool'
         });
-        
+
         console.log('📡 Querying listPerformerSets...');
-        
+
         const response: any = await client.graphql({
           query: `
             query ListPerformerSets($performerId: ID!) {
@@ -196,7 +196,7 @@ export const DJPortalOrbital: React.FC = () => {
         console.log('✅ Raw response:', response);
         const performerSets = response.data.listPerformerSets || [];
         console.log(`📊 Found ${performerSets.length} sets:`, performerSets);
-        
+
         // Fetch event details for each set to get venue name
         const setsWithEvents = await Promise.all(
           performerSets.map(async (set: any) => {
@@ -226,16 +226,16 @@ export const DJPortalOrbital: React.FC = () => {
             }
           })
         );
-        
+
         console.log('📋 Sets with event details:', setsWithEvents);
         setMySets(setsWithEvents);
-        
+
         // Auto-select most recent ACTIVE set if no set selected
         if (!currentSetId && performerSets.length > 0) {
           const activeSets = performerSets
             .filter((s: any) => s.status === 'ACTIVE' || s.status === 'SCHEDULED')
             .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime());
-          
+
           if (activeSets.length > 0) {
             console.log('🎵 Auto-loading most recent set:', activeSets[0].setId);
             setCurrentSetId(activeSets[0].setId);
@@ -281,12 +281,12 @@ export const DJPortalOrbital: React.FC = () => {
   useEffect(() => {
     const loadTracksAndPlaylist = async () => {
       if (!currentSetId || !user?.userId) return;
-      
+
       try {
         const client = generateClient({
           authMode: 'userPool'
         });
-        
+
         // 1. Load tracklist first (this contains the actual track data)
         if (tracklist.length > 0 && !tracksLoaded) {
           console.log(`📚 Loading ${tracklist.length} tracks from tracklist`);
@@ -303,7 +303,7 @@ export const DJPortalOrbital: React.FC = () => {
           setTracks(initialTracks);
           setTracksLoaded(true);
         }
-        
+
         // 2. Load saved playlist settings
         const response: any = await client.graphql({
           query: `
@@ -320,22 +320,22 @@ export const DJPortalOrbital: React.FC = () => {
           `,
           variables: { setId: currentSetId }
         });
-        
+
         const set = response.data.getDJSet;
-        
+
         // 3. Apply saved playlist (enable/disable tracks based on saved IDs)
         if (set && set.playlistTracks && set.playlistTracks.length > 0) {
           console.log(`🎵 Applying saved playlist: ${set.playlistName} (${set.playlistTracks.length} songs)`);
-          
+
           setTracks(prevTracks => {
             if (prevTracks.length === 0) return prevTracks;
-            
+
             return prevTracks.map(track => ({
               ...track,
               isEnabled: set.playlistTracks.includes(track.id)
             }));
           });
-          
+
           addNotification({
             type: 'info',
             title: '🎵 Playlist Loaded',
@@ -348,7 +348,7 @@ export const DJPortalOrbital: React.FC = () => {
         console.error('❌ Failed to load tracks/playlist:', error);
       }
     };
-    
+
     loadTracksAndPlaylist();
   }, [currentSetId, tracklist, tracksLoaded, user?.userId]); // Run when set or tracklist changes
 
@@ -364,7 +364,7 @@ export const DJPortalOrbital: React.FC = () => {
       console.warn('⚠️ Cannot sync tracks: missing userId or eventId');
       throw new Error('Missing userId or eventId');
     }
-    
+
     // CRITICAL FIX: Wrapped in try-catch for error handling
     try {
       console.log('💾 Syncing tracks to backend...');
@@ -377,23 +377,23 @@ export const DJPortalOrbital: React.FC = () => {
         albumArt: t.albumArt,
         duration: t.duration
       }));
-      
+
       // Step 1: Upload tracks to DJ's library
       const uploadResult = await submitUploadTracklist(user.userId, songs);
       console.log('✅ Tracks uploaded to library:', uploadResult);
-      
+
       // Step 2: Link tracks to the current event (use track titles as IDs for now)
       // Note: In production, you'd use actual song IDs returned from uploadTracklist
       const songIds = updatedTracks.map(t => t.id);
       const linkResult = await submitSetEventTracklist(currentEventId, songIds);
       console.log('✅ Tracks linked to event:', linkResult);
-      
+
       // Step 3: Reset tracksLoaded and reload tracklist from backend
       setTracksLoaded(false);
       if (reloadTracklist) {
         reloadTracklist();
       }
-      
+
       addNotification({
         type: 'info',
         title: '✅ Tracklist Updated',
@@ -414,16 +414,16 @@ export const DJPortalOrbital: React.FC = () => {
   const handleAddTrack = async (track: Omit<Track, 'id'>) => {
     // CRITICAL FIX: Capture state snapshot before optimistic update
     const previousTracks = [...tracks];
-    
+
     try {
       // Optimistic update
       const newTrack = { ...track, id: `track-${Date.now()}` };
       const updatedTracks = [...tracks, newTrack];
       setTracks(updatedTracks);
-      
+
       // Sync to backend (will throw on failure)
       await syncTracksToBackend(updatedTracks);
-      
+
       addNotification({
         type: 'info',
         title: '✅ Track Added',
@@ -444,12 +444,12 @@ export const DJPortalOrbital: React.FC = () => {
   const handleUpdateTrack = async (id: string, updates: Partial<Track>) => {
     // CRITICAL FIX: Capture state snapshot before optimistic update
     const previousTracks = [...tracks];
-    
+
     try {
       // Optimistic update
       const updatedTracks = tracks.map(t => (t.id === id ? { ...t, ...updates } : t));
       setTracks(updatedTracks);
-      
+
       // Sync to backend (will throw on failure)
       await syncTracksToBackend(updatedTracks);
     } catch (error) {
@@ -468,15 +468,15 @@ export const DJPortalOrbital: React.FC = () => {
     // CRITICAL FIX: Capture state snapshot before optimistic update
     const previousTracks = [...tracks];
     const track = tracks.find(t => t.id === id);
-    
+
     try {
       // Optimistic update
       const updatedTracks = tracks.filter(t => t.id !== id);
       setTracks(updatedTracks);
-      
+
       // Sync to backend (will throw on failure)
       await syncTracksToBackend(updatedTracks);
-      
+
       if (track) {
         addNotification({
           type: 'info',
@@ -499,15 +499,15 @@ export const DJPortalOrbital: React.FC = () => {
   const handleToggleTrack = async (id: string) => {
     // CRITICAL FIX: Capture state snapshot before optimistic update
     const previousTracks = [...tracks];
-    
+
     try {
       // Optimistic update
       const updatedTracks = tracks.map(t => (t.id === id ? { ...t, isEnabled: !t.isEnabled } : t));
       setTracks(updatedTracks);
-      
+
       // Sync to backend (will throw on failure)
       await syncTracksToBackend(updatedTracks);
-      
+
       const track = updatedTracks.find(t => t.id === id);
       if (track) {
         addNotification({
@@ -554,7 +554,7 @@ export const DJPortalOrbital: React.FC = () => {
           clearTimeout(vetoTimerId);
           vetoTimerId = null;
         }
-        
+
         // Restore in UI
         setVetoedRequestIds(prev => {
           const next = new Set(prev);
@@ -579,12 +579,12 @@ export const DJPortalOrbital: React.FC = () => {
       try {
         // 1. Veto the request
         await submitVeto(request.requestId, "DJ vetoed request");
-        
+
         // 2. Process refund automatically
         try {
           const refund = await submitRefund(request.requestId, 'DJ vetoed request');
           console.log('✅ Refund processed:', refund);
-          
+
           // 3. Notify DJ of successful veto + refund
           addNotification({
             type: 'info',
@@ -596,7 +596,7 @@ export const DJPortalOrbital: React.FC = () => {
           });
         } catch (refundError) {
           console.error('⚠️ Refund processing failed:', refundError);
-          
+
           // Alert DJ but don't fail the veto
           addNotification({
             type: 'error',
@@ -608,14 +608,14 @@ export const DJPortalOrbital: React.FC = () => {
         console.log('✅ Request vetoed successfully');
       } catch (error) {
         console.error('❌ Veto failed:', error);
-        
+
         // Restore in UI on error
         setVetoedRequestIds(prev => {
           const next = new Set(prev);
           next.delete(requestId);
           return next;
         });
-        
+
         addNotification({
           type: 'error',
           title: '❌ Veto Failed',
@@ -651,7 +651,7 @@ export const DJPortalOrbital: React.FC = () => {
           clearTimeout(acceptTimerId);
           acceptTimerId = null;
         }
-        
+
         // Restore in UI
         setAcceptedRequestIds(prev => {
           const next = new Set(prev);
@@ -675,7 +675,7 @@ export const DJPortalOrbital: React.FC = () => {
 
       try {
         await submitAcceptRequest(requestToAccept.requestId, currentSetId);
-        
+
         addNotification({
           type: 'info',
           title: '✅ Request Accepted',
@@ -685,14 +685,14 @@ export const DJPortalOrbital: React.FC = () => {
         console.log('✅ Request accepted successfully');
       } catch (error) {
         console.error('❌ Accept failed:', error);
-        
+
         // Restore in UI on error
         setAcceptedRequestIds(prev => {
           const next = new Set(prev);
           next.delete(requestToAccept.requestId);
           return next;
         });
-        
+
         addNotification({
           type: 'error',
           title: '❌ Accept Failed',
@@ -716,7 +716,7 @@ export const DJPortalOrbital: React.FC = () => {
   const handlePlayingConfirm = async () => {
     if (!selectedRequest || !currentSetId) return;
     setIsProcessing(true);
-    
+
     try {
       await submitMarkPlaying(selectedRequest.requestId, currentSetId);
       setShowPlayingPanel(false);
@@ -732,7 +732,7 @@ export const DJPortalOrbital: React.FC = () => {
         price: selectedRequest.price,
         startedAt: Date.now(),
       });
-      
+
       // Auto-hide celebration after 2 seconds
       setTimeout(() => {
         setShowPlayingCelebration(false);
@@ -749,7 +749,7 @@ export const DJPortalOrbital: React.FC = () => {
 
   const handleMarkComplete = async () => {
     if (!currentlyPlaying) return;
-    
+
     try {
       await submitMarkCompleted(currentlyPlaying.requestId);
       setCurrentlyPlaying(null);
@@ -765,7 +765,7 @@ export const DJPortalOrbital: React.FC = () => {
     setCurrentEventId(eventId);
     if (setId) {
       setCurrentSetId(setId);
-      
+
       // Manually add the new set to the list (optimistic update)
       const newSet = {
         setId,
@@ -777,16 +777,16 @@ export const DJPortalOrbital: React.FC = () => {
         isAcceptingRequests: true,
         event: null // Will be fetched on next load
       };
-      
+
       setMySets(prev => [...prev, newSet]);
-      
+
       // Fetch the event details for the new set
       try {
         const { generateClient } = await import('aws-amplify/api');
         const client = generateClient({
           authMode: 'userPool'
         });
-        
+
         const eventResponse: any = await client.graphql({
           query: `
             query GetEvent($eventId: ID!) {
@@ -802,10 +802,10 @@ export const DJPortalOrbital: React.FC = () => {
           `,
           variables: { eventId }
         });
-        
+
         // Update the set with event details
-        setMySets(prev => prev.map(s => 
-          s.setId === setId 
+        setMySets(prev => prev.map(s =>
+          s.setId === setId
             ? { ...s, event: eventResponse.data.getEvent }
             : s
         ));
@@ -818,15 +818,15 @@ export const DJPortalOrbital: React.FC = () => {
   // Handle GO LIVE - DJ manually activates live mode
   const handleGoLive = async () => {
     if (!currentSetId) return;
-    
+
     const confirmed = window.confirm(
       '🔴 GO LIVE?\n\nUsers will be able to scan the QR code and submit song requests.\n\nMake sure you\'re ready!'
     );
-    
+
     if (!confirmed) return;
-    
+
     setIsLiveMode(true);
-    
+
     addNotification({
       type: 'info',
       title: '🔴 You are LIVE!',
@@ -839,11 +839,11 @@ export const DJPortalOrbital: React.FC = () => {
     const confirmed = window.confirm(
       '⏸️ PAUSE LIVE MODE?\n\nNew requests will be blocked, but your current queue will be preserved.\n\nYou can resume anytime.'
     );
-    
+
     if (!confirmed) return;
-    
+
     setIsLiveMode(false);
-    
+
     addNotification({
       type: 'info',
       title: '⏸️ Live Mode Paused',
@@ -853,28 +853,28 @@ export const DJPortalOrbital: React.FC = () => {
 
   const handleEndSet = async () => {
     if (!currentSetId) return;
-    
+
     const pendingRequests = queueRequests.filter(
       (req: any) => req.status === 'PENDING' || req.status === 'ACCEPTED'
     );
-    
+
     const confirmMessage = pendingRequests.length > 0
       ? `End set and refund ${pendingRequests.length} pending request${pendingRequests.length === 1 ? '' : 's'}?`
       : 'Are you sure you want to end this DJ set?';
-    
+
     if (!confirm(confirmMessage)) return;
-    
+
     setIsProcessing(true);
-    
+
     try {
       // 1. Update set status to COMPLETED
       console.log('Ending DJ set:', currentSetId);
       await submitUpdateSetStatus(currentSetId, 'COMPLETED');
-      
+
       // 2. Process refunds for all pending requests
       if (pendingRequests.length > 0) {
         console.log(`Processing ${pendingRequests.length} refunds...`);
-        
+
         const refundPromises = pendingRequests.map(async (req: any) => {
           try {
             const refund = await submitRefund(req.requestId, 'DJ set ended');
@@ -885,11 +885,11 @@ export const DJPortalOrbital: React.FC = () => {
             return { success: false, requestId: req.requestId };
           }
         });
-        
+
         const results = await Promise.all(refundPromises);
         const successCount = results.filter(r => r.success).length;
         const failCount = results.filter(r => !r.success).length;
-        
+
         // 3. Notify DJ of results
         if (failCount === 0) {
           addNotification({
@@ -904,7 +904,7 @@ export const DJPortalOrbital: React.FC = () => {
             message: `${successCount} refunded, ${failCount} need manual processing`,
           });
         }
-        
+
         // Track business metrics
         BusinessMetrics.djSetEnded(
           currentSetId,
@@ -918,11 +918,11 @@ export const DJPortalOrbital: React.FC = () => {
           message: 'No pending refunds required',
         });
       }
-      
+
       // 4. Clear local state
       setCurrentSetId(null);
       setCurrentEventId(null);
-      
+
     } catch (error) {
       console.error('Failed to end set cleanly:', error);
       addNotification({
@@ -990,32 +990,32 @@ export const DJPortalOrbital: React.FC = () => {
       onSwipeRight={handleSwipeRight}
       peekContent={{
         left: (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <DollarSign className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">Revenue</p>
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <DollarSign className="w-12 h-12 text-white/60" />
+            <p className="text-white/60 text-lg font-bold">Revenue</p>
           </div>
         ),
         right: (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Settings className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">Settings</p>
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <Settings className="w-12 h-12 text-white/60" />
+            <p className="text-white/60 text-lg font-bold">Settings</p>
           </div>
         ),
         up: (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <List className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">Queue</p>
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <List className="w-12 h-12 text-white/60" />
+            <p className="text-white/60 text-lg font-bold">Queue</p>
           </div>
         ),
         down: (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Music className="w-20 h-20 text-white/80" />
-            <p className="text-white/80 text-2xl font-bold">Library</p>
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <Music className="w-12 h-12 text-white/60" />
+            <p className="text-white/60 text-lg font-bold">Library</p>
           </div>
         ),
       }}
     >
-      <div 
+      <div
         className="absolute inset-0 h-dvh"
         style={{
           background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
@@ -1026,8 +1026,8 @@ export const DJPortalOrbital: React.FC = () => {
           bottom: 0,
         }}
       >
-        {/* Status Arc - Hide when live or menu open */}
-        {!isLiveMode && !showSetSelector && (
+        {/* Status Arc - Hide when live, menu open, or in revenue view (redundant) */}
+        {!isLiveMode && !showSetSelector && currentView !== 'revenue' && (
           <StatusArc
             mode={mode}
             revenue={totalRevenue}
@@ -1048,16 +1048,14 @@ export const DJPortalOrbital: React.FC = () => {
         {!isLiveMode && (
           <button
             onClick={() => setShowNotifications(true)}
-            className={`relative fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${
-              showSetSelector 
-                ? 'top-2 right-14 p-1.5 opacity-30' 
-                : 'top-2 right-14 sm:top-4 sm:right-20 p-2 sm:p-3'
-            }`}
+            className={`relative fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${showSetSelector
+              ? 'top-2 right-14 p-1.5 opacity-30'
+              : 'top-2 right-14 sm:top-4 sm:right-20 p-2 sm:p-3'
+              }`}
             title="Notifications"
           >
-            <Bell className={`text-gray-300 transition-all duration-300 ${
-              showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
-            }`} />
+            <Bell className={`text-gray-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
+              }`} />
             {unreadCount > 0 && !showSetSelector && (
               <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -1070,16 +1068,14 @@ export const DJPortalOrbital: React.FC = () => {
         {!isLiveMode && (
           <button
             onClick={logout}
-            className={`fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${
-              showSetSelector 
-                ? 'top-2 right-2 p-1.5 opacity-30' 
-                : 'top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3'
-            }`}
+            className={`fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${showSetSelector
+              ? 'top-2 right-2 p-1.5 opacity-30'
+              : 'top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3'
+              }`}
             title="Logout"
           >
-            <LogOut className={`text-red-400 group-hover:text-red-300 transition-all duration-300 ${
-              showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
-            }`} />
+            <LogOut className={`text-red-400 group-hover:text-red-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
+              }`} />
           </button>
         )}
 
@@ -1087,7 +1083,7 @@ export const DJPortalOrbital: React.FC = () => {
         <div className="h-full w-full relative">
           {/* Queue View - Circular Visualizer */}
           {currentView === 'queue' && (
-            <div className="h-full flex flex-col items-center justify-center relative z-10">
+            <div className="h-full flex flex-col items-center justify-center relative z-10 pb-32">
               {!currentSetId ? (
                 // No Set - Show Create Button
                 <div className="text-center max-w-md">
@@ -1099,7 +1095,7 @@ export const DJPortalOrbital: React.FC = () => {
                     <span className="text-6xl">🎵</span>
                   </button>
                   <h2 className="text-3xl font-bold text-white mb-8">Ready to Start?</h2>
-                  
+
                   <button
                     onClick={() => setShowEventCreator(true)}
                     className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-full font-semibold text-lg transition-all shadow-lg`}
@@ -1111,15 +1107,15 @@ export const DJPortalOrbital: React.FC = () => {
                 // Has Event + Requests
                 <div className="flex flex-col items-center gap-6">
                   <CircularQueueVisualizer
-                    requests={queueRequests.filter((r: any) => 
-                      !vetoedRequestIds.has(r.requestId || r.id) && 
+                    requests={queueRequests.filter((r: any) =>
+                      !vetoedRequestIds.has(r.requestId || r.id) &&
                       !acceptedRequestIds.has(r.requestId || r.id)
                     )}
                     onVeto={handleVeto}
                     onRequestTap={handleRequestTap}
                     onAccept={handleAccept}
                   />
-                  
+
                   {/* Play Next Song Button (Feature 12) */}
                   {!currentlyPlaying && queueRequests.length > 0 && (
                     <button
@@ -1143,7 +1139,7 @@ export const DJPortalOrbital: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Music Button - Morphs and moves to top when open */}
                   {!showSetSelector && (
                     <button
@@ -1162,10 +1158,10 @@ export const DJPortalOrbital: React.FC = () => {
                       title="Switch DJ Sets"
                     >
                       <span className="text-8xl">🎵</span>
-                      
+
                       {/* Subtle hint - only when closed */}
                       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span 
+                        <span
                           className="text-xs font-semibold whitespace-nowrap"
                           style={{ color: currentTheme.accent }}
                         >
@@ -1174,10 +1170,10 @@ export const DJPortalOrbital: React.FC = () => {
                       </div>
                     </button>
                   )}
-                  
+
                   {/* DJ Sets List - Slides up from bottom */}
                   {showSetSelector && (
-                    <div 
+                    <div
                       className="fixed inset-0 z-40 animate-slide-up"
                     >
                       <div className="h-full bg-gray-900/95 backdrop-blur-lg overflow-hidden flex flex-col">
@@ -1211,7 +1207,7 @@ export const DJPortalOrbital: React.FC = () => {
                               .map((set: any, index: any) => {
                                 const startTime = new Date(set.setStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                 const endTime = new Date(set.setEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                
+
                                 return (
                                   <button
                                     key={set.setId}
@@ -1221,11 +1217,10 @@ export const DJPortalOrbital: React.FC = () => {
                                       setCurrentEventId(set.eventId);
                                       setShowSetSelector(false);
                                     }}
-                                    className={`w-full px-6 py-4 mb-3 text-left rounded-2xl transition-all transform hover:scale-[1.02] ${
-                                      currentSetId === set.setId 
-                                        ? `${themeClasses.gradientPrimary} shadow-lg`
-                                        : 'bg-white/5 hover:bg-white/10'
-                                    }`}
+                                    className={`w-full px-6 py-4 mb-3 text-left rounded-2xl transition-all transform hover:scale-[1.02] ${currentSetId === set.setId
+                                      ? `${themeClasses.gradientPrimary} shadow-lg`
+                                      : 'bg-white/5 hover:bg-white/10'
+                                      }`}
                                     style={{
                                       animationDelay: `${index * 50}ms`,
                                       animation: 'fadeInUp 0.3s ease-out forwards',
@@ -1239,11 +1234,10 @@ export const DJPortalOrbital: React.FC = () => {
                                         <p className="text-sm text-gray-300 truncate">
                                           {startTime} - {endTime}
                                         </p>
-                                        <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                          set.status === 'ACTIVE' 
-                                            ? 'bg-green-500/20 text-green-400' 
-                                            : 'bg-gray-500/20 text-gray-400'
-                                        }`}>
+                                        <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${set.status === 'ACTIVE'
+                                          ? 'bg-green-500/20 text-green-400'
+                                          : 'bg-gray-500/20 text-gray-400'
+                                          }`}>
                                           {set.status}
                                         </span>
                                       </div>
@@ -1257,7 +1251,7 @@ export const DJPortalOrbital: React.FC = () => {
                                   </button>
                                 );
                               })}
-                              
+
                             {/* Action Buttons */}
                             <div className="mt-6 space-y-3">
                               <button
@@ -1269,7 +1263,7 @@ export const DJPortalOrbital: React.FC = () => {
                               >
                                 + Create New Event
                               </button>
-                              
+
                               {currentSetId && (
                                 <button
                                   onClick={() => {
@@ -1286,12 +1280,12 @@ export const DJPortalOrbital: React.FC = () => {
                           </div>
                         ) : (
                           <div className="flex-1 flex flex-col items-center justify-center p-8">
-                            <div 
+                            <div
                               className="w-24 h-24 mb-6 rounded-full flex items-center justify-center"
                               style={{ backgroundColor: `${currentTheme.primary}33` }}
                             >
-                              <Music 
-                                className="w-12 h-12" 
+                              <Music
+                                className="w-12 h-12"
                                 style={{ color: currentTheme.accent }}
                               />
                             </div>
@@ -1310,7 +1304,7 @@ export const DJPortalOrbital: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Other Actions - Hidden when menu is open */}
                   {!showSetSelector && (
                     <div className="space-y-6 transition-opacity duration-300">
@@ -1339,7 +1333,7 @@ export const DJPortalOrbital: React.FC = () => {
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                             <span className="text-green-400 font-semibold text-sm">LIVE</span>
                           </div>
-                          
+
                           {/* Pause Button - Secondary */}
                           <button
                             onClick={handlePauseLive}
@@ -1350,7 +1344,7 @@ export const DJPortalOrbital: React.FC = () => {
                           </button>
                         </div>
                       )}
-                      
+
                       {/* Secondary Actions - Minimal */}
                       <div className="flex gap-3 justify-center pt-4">
                         <button
@@ -1377,11 +1371,11 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Library View */}
           {currentView === 'library' && (
-            <div className="h-full pt-20 pb-20 px-4 overflow-hidden">
+            <div className="h-full pt-20 pb-32 px-4 overflow-hidden">
               <div className="max-w-6xl mx-auto h-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
                 {/* Event Playlist Quick Access */}
                 {currentEventId && (
-                  <div 
+                  <div
                     className="p-4 border-b"
                     style={{
                       background: `linear-gradient(to right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
@@ -1403,14 +1397,14 @@ export const DJPortalOrbital: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Debug: Show track count */}
                 {process.env.NODE_ENV === 'development' && (
                   <div className="p-2 bg-blue-500/20 border-b border-blue-500/30 text-white text-xs">
                     Debug: {tracks.length} tracks loaded | Tracklist: {tracklist.length} songs | Tracks loaded: {tracksLoaded ? 'Yes' : 'No'}
                   </div>
                 )}
-                
+
                 <DJLibrary
                   tracks={tracks}
                   onAddTrack={handleAddTrack}
@@ -1424,13 +1418,13 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Revenue View */}
           {currentView === 'revenue' && (
-            <div className="h-full flex items-center justify-center px-4">
+            <div className="h-full flex items-center justify-center px-4 pb-32">
               <div className="max-w-4xl w-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
                 <h2 className="text-4xl font-bold text-white mb-8 text-center">Revenue Dashboard</h2>
-                
+
                 {/* Revenue Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div 
+                  <div
                     className="rounded-2xl p-6 border"
                     style={{
                       background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
@@ -1442,8 +1436,8 @@ export const DJPortalOrbital: React.FC = () => {
                       R{totalRevenue.toFixed(2)}
                     </p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className="rounded-2xl p-6 border"
                     style={{
                       background: `linear-gradient(to bottom right, ${currentTheme.secondary}33, ${currentTheme.accent}33)`,
@@ -1453,8 +1447,8 @@ export const DJPortalOrbital: React.FC = () => {
                     <p className="text-sm mb-2" style={{ color: currentTheme.secondary }}>Requests Filled</p>
                     <p className="text-5xl font-bold" style={{ color: currentTheme.secondary }}>{queueRequests.length}</p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className="rounded-2xl p-6 border"
                     style={{
                       background: `linear-gradient(to bottom right, ${currentTheme.accent}33, ${currentTheme.primary}33)`,
@@ -1490,10 +1484,10 @@ export const DJPortalOrbital: React.FC = () => {
 
           {/* Settings View */}
           {currentView === 'settings' && (
-            <div className="h-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8">
+            <div className="h-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8 pb-32">
               <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Settings</h2>
-                
+
                 {/* Theme Selector - Full Width */}
                 <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -1506,24 +1500,23 @@ export const DJPortalOrbital: React.FC = () => {
                       <button
                         key={mode}
                         onClick={() => setThemeMode(mode)}
-                        className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${
-                          themeMode === mode
-                            ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
-                            : 'opacity-60 hover:opacity-100'
-                        }`}
+                        className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${themeMode === mode
+                          ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
+                          : 'opacity-60 hover:opacity-100'
+                          }`}
                         style={{
-                          background: mode === 'BeatMatchMe' 
+                          background: mode === 'BeatMatchMe'
                             ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
                             : mode === 'gold'
-                            ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
-                            : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
+                              ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
+                              : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
                           color: '#ffffff',
                           ...(themeMode === mode && {
-                            boxShadow: mode === 'BeatMatchMe' 
+                            boxShadow: mode === 'BeatMatchMe'
                               ? '0 0 0 2px #8B5CF6'
                               : mode === 'gold'
-                              ? '0 0 0 2px #D4AF37'
-                              : '0 0 0 2px #E5E4E2'
+                                ? '0 0 0 2px #D4AF37'
+                                : '0 0 0 2px #E5E4E2'
                           })
                         }}
                       >
@@ -1640,14 +1633,14 @@ export const DJPortalOrbital: React.FC = () => {
                     onUpdateSettings={async (settings) => {
                       console.log('Updating request cap settings:', settings);
                       setRequestsPerHour(settings.requestCapPerHour);
-                      
+
                       if (currentSetId) {
                         try {
                           const success = await updateDJSetSettings(currentSetId, {
                             requestCapPerHour: settings.requestCapPerHour,
                             isSoldOut: settings.isSoldOut
                           });
-                          
+
                           if (success) {
                             addNotification({
                               type: 'info',
@@ -1688,7 +1681,7 @@ export const DJPortalOrbital: React.FC = () => {
                         <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">No active set</p>
                       </div>
                     </div>
-                    
+
                     {/* Green */}
                     <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
                       <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
@@ -1697,7 +1690,7 @@ export const DJPortalOrbital: React.FC = () => {
                         <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">Accepting requests</p>
                       </div>
                     </div>
-                    
+
                     {/* Yellow */}
                     <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
                       <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
@@ -1715,9 +1708,10 @@ export const DJPortalOrbital: React.FC = () => {
         </div>
 
         {/* Gesture Hints - Bottom Center - Hide when live */}
+        {/* Gesture Hints - Bottom Center - Minimal & Subtle */}
         {!isLiveMode && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 bg-gray-900/50 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20">
-            <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-3 text-[10px] text-gray-400 font-medium">
               <span>↑ Queue</span>
               <span>↓ Library</span>
               <span>← Revenue</span>
@@ -1754,7 +1748,7 @@ export const DJPortalOrbital: React.FC = () => {
               isLive={isLiveMode}
               onApplyPlaylist={async (trackIds, playlistInfo) => {
                 console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
-                
+
                 // 1. Save playlist to backend
                 if (currentSetId) {
                   try {
@@ -1770,7 +1764,7 @@ export const DJPortalOrbital: React.FC = () => {
                     // Continue anyway - playlist still applied locally
                   }
                 }
-                
+
                 // 2. Enable selected tracks, disable others (local state)
                 setTracks(prevTracks =>
                   prevTracks.map(track => ({
@@ -1778,7 +1772,7 @@ export const DJPortalOrbital: React.FC = () => {
                     isEnabled: trackIds.includes(track.id)
                   }))
                 );
-                
+
                 // 3. Show success notification
                 addNotification({
                   type: 'info',
@@ -1799,7 +1793,7 @@ export const DJPortalOrbital: React.FC = () => {
           <MarkPlayingPanel
             request={{
               ...selectedRequest,
-              waitTime: selectedRequest.submittedAt 
+              waitTime: selectedRequest.submittedAt
                 ? Math.floor((Date.now() - selectedRequest.submittedAt) / 60000)
                 : 0,
             }}
@@ -1873,7 +1867,7 @@ export const DJPortalOrbital: React.FC = () => {
                 }}
                 onUpdateProfile={async (updates) => {
                   console.log('Save DJ profile updates:', updates);
-                  
+
                   if (user?.userId) {
                     try {
                       const success = await updateDJProfile(user.userId, {
@@ -1882,38 +1876,38 @@ export const DJPortalOrbital: React.FC = () => {
                         genres: updates.genres,
                         basePrice: updates.basePrice,
                       });
-                      
+
                       if (success) {
-                        addNotification({ 
-                          type: 'info', 
-                          title: '✅ Profile Updated', 
-                          message: 'Your profile changes were saved successfully.' 
+                        addNotification({
+                          type: 'info',
+                          title: '✅ Profile Updated',
+                          message: 'Your profile changes were saved successfully.'
                         });
                       } else {
-                        addNotification({ 
-                          type: 'info', 
-                          title: 'Profile Updated Locally', 
-                          message: 'Backend sync pending - changes will persist after deployment' 
+                        addNotification({
+                          type: 'info',
+                          title: 'Profile Updated Locally',
+                          message: 'Backend sync pending - changes will persist after deployment'
                         });
                       }
-                      
+
                       setShowProfile(false);
                     } catch (error) {
                       console.error('Failed to update profile:', error);
-                      addNotification({ 
-                        type: 'error', 
-                        title: '⚠️ Update Failed', 
-                        message: 'Could not save profile. Please try again.' 
+                      addNotification({
+                        type: 'error',
+                        title: '⚠️ Update Failed',
+                        message: 'Could not save profile. Please try again.'
                       });
                     }
                   }
                 }}
                 onUpgradeTier={(tier) => {
                   console.log('Upgrade to tier:', tier);
-                  addNotification({ 
-                    type: 'info', 
-                    title: 'Upgrade Requested', 
-                    message: `Requested upgrade to ${tier}. Contact support to complete.` 
+                  addNotification({
+                    type: 'info',
+                    title: 'Upgrade Requested',
+                    message: `Requested upgrade to ${tier}. Contact support to complete.`
                   });
                 }}
               />

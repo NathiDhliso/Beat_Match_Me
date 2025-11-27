@@ -42,7 +42,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
   const handleSwipe = (direction: 'left' | 'right') => {
     setSwipeDirection(direction);
     HapticFeedback.buttonPress();
-    
+
     setTimeout(() => {
       if (direction === 'right' && currentEvent) {
         HapticFeedback.requestAccepted();
@@ -73,11 +73,11 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
       setDragOffset(0);
       return;
     }
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
-    
+
     if (isLeftSwipe) {
       handleSwipe('left');
     } else if (isRightSwipe) {
@@ -143,11 +143,10 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
 
         {/* Event Card */}
         <div
-          className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 cursor-grab active:cursor-grabbing ${
-            swipeDirection === 'left' ? 'animate-swipe-left' : ''
-          } ${swipeDirection === 'right' ? 'animate-swipe-right' : ''}`}
-          style={{ 
-            height: 'min(600px, 70vh)',
+          className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 cursor-grab active:cursor-grabbing ${swipeDirection === 'left' ? 'animate-swipe-left' : ''
+            } ${swipeDirection === 'right' ? 'animate-swipe-right' : ''}`}
+          style={{
+            height: 'min(600px, 65vh)',
             transform: swipeDirection ? undefined : `translateX(${dragOffset}px) rotate(${dragOffset * 0.02}deg)`,
             transition: swipeDirection ? 'all 0.3s ease-out' : dragOffset ? 'none' : 'all 0.3s ease-out',
           }}
@@ -167,7 +166,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
             ) : (
               <Music className="w-32 h-32 text-white/50" />
             )}
-            
+
             {/* Distance Badge */}
             <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-lg rounded-full px-4 py-2">
               <span className="text-white font-semibold">{currentEvent.distance}</span>
@@ -224,7 +223,7 @@ export const EventDiscovery: React.FC<EventDiscoveryProps> = ({ events, onSelect
           >
             <X className="w-8 h-8 text-red-500" />
           </button>
-          
+
           <button
             onClick={() => handleSwipe('right')}
             className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center hover:scale-110 hover:bg-green-500/30 active:scale-95 transition-all"
@@ -283,15 +282,14 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
           const row = Math.floor(index / 4);
           const parallaxOffset = (scrollY * (row % 3 === 0 ? 0.05 : row % 3 === 1 ? 0.1 : 0.15));
           const isSelected = selectedSongId === song.id;
-          
+
           return (
             <button
               key={song.id}
-              className={`relative group cursor-pointer focus:outline-none rounded-2xl transition-all ${
-                isSelected 
-                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-gray-900' 
+              className={`relative group cursor-pointer focus:outline-none rounded-2xl transition-all ${isSelected
+                  ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-gray-900'
                   : 'focus:ring-2 focus:ring-purple-500'
-              }`}
+                }`}
               style={{
                 transform: `translateY(${parallaxOffset}px) scale(${isSelected ? 1.05 : 1})`,
                 transition: 'transform 0.2s ease-out',
@@ -314,18 +312,17 @@ export const AlbumArtGrid: React.FC<AlbumGridProps> = ({ songs, onSelectSong, se
                     <Music className="w-12 h-12 text-white/50" />
                   </div>
                 )}
-                
+
                 {/* Selected Checkmark */}
                 {isSelected && (
                   <div className="absolute top-2 left-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-scale-in">
                     <Check className="w-5 h-5 text-gray-900" />
                   </div>
                 )}
-                
+
                 {/* Hover Overlay - Minimal */}
-                <div className={`absolute inset-0 bg-black/60 ${
-                  isSelected ? 'opacity-100 bg-yellow-400/20' : 'opacity-0'
-                } group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center`}>
+                <div className={`absolute inset-0 bg-black/60 ${isSelected ? 'opacity-100 bg-yellow-400/20' : 'opacity-0'
+                  } group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex items-center justify-center`}>
                   <div className="text-center p-2">
                     <p className="text-white font-bold text-sm truncate">{song.title}</p>
                     <p className="text-gray-300 text-xs truncate">{song.artist}</p>
@@ -361,16 +358,15 @@ export const MassiveRequestButton: React.FC<RequestButtonProps> = ({ onPress, di
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-30">
       <button
         onClick={handlePress}
         disabled={disabled}
-        className={`w-full h-16 sm:h-20 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-bold text-lg sm:text-2xl shadow-2xl pointer-events-auto ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-glow hover:scale-105 active:scale-95'
-        } transition-all flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3`}
+        className={`w-full h-16 sm:h-20 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-bold text-lg sm:text-2xl shadow-2xl pointer-events-auto ${disabled ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-glow hover:scale-105 active:scale-95'
+          } transition-all flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3`}
         style={{
-          boxShadow: disabled 
-            ? '0 0 20px rgba(168, 85, 247, 0.3)' 
+          boxShadow: disabled
+            ? '0 0 20px rgba(168, 85, 247, 0.3)'
             : '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3)',
         }}
       >
@@ -415,7 +411,7 @@ export const LockedInAnimation: React.FC<LockedInProps> = ({ songTitle, onComple
         {/* Locked In Text */}
         <h2 className="text-4xl font-bold text-white mb-2 animate-scale-in">Locked In!</h2>
         <p className="text-xl text-gray-300 mb-4">{songTitle}</p>
-        
+
         {/* Confetti Effect */}
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(20)].map((_, i) => {
@@ -531,7 +527,7 @@ export const NowPlayingCelebration: React.FC<NowPlayingProps> = ({ songTitle, ar
             <Music className="w-16 h-16 text-white" />
           </div>
 
-          <h1 className="text-5xl font-bold text-white mb-4 animate-scale-in">NOW PLAYING</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4 animate-scale-in">NOW PLAYING</h1>
           <h2 className="text-3xl font-bold text-yellow-400 mb-2">{songTitle}</h2>
           <p className="text-xl text-gray-300">{artist}</p>
 
