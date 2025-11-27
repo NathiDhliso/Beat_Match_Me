@@ -1,10 +1,9 @@
 /**
  * DJ Library Management
  * Curate master tracklist, enable/disable songs for events
- * Phase 8: Performance - Added virtual scrolling for large track lists
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Music, Search, Filter, X, Upload, Globe, Edit, Trash2, DollarSign, ToggleLeft, ToggleRight } from 'lucide-react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import styles from './DJLibrary.module.css';
@@ -48,10 +47,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSongSearch, setShowSongSearch] = useState(false);
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
-  const listContainerRef = useRef<HTMLDivElement | null>(null);
-  const [listHeight, setListHeight] = useState(0);
 
-  // Ensure tracks is always an array to prevent react-window crash
   const safeTracks = Array.isArray(tracks) ? tracks : [];
   const genres = ['all', ...new Set(safeTracks.map(t => t.genre))];
 
@@ -61,46 +57,6 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
     const matchesGenre = selectedGenre === 'all' || track.genre === selectedGenre;
     return matchesSearch && matchesGenre;
   });
-
-  useEffect(() => {
-    const element = listContainerRef.current;
-    if (!element) {
-      return;
-    }
-
-    const setHeight = () => {
-      setListHeight(element.getBoundingClientRect().height);
-    };
-
-    setHeight();
-
-    let observer: ResizeObserver | null = null;
-
-    if (typeof window !== 'undefined') {
-      if ('ResizeObserver' in window) {
-        observer = new ResizeObserver(entries => {
-          if (entries[0]) {
-            setListHeight(entries[0].contentRect.height);
-          }
-        });
-        observer.observe(element);
-      }
-
-      window.addEventListener('resize', setHeight);
-    }
-
-    return () => {
-      if (observer) {
-        observer.disconnect();
-      }
-
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', setHeight);
-      }
-    };
-  }, []);
-
-  const computedListHeight = Math.max(240, listHeight - 48);
 
   return (
     <div className={`h-full flex flex-col ${styles.libraryRoot}`}>
@@ -180,8 +136,8 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
         </div>
       </div>
 
-      {/* Track List - Phase 8: Virtual scrolling for performance */}
-      <div ref={listContainerRef} className="flex-1 overflow-hidden relative">
+      {/* Track List */}
+      <div className="flex-1 overflow-hidden relative">
         {/* Loading Overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm z-10 flex items-center justify-center">
