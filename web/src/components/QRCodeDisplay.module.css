@@ -8,20 +8,28 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgb(0 0 0 / 0.9);
+  background-color: rgb(0 0 0 / 0.5);
   backdrop-filter: blur(16px);
   z-index: 50;
   display: flex;
   justify-content: flex-end;
 }
 
+:global(.dark) .overlay {
+  background-color: rgb(0 0 0 / 0.9);
+}
+
 .panel {
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
+  background: linear-gradient(to bottom right, rgb(249 250 251), rgb(243 244 246));
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   overflow-y: auto;
   animation: slideInRight 0.3s ease-out;
+}
+
+:global(.dark) .panel {
+  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
 }
 
 @media (min-width: 640px) {
@@ -133,13 +141,21 @@
 .venueName {
   font-size: 1.25rem;
   font-weight: 700;
-  color: white;
+  color: rgb(17 24 39); /* gray-900 for light mode */
   margin-bottom: 0.5rem;
 }
 
+:global(.dark) .venueName {
+  color: white;
+}
+
 .scanInstruction {
-  color: rgb(156 163 175); /* gray-400 */
+  color: rgb(75 85 99); /* gray-600 for light mode */
   font-size: 0.875rem;
+}
+
+:global(.dark) .scanInstruction {
+  color: rgb(156 163 175); /* gray-400 */
 }
 
 .eventId {
@@ -178,9 +194,9 @@
 .copyButton {
   flex: 1;
   padding: 0.75rem;
-  background-color: rgb(255 255 255 / 0.1);
+  background-color: rgb(229 231 235); /* gray-200 for light mode */
   border-radius: 0.5rem;
-  color: white;
+  color: rgb(17 24 39); /* gray-900 for light mode */
   font-weight: 600;
   transition: background-color 0.2s;
   display: flex;
@@ -191,7 +207,16 @@
   min-height: 44px;
 }
 
+:global(.dark) .copyButton {
+  background-color: rgb(255 255 255 / 0.1);
+  color: white;
+}
+
 .copyButton:hover {
+  background-color: rgb(209 213 219); /* gray-300 for light mode */
+}
+
+:global(.dark) .copyButton:hover {
   background-color: rgb(255 255 255 / 0.2);
 }
 
