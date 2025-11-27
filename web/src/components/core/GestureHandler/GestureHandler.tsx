@@ -63,10 +63,10 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
         minHeight: '100vh',
       }}
     >
-      {/* Peek Preview Layer - Shows behind the main content */}
-      {isPeeking && peekPreview && peekPreview.direction && (
+      {/* Peek Preview Layer - REMOVED as per user request */}
+      {/* isPeeking && peekPreview && peekPreview.direction && (
         <PeekPreview peekPreview={peekPreview} />
-      )}
+      ) */}
 
       {/* Current Page Layer - Limited drag with elastic snap back */}
       <div

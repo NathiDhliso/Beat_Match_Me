@@ -24,11 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'PERFO
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-2xl">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Verifying access..." />;
   }
 
   if (!user) {
@@ -66,17 +62,17 @@ const Dashboard: React.FC = () => {
   return <Navigate to="/user-portal" replace />;
 };
 
-// Loading Screen Component
-const LoadingScreen: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => {
+// Loading Screen Component - Subtle Buffering with Blur
+const LoadingScreen: React.FC<{ message?: string }> = ({ message }) => {
   return (
-    <div className="fixed inset-0 h-dvh bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-white text-2xl mb-4">{message}</div>
-        <div className="flex items-center justify-center gap-2">
-          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-        </div>
+    <div className="fixed inset-0 h-dvh bg-gray-900/50 backdrop-blur-md flex items-center justify-center z-50">
+      <div className="flex flex-col items-center gap-4">
+        {/* Simple Spinner */}
+        <div className="w-10 h-10 border-4 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
+        {/* Optional Message - Only show if explicitly provided and not the default connection message */}
+        {message && message !== 'Connecting to backend...' && (
+          <div className="text-white/80 text-sm font-medium">{message}</div>
+        )}
       </div>
     </div>
   );
@@ -99,22 +95,22 @@ function App() {
       console.warn('🔴 App went offline');
       setIsOffline(true);
     };
-    
+
     const handleOnline = () => {
       console.log('🟢 App back online');
       setIsOffline(false);
-      
+
       // Optional: Trigger data sync when coming back online
       // syncPendingActions();
     };
-    
+
     // Check initial state
     setIsOffline(!navigator.onLine);
-    
+
     // Add event listeners
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
-    
+
     return () => {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
@@ -139,7 +135,7 @@ function App() {
           <header role="banner">
             {isOffline && <OfflineBanner />}
           </header>
-          
+
           <Router>
             <main role="main">
               <Routes>

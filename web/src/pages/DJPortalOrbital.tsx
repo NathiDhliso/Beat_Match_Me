@@ -992,963 +992,971 @@ export const DJPortalOrbital: React.FC = () => {
   ];
 
   return (
-    <GestureHandler
-      onSwipeUp={handleSwipeUp}
-      onSwipeDown={handleSwipeDown}
-      onSwipeLeft={handleSwipeLeft}
-      onSwipeRight={handleSwipeRight}
-      disabled={isDesktop}
-      peekContent={{
-        left: (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <DollarSign className="w-12 h-12 text-white/60" />
-            <p className="text-white/60 text-lg font-bold">Revenue</p>
-          </div>
-        ),
-        right: (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <Settings className="w-12 h-12 text-white/60" />
-            <p className="text-white/60 text-lg font-bold">Settings</p>
-          </div>
-        ),
-        up: (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <List className="w-12 h-12 text-white/60" />
-            <p className="text-white/60 text-lg font-bold">Queue</p>
-          </div>
-        ),
-        down: (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <Music className="w-12 h-12 text-white/60" />
-            <p className="text-white/60 text-lg font-bold">Library</p>
-          </div>
-        ),
-      }}
-    >
-      <div
-        className="absolute inset-0 min-h-[100dvh] pb-[env(safe-area-inset-bottom)]"
-        style={{
-          background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+    <>
+      {/* Floating Action Bubble - Moved outside GestureHandler to prevent cropping */}
+      {!isLiveMode && !showSetSelector && (
+        <FloatingActionBubble
+          onMenuToggle={() => setIsMenuExpanded(!isMenuExpanded)}
+          isExpanded={isMenuExpanded}
+          menuOptions={menuOptions}
+        />
+      )}
+
+      <GestureHandler
+        onSwipeUp={handleSwipeUp}
+        onSwipeDown={handleSwipeDown}
+        onSwipeLeft={handleSwipeLeft}
+        onSwipeRight={handleSwipeRight}
+        disabled={isDesktop}
+        peekContent={{
+          left: (
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <DollarSign className="w-12 h-12 text-white/60" />
+              <p className="text-white/60 text-lg font-bold">Revenue</p>
+            </div>
+          ),
+          right: (
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <Settings className="w-12 h-12 text-white/60" />
+              <p className="text-white/60 text-lg font-bold">Settings</p>
+            </div>
+          ),
+          up: (
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <List className="w-12 h-12 text-white/60" />
+              <p className="text-white/60 text-lg font-bold">Queue</p>
+            </div>
+          ),
+          down: (
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <Music className="w-12 h-12 text-white/60" />
+              <p className="text-white/60 text-lg font-bold">Library</p>
+            </div>
+          ),
         }}
       >
-        {/* Status Arc - Hide when live, menu open, or in revenue view (redundant) */}
-        {!isLiveMode && !showSetSelector && currentView !== 'revenue' && (
-          <StatusArc
-            mode={mode}
-            revenue={totalRevenue}
-            requestCount={queueRequests.length}
-          />
-        )}
+        <div
+          className="absolute inset-0 min-h-[100dvh] pb-[env(safe-area-inset-bottom)]"
+          style={{
+            background: currentTheme.primary ? `linear-gradient(135deg, #1e293b 0%, ${currentTheme.primary}80 50%, #1e293b 100%)` : 'linear-gradient(135deg, #1e293b 0%, #8b5cf6 50%, #1e293b 100%)',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        >
+          {/* Status Arc - Hide when live, menu open, or in revenue view (redundant) */}
+          {!isLiveMode && !showSetSelector && currentView !== 'revenue' && (
+            <StatusArc
+              mode={mode}
+              revenue={totalRevenue}
+              requestCount={queueRequests.length}
+            />
+          )}
 
-        {/* Floating Action Bubble - Hide when live or menu open */}
-        {!isLiveMode && !showSetSelector && (
-          <FloatingActionBubble
-            onMenuToggle={() => setIsMenuExpanded(!isMenuExpanded)}
-            isExpanded={isMenuExpanded}
-            menuOptions={menuOptions}
-          />
-        )}
+          {/* Notification Bell - Hide when live, minimize when menu open */}
+          {!isLiveMode && (
+            <button
+              onClick={() => setShowNotifications(true)}
+              className={`relative fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${showSetSelector
+                ? 'top-2 right-14 p-1.5 opacity-30'
+                : 'top-2 right-14 sm:top-4 sm:right-20 p-2 sm:p-3'
+                }`}
+              title="Notifications"
+            >
+              <Bell className={`text-gray-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
+                }`} />
+              {unreadCount > 0 && !showSetSelector && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+          )}
 
-        {/* Notification Bell - Hide when live, minimize when menu open */}
-        {!isLiveMode && (
-          <button
-            onClick={() => setShowNotifications(true)}
-            className={`relative fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 ${showSetSelector
-              ? 'top-2 right-14 p-1.5 opacity-30'
-              : 'top-2 right-14 sm:top-4 sm:right-20 p-2 sm:p-3'
-              }`}
-            title="Notifications"
-          >
-            <Bell className={`text-gray-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
-              }`} />
-            {unreadCount > 0 && !showSetSelector && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
-        )}
+          {/* Logout Button - Hide when live, minimize when menu open */}
+          {!isLiveMode && (
+            <button
+              onClick={logout}
+              className={`fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${showSetSelector
+                ? 'top-2 right-2 p-1.5 opacity-30'
+                : 'top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3'
+                }`}
+              title="Logout"
+            >
+              <LogOut className={`text-red-400 group-hover:text-red-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
+                }`} />
+            </button>
+          )}
 
-        {/* Logout Button - Hide when live, minimize when menu open */}
-        {!isLiveMode && (
-          <button
-            onClick={logout}
-            className={`fixed z-40 bg-gray-900/50 backdrop-blur-lg rounded-full border border-red-500/50 hover:bg-red-500/20 transition-all duration-300 group ${showSetSelector
-              ? 'top-2 right-2 p-1.5 opacity-30'
-              : 'top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3'
-              }`}
-            title="Logout"
-          >
-            <LogOut className={`text-red-400 group-hover:text-red-300 transition-all duration-300 ${showSetSelector ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5'
-              }`} />
-          </button>
-        )}
-
-        {/* Main Content Area */}
-        <div className="h-full w-full relative">
-          {/* Queue View - Circular Visualizer */}
-          {currentView === 'queue' && (
-            <div className="h-full flex flex-col items-center justify-center relative z-10 pb-32">
-              {!currentSetId ? (
-                // No Set - Show Create Button
-                <div className="text-center max-w-md">
-                  <button
-                    onClick={() => setShowEventCreator(true)}
-                    className={`w-32 h-32 mx-auto mb-6 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer`}
-                    title="Create Event"
-                  >
-                    <span className="text-6xl">🎵</span>
-                  </button>
-                  <h2 className="text-3xl font-bold text-white mb-8">Ready to Start?</h2>
-
-                  <button
-                    onClick={() => setShowEventCreator(true)}
-                    className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-full font-semibold text-lg transition-all shadow-lg`}
-                  >
-                    Create Event
-                  </button>
-                </div>
-              ) : queueRequests.length > 0 ? (
-                // Has Event + Requests
-                <div className="flex flex-col items-center gap-6">
-                  <CircularQueueVisualizer
-                    requests={queueRequests.filter((r: any) =>
-                      !vetoedRequestIds.has(r.requestId || r.id) &&
-                      !acceptedRequestIds.has(r.requestId || r.id)
-                    )}
-                    onVeto={handleVeto}
-                    onRequestTap={handleRequestTap}
-                    onAccept={handleAccept}
-                  />
-
-                  {/* Play Next Song Button (Feature 12) */}
-                  {!currentlyPlaying && queueRequests.length > 0 && (
+          {/* Main Content Area */}
+          <div className="h-full w-full relative">
+            {/* Queue View - Circular Visualizer */}
+            {currentView === 'queue' && (
+              <div className="h-full flex flex-col items-center justify-center relative z-10 pb-32">
+                {!currentSetId ? (
+                  // No Set - Show Create Button
+                  <div className="text-center max-w-md">
                     <button
-                      onClick={handleMarkPlaying}
-                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-full shadow-2xl transition-all transform hover:scale-105 flex items-center gap-3"
+                      onClick={() => setShowEventCreator(true)}
+                      className={`w-32 h-32 mx-auto mb-6 rounded-full ${themeClasses.gradientPrimary} flex items-center justify-center animate-pulse-glow hover:scale-110 transition-all cursor-pointer`}
+                      title="Create Event"
                     >
-                      <Play className="w-6 h-6" />
-                      <span className="text-lg">Play Next</span>
+                      <span className="text-6xl">🎵</span>
                     </button>
-                  )}
-                </div>
-              ) : (
-                // Has Event, No Requests - SIMPLIFIED CLEAN UI WITH ANIMATED MENU
-                <div className="text-center max-w-lg mx-auto space-y-8 relative">
-                  {/* Page content - Fade out when menu opens */}
-                  <div className={`transition-opacity duration-300 ${showSetSelector ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    {/* Event Info */}
-                    {currentEvent && !showSetSelector && (
-                      <div className="text-lg font-semibold text-white mb-6">
-                        {currentEvent.venueName}
-                      </div>
+                    <h2 className="text-3xl font-bold text-white mb-8">Ready to Start?</h2>
+
+                    <button
+                      onClick={() => setShowEventCreator(true)}
+                      className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-full font-semibold text-lg transition-all shadow-lg`}
+                    >
+                      Create Event
+                    </button>
+                  </div>
+                ) : queueRequests.length > 0 ? (
+                  // Has Event + Requests
+                  <div className="flex flex-col items-center gap-6">
+                    <CircularQueueVisualizer
+                      requests={queueRequests.filter((r: any) =>
+                        !vetoedRequestIds.has(r.requestId || r.id) &&
+                        !acceptedRequestIds.has(r.requestId || r.id)
+                      )}
+                      onVeto={handleVeto}
+                      onRequestTap={handleRequestTap}
+                      onAccept={handleAccept}
+                    />
+
+                    {/* Play Next Song Button (Feature 12) */}
+                    {!currentlyPlaying && queueRequests.length > 0 && (
+                      <button
+                        onClick={handleMarkPlaying}
+                        className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-full shadow-2xl transition-all transform hover:scale-105 flex items-center gap-3"
+                      >
+                        <Play className="w-6 h-6" />
+                        <span className="text-lg">Play Next</span>
+                      </button>
                     )}
                   </div>
+                ) : (
+                  // Has Event, No Requests - SIMPLIFIED CLEAN UI WITH ANIMATED MENU
+                  <div className="text-center max-w-lg mx-auto space-y-8 relative">
+                    {/* Page content - Fade out when menu opens */}
+                    <div className={`transition-opacity duration-300 ${showSetSelector ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                      {/* Event Info */}
+                      {currentEvent && !showSetSelector && (
+                        <div className="text-lg font-semibold text-white mb-6">
+                          {currentEvent.venueName}
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Music Button - Morphs and moves to top when open */}
-                  {!showSetSelector && (
-                    <button
-                      onClick={() => setShowSetSelector(!showSetSelector)}
-                      className="mx-auto mb-6 w-48 h-48 rounded-full flex items-center justify-center border-4 cursor-pointer group relative transition-all hover:scale-105 z-10"
-                      style={{
-                        background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
-                        borderColor: `${currentTheme.primary}4D`,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
-                      }}
-                      title="Switch DJ Sets"
-                    >
-                      <span className="text-8xl">🎵</span>
+                    {/* Music Button - Morphs and moves to top when open */}
+                    {!showSetSelector && (
+                      <button
+                        onClick={() => setShowSetSelector(!showSetSelector)}
+                        className="mx-auto mb-6 w-48 h-48 rounded-full flex items-center justify-center border-4 cursor-pointer group relative transition-all hover:scale-105 z-10"
+                        style={{
+                          background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                          borderColor: `${currentTheme.primary}4D`,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
+                        }}
+                        title="Switch DJ Sets"
+                      >
+                        <span className="text-8xl">🎵</span>
 
-                      {/* Subtle hint - only when closed */}
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span
-                          className="text-xs font-semibold whitespace-nowrap"
-                          style={{ color: currentTheme.accent }}
-                        >
-                          Switch Sets ({mySets.length})
-                        </span>
-                      </div>
-                    </button>
-                  )}
+                        {/* Subtle hint - only when closed */}
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span
+                            className="text-xs font-semibold whitespace-nowrap"
+                            style={{ color: currentTheme.accent }}
+                          >
+                            Switch Sets ({mySets.length})
+                          </span>
+                        </div>
+                      </button>
+                    )}
 
-                  {/* DJ Sets List - Slides up from bottom */}
-                  {showSetSelector && (
-                    <div
-                      className="fixed inset-0 z-40 animate-slide-up"
-                    >
-                      <div className="h-full bg-gray-900/95 backdrop-blur-lg overflow-hidden flex flex-col">
-                        {/* Header Button - Fixed at top */}
-                        <button
-                          onClick={() => setShowSetSelector(false)}
-                          className="flex-shrink-0 w-80 h-16 mx-auto mt-4 rounded-3xl flex items-center justify-center border-4 cursor-pointer transition-all duration-300 z-50"
-                          style={{
-                            background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
-                            borderColor: `${currentTheme.primary}4D`,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
-                          }}
-                        >
-                          <span className="text-4xl">🎵</span>
-                          <span className="ml-3 text-white font-bold text-xl animate-fade-in">DJ Sets</span>
-                        </button>
-                        {/* Sets List - Scrollable content below header */}
-                        {setsLoading ? (
-                          <div className="flex-1 overflow-y-auto p-4 pb-32">
-                            <DJSetListSkeleton count={3} />
-                          </div>
-                        ) : mySets.length > 0 ? (
-                          <div className="flex-1 overflow-y-auto p-4 pb-32">
-                            {mySets
-                              .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime())
-                              .map((set: any, index: any) => {
-                                const startTime = new Date(set.setStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                const endTime = new Date(set.setEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    {/* DJ Sets List - Slides up from bottom */}
+                    {showSetSelector && (
+                      <div
+                        className="fixed inset-0 z-40 animate-slide-up"
+                      >
+                        <div className="h-full bg-gray-900/95 backdrop-blur-lg overflow-hidden flex flex-col">
+                          {/* Header Button - Fixed at top */}
+                          <button
+                            onClick={() => setShowSetSelector(false)}
+                            className="flex-shrink-0 w-80 h-16 mx-auto mt-4 rounded-3xl flex items-center justify-center border-4 cursor-pointer transition-all duration-300 z-50"
+                            style={{
+                              background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                              borderColor: `${currentTheme.primary}4D`,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = `${currentTheme.primary}80`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = `${currentTheme.primary}4D`;
+                            }}
+                          >
+                            <span className="text-4xl">🎵</span>
+                            <span className="ml-3 text-white font-bold text-xl animate-fade-in">DJ Sets</span>
+                          </button>
+                          {/* Sets List - Scrollable content below header */}
+                          {setsLoading ? (
+                            <div className="flex-1 overflow-y-auto p-4 pb-32">
+                              <DJSetListSkeleton count={3} />
+                            </div>
+                          ) : mySets.length > 0 ? (
+                            <div className="flex-1 overflow-y-auto p-4 pb-32">
+                              {mySets
+                                .sort((a: any, b: any) => new Date(b.setStartTime).getTime() - new Date(a.setStartTime).getTime())
+                                .map((set: any, index: any) => {
+                                  const startTime = new Date(set.setStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                  const endTime = new Date(set.setEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                                return (
+                                  return (
+                                    <button
+                                      key={set.setId}
+                                      onClick={() => {
+                                        HapticFeedback.buttonPress();
+                                        setCurrentSetId(set.setId);
+                                        setCurrentEventId(set.eventId);
+                                        setShowSetSelector(false);
+                                      }}
+                                      className={`w-full px-6 py-4 mb-3 text-left rounded-2xl transition-all transform hover:scale-[1.02] ${currentSetId === set.setId
+                                        ? `${themeClasses.gradientPrimary} shadow-lg`
+                                        : 'bg-white/5 hover:bg-white/10'
+                                        }`}
+                                      style={{
+                                        animationDelay: `${index * 50}ms`,
+                                        animation: 'fadeInUp 0.3s ease-out forwards',
+                                      }}
+                                    >
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="text-white font-bold text-lg truncate mb-1">
+                                            {set.event?.venueName || 'Unknown Venue'}
+                                          </h4>
+                                          <p className="text-sm text-gray-300 truncate">
+                                            {startTime} - {endTime}
+                                          </p>
+                                          <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${set.status === 'ACTIVE'
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-gray-500/20 text-gray-400'
+                                            }`}>
+                                            {set.status}
+                                          </span>
+                                        </div>
+                                        {currentSetId === set.setId && (
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs text-white font-semibold">ACTIVE</span>
+                                            <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+
+                              {/* Action Buttons */}
+                              <div className="mt-6 space-y-3">
+                                <button
+                                  onClick={() => {
+                                    setShowEventCreator(true);
+                                    setShowSetSelector(false);
+                                  }}
+                                  className={`w-full px-6 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
+                                >
+                                  + Create New Event
+                                </button>
+
+                                {currentSetId && (
                                   <button
-                                    key={set.setId}
                                     onClick={() => {
-                                      HapticFeedback.buttonPress();
-                                      setCurrentSetId(set.setId);
-                                      setCurrentEventId(set.eventId);
+                                      setShowPlaylistManager(true);
                                       setShowSetSelector(false);
                                     }}
-                                    className={`w-full px-6 py-4 mb-3 text-left rounded-2xl transition-all transform hover:scale-[1.02] ${currentSetId === set.setId
-                                      ? `${themeClasses.gradientPrimary} shadow-lg`
-                                      : 'bg-white/5 hover:bg-white/10'
-                                      }`}
-                                    style={{
-                                      animationDelay: `${index * 50}ms`,
-                                      animation: 'fadeInUp 0.3s ease-out forwards',
-                                    }}
+                                    className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
                                   >
-                                    <div className="flex items-center justify-between gap-3">
-                                      <div className="flex-1 min-w-0">
-                                        <h4 className="text-white font-bold text-lg truncate mb-1">
-                                          {set.event?.venueName || 'Unknown Venue'}
-                                        </h4>
-                                        <p className="text-sm text-gray-300 truncate">
-                                          {startTime} - {endTime}
-                                        </p>
-                                        <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${set.status === 'ACTIVE'
-                                          ? 'bg-green-500/20 text-green-400'
-                                          : 'bg-gray-500/20 text-gray-400'
-                                          }`}>
-                                          {set.status}
-                                        </span>
-                                      </div>
-                                      {currentSetId === set.setId && (
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs text-white font-semibold">ACTIVE</span>
-                                          <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
-                                        </div>
-                                      )}
-                                    </div>
+                                    <Sparkles className="w-5 h-5" />
+                                    Manage Event Playlist
                                   </button>
-                                );
-                              })}
-
-                            {/* Action Buttons */}
-                            <div className="mt-6 space-y-3">
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-8">
+                              <div
+                                className="w-24 h-24 mb-6 rounded-full flex items-center justify-center"
+                                style={{ backgroundColor: `${currentTheme.primary}33` }}
+                              >
+                                <Music
+                                  className="w-12 h-12"
+                                  style={{ color: currentTheme.accent }}
+                                />
+                              </div>
+                              <p className="text-gray-400 text-lg mb-8">No other sets</p>
                               <button
                                 onClick={() => {
                                   setShowEventCreator(true);
                                   setShowSetSelector(false);
                                 }}
-                                className={`w-full px-6 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
+                                className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
                               >
                                 + Create New Event
                               </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
-                              {currentSetId && (
-                                <button
-                                  onClick={() => {
-                                    setShowPlaylistManager(true);
-                                    setShowSetSelector(false);
-                                  }}
-                                  className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
-                                >
-                                  <Sparkles className="w-5 h-5" />
-                                  Manage Event Playlist
-                                </button>
-                              )}
-                            </div>
-                          </div>
+                    {/* Other Actions - Hidden when menu is open */}
+                    {!showSetSelector && (
+                      <div className="space-y-6 transition-opacity duration-300">
+                        {/* Primary Action - GO LIVE Toggle */}
+                        {!isLiveMode ? (
+                          <button
+                            onClick={handleGoLive}
+                            className="w-full max-w-sm mx-auto py-6 text-white rounded-2xl font-bold text-xl transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3"
+                            style={{
+                              background: `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.primary})`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`;
+                            }}
+                          >
+                            <span className="text-3xl">🔴</span>
+                            <span>GO LIVE</span>
+                          </button>
                         ) : (
-                          <div className="flex-1 flex flex-col items-center justify-center p-8">
-                            <div
-                              className="w-24 h-24 mb-6 rounded-full flex items-center justify-center"
-                              style={{ backgroundColor: `${currentTheme.primary}33` }}
-                            >
-                              <Music
-                                className="w-12 h-12"
-                                style={{ color: currentTheme.accent }}
-                              />
+                          <div className="space-y-4">
+                            {/* Live Status Badge */}
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500 rounded-full">
+                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                              <span className="text-green-400 font-semibold text-sm">LIVE</span>
                             </div>
-                            <p className="text-gray-400 text-lg mb-8">No other sets</p>
+
+                            {/* Pause Button - Secondary */}
                             <button
-                              onClick={() => {
-                                setShowEventCreator(true);
-                                setShowSetSelector(false);
-                              }}
-                              className={`px-8 py-4 ${themeClasses.gradientPrimary} hover:opacity-90 text-white font-bold text-lg rounded-2xl transition-all shadow-lg`}
+                              onClick={handlePauseLive}
+                              className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 mx-auto"
                             >
-                              + Create New Event
+                              <span>⏸️</span>
+                              <span>Pause</span>
                             </button>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Other Actions - Hidden when menu is open */}
-                  {!showSetSelector && (
-                    <div className="space-y-6 transition-opacity duration-300">
-                      {/* Primary Action - GO LIVE Toggle */}
-                      {!isLiveMode ? (
-                        <button
-                          onClick={handleGoLive}
-                          className="w-full max-w-sm mx-auto py-6 text-white rounded-2xl font-bold text-xl transition-all shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-3"
-                          style={{
-                            background: `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = `linear-gradient(to right, rgb(220, 38, 38), ${currentTheme.primary})`;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = `linear-gradient(to right, rgb(239, 68, 68), ${currentTheme.secondary})`;
-                          }}
-                        >
-                          <span className="text-3xl">🔴</span>
-                          <span>GO LIVE</span>
-                        </button>
-                      ) : (
-                        <div className="space-y-4">
-                          {/* Live Status Badge */}
-                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500 rounded-full">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            <span className="text-green-400 font-semibold text-sm">LIVE</span>
-                          </div>
-
-                          {/* Pause Button - Secondary */}
+                        {/* Secondary Actions - Minimal */}
+                        <div className="flex gap-3 justify-center pt-4">
                           <button
-                            onClick={handlePauseLive}
-                            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 mx-auto"
+                            onClick={() => setShowQRCode(true)}
+                            className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all flex items-center gap-2 text-sm"
+                            title="Show QR Code"
                           >
-                            <span>⏸️</span>
-                            <span>Pause</span>
+                            <QrCode className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={handleEndSet}
+                            className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-xl text-gray-400 hover:text-red-400 transition-all text-sm"
+                            title="End Set"
+                          >
+                            End Set
                           </button>
                         </div>
-                      )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
-                      {/* Secondary Actions - Minimal */}
-                      <div className="flex gap-3 justify-center pt-4">
+            {/* Library View */}
+            {currentView === 'library' && (
+              <div className="h-full pt-20 pb-32 px-4 overflow-hidden">
+                <div className="max-w-6xl mx-auto h-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
+                  {/* Event Playlist Quick Access */}
+                  {currentEventId && (
+                    <div
+                      className="p-4 border-b"
+                      style={{
+                        background: `linear-gradient(to right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                        borderColor: `${currentTheme.primary}4D`,
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-white font-semibold">Event-Specific Playlist</h3>
+                          <p className="text-gray-400 text-sm">Quickly curate songs for this event</p>
+                        </div>
                         <button
-                          onClick={() => setShowQRCode(true)}
-                          className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all flex items-center gap-2 text-sm"
-                          title="Show QR Code"
+                          onClick={() => setShowPlaylistManager(true)}
+                          className={`px-4 py-2 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-lg font-semibold transition-all flex items-center gap-2`}
                         >
-                          <QrCode className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={handleEndSet}
-                          className="px-5 py-2.5 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-xl text-gray-400 hover:text-red-400 transition-all text-sm"
-                          title="End Set"
-                        >
-                          End Set
+                          <Sparkles className="w-4 h-4" />
+                          Manage Playlist
                         </button>
                       </div>
                     </div>
                   )}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Library View */}
-          {currentView === 'library' && (
-            <div className="h-full pt-20 pb-32 px-4 overflow-hidden">
-              <div className="max-w-6xl mx-auto h-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 overflow-hidden">
-                {/* Event Playlist Quick Access */}
-                {currentEventId && (
-                  <div
-                    className="p-4 border-b"
-                    style={{
-                      background: `linear-gradient(to right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
-                      borderColor: `${currentTheme.primary}4D`,
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-white font-semibold">Event-Specific Playlist</h3>
-                        <p className="text-gray-400 text-sm">Quickly curate songs for this event</p>
-                      </div>
-                      <button
-                        onClick={() => setShowPlaylistManager(true)}
-                        className={`px-4 py-2 ${themeClasses.gradientPrimary} hover:opacity-90 text-white rounded-lg font-semibold transition-all flex items-center gap-2`}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Manage Playlist
-                      </button>
+                  {/* Debug: Show track count */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="p-2 bg-blue-500/20 border-b border-blue-500/30 text-white text-xs">
+                      Debug: {tracks.length} tracks loaded | Tracklist: {tracklist.length} songs | Tracks loaded: {tracksLoaded ? 'Yes' : 'No'}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Debug: Show track count */}
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="p-2 bg-blue-500/20 border-b border-blue-500/30 text-white text-xs">
-                    Debug: {tracks.length} tracks loaded | Tracklist: {tracklist.length} songs | Tracks loaded: {tracksLoaded ? 'Yes' : 'No'}
-                  </div>
-                )}
-
-                <DJLibrary
-                  tracks={tracks}
-                  onAddTrack={handleAddTrack}
-                  onUpdateTrack={handleUpdateTrack}
-                  onDeleteTrack={handleDeleteTrack}
-                  onToggleTrack={handleToggleTrack}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Revenue View */}
-          {currentView === 'revenue' && (
-            <div className="h-full flex items-center justify-center px-4 pb-32">
-              <div className="max-w-4xl w-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
-                <h2 className="text-4xl font-bold text-white mb-8 text-center">Revenue Dashboard</h2>
-
-                {/* Revenue Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div
-                    className="rounded-2xl p-6 border"
-                    style={{
-                      background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
-                      borderColor: `${currentTheme.primary}80`
-                    }}
-                  >
-                    <p className="text-sm mb-2" style={{ color: currentTheme.accent }}>Total Earnings</p>
-                    <p className="text-5xl font-bold animate-tumble" style={{ color: currentTheme.accent }}>
-                      R{totalRevenue.toFixed(2)}
-                    </p>
-                  </div>
-
-                  <div
-                    className="rounded-2xl p-6 border"
-                    style={{
-                      background: `linear-gradient(to bottom right, ${currentTheme.secondary}33, ${currentTheme.accent}33)`,
-                      borderColor: `${currentTheme.secondary}80`
-                    }}
-                  >
-                    <p className="text-sm mb-2" style={{ color: currentTheme.secondary }}>Requests Filled</p>
-                    <p className="text-5xl font-bold" style={{ color: currentTheme.secondary }}>{queueRequests.length}</p>
-                  </div>
-
-                  <div
-                    className="rounded-2xl p-6 border"
-                    style={{
-                      background: `linear-gradient(to bottom right, ${currentTheme.accent}33, ${currentTheme.primary}33)`,
-                      borderColor: `${currentTheme.accent}80`
-                    }}
-                  >
-                    <p className="text-sm mb-2" style={{ color: currentTheme.primary }}>Avg per Request</p>
-                    <p className="text-5xl font-bold" style={{ color: currentTheme.primary }}>
-                      R{queueRequests.length > 0 ? (totalRevenue / queueRequests.length).toFixed(2) : '0.00'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Event Info */}
-                {currentEvent && (
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-2xl font-bold text-white mb-4">{currentEvent.venueName}</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-gray-400">Status</p>
-                        <p className="text-green-400 font-semibold">{currentEvent.status}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">Start Time</p>
-                        <p className="text-white">{new Date(currentEvent.startTime).toLocaleTimeString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Settings View */}
-          {currentView === 'settings' && (
-            <div className="h-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8 pb-32">
-              <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Settings</h2>
-
-                {/* Theme Selector - Full Width */}
-                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                  <div className="flex items-center justify-between mb-2 sm:mb-3">
-                    <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                      🎨 Theme
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['BeatMatchMe', 'gold', 'platinum'] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setThemeMode(mode)}
-                        className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${themeMode === mode
-                          ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
-                          : 'opacity-60 hover:opacity-100'
-                          }`}
-                        style={{
-                          background: mode === 'BeatMatchMe'
-                            ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
-                            : mode === 'gold'
-                              ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
-                              : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
-                          color: '#ffffff',
-                          ...(themeMode === mode && {
-                            boxShadow: mode === 'BeatMatchMe'
-                              ? '0 0 0 2px #8B5CF6'
-                              : mode === 'gold'
-                                ? '0 0 0 2px #D4AF37'
-                                : '0 0 0 2px #E5E4E2'
-                          })
-                        }}
-                      >
-                        {mode === 'BeatMatchMe' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Profile & Event Settings - 2 Column Grid on mobile and desktop */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  {/* Profile Card */}
-                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                    <h3 className="text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
-                      <span className="text-base sm:text-lg">👤</span>
-                      <span className="hidden sm:inline">Profile</span>
-                    </h3>
-                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                      <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Name</span>
-                        <span className="text-white font-medium truncate">{user?.name}</span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Role</span>
-                        <span className="font-medium truncate" style={{ color: currentTheme.accent }}>
-                          {user?.role}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setShowProfile(true)}
-                        className="w-full mt-1.5 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm font-semibold transition-all hover:opacity-90"
-                        style={{ backgroundColor: currentTheme.primary }}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Event Settings Card */}
-                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                    <div className="flex items-center justify-between mb-2 sm:mb-3">
-                      <h3 className="text-sm sm:text-lg font-semibold text-white flex items-center gap-1 sm:gap-2">
-                        <span className="text-base sm:text-lg">⚙️</span>
-                        <span className="hidden sm:inline">Event</span>
-                      </h3>
-                      <button
-                        onClick={() => setIsEditingSettings(!isEditingSettings)}
-                        className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white text-[10px] sm:text-xs font-medium transition-all hover:opacity-90"
-                        style={{ backgroundColor: currentTheme.primary }}
-                      >
-                        {isEditingSettings ? 'Save' : 'Edit'}
-                      </button>
-                    </div>
-                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Base Price</span>
-                        {isEditingSettings ? (
-                          <input
-                            type="number"
-                            value={basePrice}
-                            onChange={(e) => setBasePrice(Number(e.target.value))}
-                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-yellow-500"
-                          />
-                        ) : (
-                          <span className="text-yellow-400 font-semibold">R{basePrice}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Requests/Hr</span>
-                        {isEditingSettings ? (
-                          <input
-                            type="number"
-                            value={requestsPerHour}
-                            onChange={(e) => setRequestsPerHour(Number(e.target.value))}
-                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
-                          />
-                        ) : (
-                          <span className="text-blue-400 font-semibold">{requestsPerHour}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Spotlight</span>
-                        {isEditingSettings ? (
-                          <input
-                            type="number"
-                            value={spotlightSlots}
-                            onChange={(e) => setSpotlightSlots(Number(e.target.value))}
-                            min="0"
-                            max="5"
-                            className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none"
-                            style={{
-                              borderColor: currentTheme.secondary,
-                            }}
-                          />
-                        ) : (
-                          <span className="font-semibold" style={{ color: currentTheme.secondary }}>
-                            {spotlightSlots}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Request Cap Manager - Compact */}
-                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
-                    📊 Request Cap
-                  </h3>
-                  <RequestCapManager
-                    currentRequestCount={queueRequests.length}
-                    requestCapPerHour={requestsPerHour}
-                    isSoldOut={false}
-                    onUpdateSettings={async (settings) => {
-                      console.log('Updating request cap settings:', settings);
-                      setRequestsPerHour(settings.requestCapPerHour);
-
-                      if (currentSetId) {
-                        try {
-                          const success = await updateDJSetSettings(currentSetId, {
-                            requestCapPerHour: settings.requestCapPerHour,
-                            isSoldOut: settings.isSoldOut
-                          });
-
-                          if (success) {
-                            addNotification({
-                              type: 'info',
-                              title: '✅ Settings Saved',
-                              message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
-                            });
-                          } else {
-                            addNotification({
-                              type: 'info',
-                              title: 'Settings Updated Locally',
-                              message: 'Backend sync pending',
-                            });
-                          }
-                        } catch (error) {
-                          console.error('Failed to save settings:', error);
-                          addNotification({
-                            type: 'error',
-                            title: '⚠️ Save Failed',
-                            message: 'Could not save to backend',
-                          });
-                        }
-                      }
-                    }}
+                  <DJLibrary
+                    tracks={tracks}
+                    onAddTrack={handleAddTrack}
+                    onUpdateTrack={handleUpdateTrack}
+                    onDeleteTrack={handleDeleteTrack}
+                    onToggleTrack={handleToggleTrack}
                   />
                 </div>
+              </div>
+            )}
 
-                {/* Status Ring Guide - 3 Column Grid (single row) */}
-                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
-                  <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
-                    💡 Status Ring Guide
-                  </h3>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {/* Blue */}
-                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                      <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0 text-center sm:text-left">
-                        <p className="text-blue-400 font-semibold text-[10px] sm:text-xs">Browsing</p>
-                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">No active set</p>
+            {/* Revenue View */}
+            {currentView === 'revenue' && (
+              <div className="h-full flex items-center justify-center px-4 pb-32">
+                <div className="max-w-4xl w-full bg-gray-900/30 backdrop-blur-lg rounded-3xl border border-white/10 p-8">
+                  <h2 className="text-4xl font-bold text-white mb-8 text-center">Revenue Dashboard</h2>
+
+                  {/* Revenue Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div
+                      className="rounded-2xl p-6 border"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${currentTheme.primary}33, ${currentTheme.secondary}33)`,
+                        borderColor: `${currentTheme.primary}80`
+                      }}
+                    >
+                      <p className="text-sm mb-2" style={{ color: currentTheme.accent }}>Total Earnings</p>
+                      <p className="text-5xl font-bold animate-tumble" style={{ color: currentTheme.accent }}>
+                        R{totalRevenue.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div
+                      className="rounded-2xl p-6 border"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${currentTheme.secondary}33, ${currentTheme.accent}33)`,
+                        borderColor: `${currentTheme.secondary}80`
+                      }}
+                    >
+                      <p className="text-sm mb-2" style={{ color: currentTheme.secondary }}>Requests Filled</p>
+                      <p className="text-5xl font-bold" style={{ color: currentTheme.secondary }}>{queueRequests.length}</p>
+                    </div>
+
+                    <div
+                      className="rounded-2xl p-6 border"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${currentTheme.accent}33, ${currentTheme.primary}33)`,
+                        borderColor: `${currentTheme.accent}80`
+                      }}
+                    >
+                      <p className="text-sm mb-2" style={{ color: currentTheme.primary }}>Avg per Request</p>
+                      <p className="text-5xl font-bold" style={{ color: currentTheme.primary }}>
+                        R{queueRequests.length > 0 ? (totalRevenue / queueRequests.length).toFixed(2) : '0.00'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Event Info */}
+                  {currentEvent && (
+                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-2xl font-bold text-white mb-4">{currentEvent.venueName}</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-400">Status</p>
+                          <p className="text-green-400 font-semibold">{currentEvent.status}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Start Time</p>
+                          <p className="text-white">{new Date(currentEvent.startTime).toLocaleTimeString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Settings View */}
+            {currentView === 'settings' && (
+              <div className="h-full w-full overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-4 sm:py-8 pb-32">
+                <div className="w-full max-w-4xl mx-auto space-y-3 sm:space-y-4">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Settings</h2>
+
+                  {/* Theme Selector - Full Width */}
+                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+                        🎨 Theme
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['BeatMatchMe', 'gold', 'platinum'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          onClick={() => setThemeMode(mode)}
+                          className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all ${themeMode === mode
+                            ? 'ring-2 ring-offset-2 ring-offset-gray-900 scale-105'
+                            : 'opacity-60 hover:opacity-100'
+                            }`}
+                          style={{
+                            background: mode === 'BeatMatchMe'
+                              ? 'linear-gradient(to right, #8B5CF6, #EC4899)'
+                              : mode === 'gold'
+                                ? 'linear-gradient(to right, #D4AF37, #F59E0B)'
+                                : 'linear-gradient(to right, #E5E4E2, #94A3B8)',
+                            color: '#ffffff',
+                            ...(themeMode === mode && {
+                              boxShadow: mode === 'BeatMatchMe'
+                                ? '0 0 0 2px #8B5CF6'
+                                : mode === 'gold'
+                                  ? '0 0 0 2px #D4AF37'
+                                  : '0 0 0 2px #E5E4E2'
+                            })
+                          }}
+                        >
+                          {mode === 'BeatMatchMe' ? '🎵 Purple' : mode === 'gold' ? '👑 Gold' : '💎 Platinum'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Profile & Event Settings - 2 Column Grid on mobile and desktop */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                    {/* Profile Card */}
+                    <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                      <h3 className="text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
+                        <span className="text-base sm:text-lg">👤</span>
+                        <span className="hidden sm:inline">Profile</span>
+                      </h3>
+                      <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">Name</span>
+                          <span className="text-white font-medium truncate">{user?.name}</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-0">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">Role</span>
+                          <span className="font-medium truncate" style={{ color: currentTheme.accent }}>
+                            {user?.role}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setShowProfile(true)}
+                          className="w-full mt-1.5 sm:mt-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm font-semibold transition-all hover:opacity-90"
+                          style={{ backgroundColor: currentTheme.primary }}
+                        >
+                          Edit
+                        </button>
                       </div>
                     </div>
 
-                    {/* Green */}
-                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
-                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0 text-center sm:text-left">
-                        <p className="text-green-400 font-semibold text-[10px] sm:text-xs">Active</p>
-                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">Accepting requests</p>
+                    {/* Event Settings Card */}
+                    <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <h3 className="text-sm sm:text-lg font-semibold text-white flex items-center gap-1 sm:gap-2">
+                          <span className="text-base sm:text-lg">⚙️</span>
+                          <span className="hidden sm:inline">Event</span>
+                        </h3>
+                        <button
+                          onClick={() => setIsEditingSettings(!isEditingSettings)}
+                          className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-white text-[10px] sm:text-xs font-medium transition-all hover:opacity-90"
+                          style={{ backgroundColor: currentTheme.primary }}
+                        >
+                          {isEditingSettings ? 'Save' : 'Edit'}
+                        </button>
                       </div>
-                    </div>
-
-                    {/* Yellow */}
-                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                      <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
-                      <div className="min-w-0 text-center sm:text-left">
-                        <p className="text-yellow-400 font-semibold text-[10px] sm:text-xs">Earning</p>
-                        <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">High activity</p>
+                      <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">Base Price</span>
+                          {isEditingSettings ? (
+                            <input
+                              type="number"
+                              value={basePrice}
+                              onChange={(e) => setBasePrice(Number(e.target.value))}
+                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-yellow-500"
+                            />
+                          ) : (
+                            <span className="text-yellow-400 font-semibold">R{basePrice}</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">Requests/Hr</span>
+                          {isEditingSettings ? (
+                            <input
+                              type="number"
+                              value={requestsPerHour}
+                              onChange={(e) => setRequestsPerHour(Number(e.target.value))}
+                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                            />
+                          ) : (
+                            <span className="text-blue-400 font-semibold">{requestsPerHour}</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-0">
+                          <span className="text-gray-400 text-[10px] sm:text-xs">Spotlight</span>
+                          {isEditingSettings ? (
+                            <input
+                              type="number"
+                              value={spotlightSlots}
+                              onChange={(e) => setSpotlightSlots(Number(e.target.value))}
+                              min="0"
+                              max="5"
+                              className="w-16 sm:w-20 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded text-white text-xs sm:text-sm focus:outline-none"
+                              style={{
+                                borderColor: currentTheme.secondary,
+                              }}
+                            />
+                          ) : (
+                            <span className="font-semibold" style={{ color: currentTheme.secondary }}>
+                              {spotlightSlots}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
+                  {/* Request Cap Manager - Compact */}
+                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
+                      📊 Request Cap
+                    </h3>
+                    <RequestCapManager
+                      currentRequestCount={queueRequests.length}
+                      requestCapPerHour={requestsPerHour}
+                      isSoldOut={false}
+                      onUpdateSettings={async (settings) => {
+                        console.log('Updating request cap settings:', settings);
+                        setRequestsPerHour(settings.requestCapPerHour);
+
+                        if (currentSetId) {
+                          try {
+                            const success = await updateDJSetSettings(currentSetId, {
+                              requestCapPerHour: settings.requestCapPerHour,
+                              isSoldOut: settings.isSoldOut
+                            });
+
+                            if (success) {
+                              addNotification({
+                                type: 'info',
+                                title: '✅ Settings Saved',
+                                message: `Request cap: ${settings.requestCapPerHour}/hour${settings.isSoldOut ? ' (Sold Out)' : ''}`,
+                              });
+                            } else {
+                              addNotification({
+                                type: 'info',
+                                title: 'Settings Updated Locally',
+                                message: 'Backend sync pending',
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Failed to save settings:', error);
+                            addNotification({
+                              type: 'error',
+                              title: '⚠️ Save Failed',
+                              message: 'Could not save to backend',
+                            });
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Status Ring Guide - 3 Column Grid (single row) */}
+                  <div className="bg-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/10">
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
+                      💡 Status Ring Guide
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      {/* Blue */}
+                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                        <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></div>
+                        <div className="min-w-0 text-center sm:text-left">
+                          <p className="text-blue-400 font-semibold text-[10px] sm:text-xs">Browsing</p>
+                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">No active set</p>
+                        </div>
+                      </div>
+
+                      {/* Green */}
+                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                        <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
+                        <div className="min-w-0 text-center sm:text-left">
+                          <p className="text-green-400 font-semibold text-[10px] sm:text-xs">Active</p>
+                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">Accepting requests</p>
+                        </div>
+                      </div>
+
+                      {/* Yellow */}
+                      <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
+                        <div className="min-w-0 text-center sm:text-left">
+                          <p className="text-yellow-400 font-semibold text-[10px] sm:text-xs">Earning</p>
+                          <p className="text-gray-400 text-[8px] sm:text-[10px] truncate hidden sm:block">High activity</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Gesture Hints - Bottom Center - Hide when live */}
+          {/* Gesture Hints - Bottom Center - Minimal & Subtle */}
+          {!isLiveMode && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-3 text-[10px] text-gray-400 font-medium">
+                <span>↑ Queue</span>
+                <span>↓ Library</span>
+                <span>← Revenue</span>
+                <span>→ Settings</span>
+              </div>
+            </div>
+          )}
+
+          {/* Modals - Phase 8: Lazy loaded for performance */}
+          {showEventCreator && (
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="text-white text-lg">Loading...</div>
+              </div>
+            }>
+              <EventCreator
+                onClose={() => setShowEventCreator(false)}
+                onEventCreated={handleEventCreated}
+              />
+            </Suspense>
+          )}
+
+          {/* Event Playlist Manager Modal */}
+          {showPlaylistManager && (
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="text-white text-lg">Loading...</div>
+              </div>
+            }>
+              <EventPlaylistManager
+                masterLibrary={tracks}
+                currentEventName={currentEvent?.venueName}
+                currentSetId={currentSetId || undefined}
+                isLive={isLiveMode}
+                onApplyPlaylist={async (trackIds, playlistInfo) => {
+                  console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
+
+                  // 1. Save playlist to backend
+                  if (currentSetId) {
+                    try {
+                      await updateSetPlaylist(currentSetId, {
+                        playlistType: playlistInfo.type,
+                        playlistId: playlistInfo.id,
+                        playlistName: playlistInfo.name,
+                        playlistTracks: trackIds
+                      });
+                      console.log('✅ Playlist saved to backend successfully');
+                    } catch (error) {
+                      console.error('❌ Failed to save playlist to backend:', error);
+                      // Continue anyway - playlist still applied locally
+                    }
+                  }
+
+                  // 2. Enable selected tracks, disable others (local state)
+                  setTracks(prevTracks =>
+                    prevTracks.map(track => ({
+                      ...track,
+                      isEnabled: trackIds.includes(track.id)
+                    }))
+                  );
+
+                  // 3. Show success notification
+                  addNotification({
+                    type: 'info',
+                    title: '✅ Playlist Applied',
+                    message: `${playlistInfo.name}: ${trackIds.length} songs enabled for this event`,
+                  });
+                }}
+                onClose={() => setShowPlaylistManager(false)}
+              />
+            </Suspense>
+          )}
+
+          {/* Features 6, 10, 12 - Request Management Modals */}
+          {/* Accept modal removed - now using optimistic pattern with undo toast */}
+          {/* Veto modal removed - now using optimistic pattern with undo toast */}
+
+          {showPlayingPanel && selectedRequest && (
+            <MarkPlayingPanel
+              request={{
+                ...selectedRequest,
+                waitTime: selectedRequest.submittedAt
+                  ? Math.floor((Date.now() - selectedRequest.submittedAt) / 60000)
+                  : 0,
+              }}
+              onConfirm={handlePlayingConfirm}
+              onCancel={() => {
+                setShowPlayingPanel(false);
+                setSelectedRequest(null);
+              }}
+              isProcessing={isProcessing}
+            />
+          )}
+
+          {showPlayingCelebration && selectedRequest && (
+            <PlayingCelebration
+              request={selectedRequest}
+              onComplete={() => setShowPlayingCelebration(false)}
+            />
+          )}
+
+          {currentlyPlaying && (
+            <NowPlayingCard
+              playing={currentlyPlaying}
+              onMarkComplete={handleMarkComplete}
+            />
+          )}
+
+          {/* Notification Center Modal */}
+          {showNotifications && (
+            <Suspense fallback={null}>
+              <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="max-w-2xl w-full max-h-[90vh]">
+                  <NotificationCenter
+                    notifications={notifications}
+                    onMarkAsRead={markAsRead}
+                    onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
+                    onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
+                    onNotificationClick={(notification) => {
+                      markAsRead(notification.id);
+                      if (notification.metadata?.requestId) {
+                        console.log('Open request:', notification.metadata.requestId);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </Suspense>
+          )}
+
+          {/* DJ Profile Management Modal */}
+          {showProfile && (
+            <div className="fixed inset-0 bg-gray-900/80 z-50 flex items-center justify-center p-4">
+              <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <DJProfileScreen
+                  profile={{
+                    userId: user?.userId || '',
+                    name: user?.name || 'DJ',
+                    email: user?.email || '',
+                    photo: undefined,
+                    tier: (user?.tier as any) || 'BRONZE',
+                    bio: '',
+                    genres: [],
+                    basePrice: basePrice,
+                    stats: undefined,
+                  }}
+                  onUpdateProfile={async (updates) => {
+                    console.log('Save DJ profile updates:', updates);
+
+                    if (user?.userId) {
+                      try {
+                        const success = await updateDJProfile(user.userId, {
+                          name: updates.name,
+                          bio: updates.bio,
+                          genres: updates.genres,
+                          basePrice: updates.basePrice,
+                        });
+
+                        if (success) {
+                          addNotification({
+                            type: 'info',
+                            title: '✅ Profile Updated',
+                            message: 'Your profile changes were saved successfully.'
+                          });
+                        } else {
+                          addNotification({
+                            type: 'info',
+                            title: 'Profile Updated Locally',
+                            message: 'Backend sync pending - changes will persist after deployment'
+                          });
+                        }
+
+                        setShowProfile(false);
+                      } catch (error) {
+                        console.error('Failed to update profile:', error);
+                        addNotification({
+                          type: 'error',
+                          title: '⚠️ Update Failed',
+                          message: 'Could not save profile. Please try again.'
+                        });
+                      }
+                    }
+                  }}
+                  onUpgradeTier={(tier) => {
+                    console.log('Upgrade to tier:', tier);
+                    addNotification({
+                      type: 'info',
+                      title: 'Upgrade Requested',
+                      message: `Requested upgrade to ${tier}. Contact support to complete.`
+                    });
+                  }}
+                />
               </div>
             </div>
           )}
         </div>
 
-        {/* Gesture Hints - Bottom Center - Hide when live */}
-        {/* Gesture Hints - Bottom Center - Minimal & Subtle */}
-        {!isLiveMode && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-gray-900/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 opacity-60 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-3 text-[10px] text-gray-400 font-medium">
-              <span>↑ Queue</span>
-              <span>↓ Library</span>
-              <span>← Revenue</span>
-              <span>→ Settings</span>
-            </div>
-          </div>
-        )}
-
-        {/* Modals - Phase 8: Lazy loaded for performance */}
-        {showEventCreator && (
-          <Suspense fallback={
-            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="text-white text-lg">Loading...</div>
-            </div>
-          }>
-            <EventCreator
-              onClose={() => setShowEventCreator(false)}
-              onEventCreated={handleEventCreated}
-            />
-          </Suspense>
-        )}
-
-        {/* Event Playlist Manager Modal */}
-        {showPlaylistManager && (
-          <Suspense fallback={
-            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="text-white text-lg">Loading...</div>
-            </div>
-          }>
-            <EventPlaylistManager
-              masterLibrary={tracks}
-              currentEventName={currentEvent?.venueName}
-              currentSetId={currentSetId || undefined}
-              isLive={isLiveMode}
-              onApplyPlaylist={async (trackIds, playlistInfo) => {
-                console.log('📋 Applying playlist to event:', trackIds, playlistInfo);
-
-                // 1. Save playlist to backend
-                if (currentSetId) {
-                  try {
-                    await updateSetPlaylist(currentSetId, {
-                      playlistType: playlistInfo.type,
-                      playlistId: playlistInfo.id,
-                      playlistName: playlistInfo.name,
-                      playlistTracks: trackIds
-                    });
-                    console.log('✅ Playlist saved to backend successfully');
-                  } catch (error) {
-                    console.error('❌ Failed to save playlist to backend:', error);
-                    // Continue anyway - playlist still applied locally
-                  }
-                }
-
-                // 2. Enable selected tracks, disable others (local state)
-                setTracks(prevTracks =>
-                  prevTracks.map(track => ({
-                    ...track,
-                    isEnabled: trackIds.includes(track.id)
-                  }))
-                );
-
-                // 3. Show success notification
-                addNotification({
-                  type: 'info',
-                  title: '✅ Playlist Applied',
-                  message: `${playlistInfo.name}: ${trackIds.length} songs enabled for this event`,
-                });
-              }}
-              onClose={() => setShowPlaylistManager(false)}
-            />
-          </Suspense>
-        )}
-
-        {/* Features 6, 10, 12 - Request Management Modals */}
-        {/* Accept modal removed - now using optimistic pattern with undo toast */}
-        {/* Veto modal removed - now using optimistic pattern with undo toast */}
-
-        {showPlayingPanel && selectedRequest && (
-          <MarkPlayingPanel
-            request={{
-              ...selectedRequest,
-              waitTime: selectedRequest.submittedAt
-                ? Math.floor((Date.now() - selectedRequest.submittedAt) / 60000)
-                : 0,
-            }}
-            onConfirm={handlePlayingConfirm}
-            onCancel={() => {
-              setShowPlayingPanel(false);
-              setSelectedRequest(null);
-            }}
-            isProcessing={isProcessing}
-          />
-        )}
-
-        {showPlayingCelebration && selectedRequest && (
-          <PlayingCelebration
-            request={selectedRequest}
-            onComplete={() => setShowPlayingCelebration(false)}
-          />
-        )}
-
-        {currentlyPlaying && (
-          <NowPlayingCard
-            playing={currentlyPlaying}
-            onMarkComplete={handleMarkComplete}
-          />
-        )}
-
-        {/* Notification Center Modal */}
-        {showNotifications && (
-          <Suspense fallback={null}>
-            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="max-w-2xl w-full max-h-[90vh]">
-                <NotificationCenter
-                  notifications={notifications}
-                  onMarkAsRead={markAsRead}
-                  onMarkAllAsRead={() => notifications.forEach(n => markAsRead(n.id))}
-                  onClearAll={() => notifications.forEach(n => clearNotification(n.id))}
-                  onNotificationClick={(notification) => {
-                    markAsRead(notification.id);
-                    if (notification.metadata?.requestId) {
-                      console.log('Open request:', notification.metadata.requestId);
-                    }
-                  }}
-                  className="w-full"
-                />
-                <button
-                  onClick={() => setShowNotifications(false)}
-                  className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </Suspense>
-        )}
-
-        {/* DJ Profile Management Modal */}
-        {showProfile && (
-          <div className="fixed inset-0 bg-gray-900/80 z-50 flex items-center justify-center p-4">
-            <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <DJProfileScreen
-                profile={{
-                  userId: user?.userId || '',
-                  name: user?.name || 'DJ',
-                  email: user?.email || '',
-                  photo: undefined,
-                  tier: (user?.tier as any) || 'BRONZE',
-                  bio: '',
-                  genres: [],
-                  basePrice: basePrice,
-                  stats: undefined,
-                }}
-                onUpdateProfile={async (updates) => {
-                  console.log('Save DJ profile updates:', updates);
-
-                  if (user?.userId) {
-                    try {
-                      const success = await updateDJProfile(user.userId, {
-                        name: updates.name,
-                        bio: updates.bio,
-                        genres: updates.genres,
-                        basePrice: updates.basePrice,
-                      });
-
-                      if (success) {
-                        addNotification({
-                          type: 'info',
-                          title: '✅ Profile Updated',
-                          message: 'Your profile changes were saved successfully.'
-                        });
-                      } else {
-                        addNotification({
-                          type: 'info',
-                          title: 'Profile Updated Locally',
-                          message: 'Backend sync pending - changes will persist after deployment'
-                        });
-                      }
-
-                      setShowProfile(false);
-                    } catch (error) {
-                      console.error('Failed to update profile:', error);
-                      addNotification({
-                        type: 'error',
-                        title: '⚠️ Update Failed',
-                        message: 'Could not save profile. Please try again.'
-                      });
-                    }
-                  }
-                }}
-                onUpgradeTier={(tier) => {
-                  console.log('Upgrade to tier:', tier);
-                  addNotification({
-                    type: 'info',
-                    title: 'Upgrade Requested',
-                    message: `Requested upgrade to ${tier}. Contact support to complete.`
-                  });
-                }}
+        {/* Slide-out Panels (non-blocking) - Phase 8: Lazy loaded */}
+        {
+          showSettings && (
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
+            }>
+              <SettingsModal
+                onClose={() => setShowSettings(false)}
+                mode="dj"
               />
-            </div>
-          </div>
-        )}
-      </div>
+            </Suspense>
+          )
+        }
 
-      {/* Slide-out Panels (non-blocking) - Phase 8: Lazy loaded */}
-      {showSettings && (
-        <Suspense fallback={
-          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
-        }>
-          <SettingsModal
-            onClose={() => setShowSettings(false)}
-            mode="dj"
-          />
-        </Suspense>
-      )}
-
-      {showQRCode && currentEvent && currentEventId && (
-        <Suspense fallback={
-          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
-        }>
-          <QRCodeDisplay
-            eventId={currentEventId}
-            venueName={currentEvent.venueName}
-            onClose={() => setShowQRCode(false)}
-          />
-        </Suspense>
-      )}
-    </GestureHandler>
+        {
+          showQRCode && currentEvent && currentEventId && (
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50" />
+            }>
+              <QRCodeDisplay
+                eventId={currentEventId}
+                venueName={currentEvent.venueName}
+                onClose={() => setShowQRCode(false)}
+              />
+            </Suspense>
+          )
+        }
+      </GestureHandler>
+    </>
   );
 };
+
+export default DJPortalOrbital;

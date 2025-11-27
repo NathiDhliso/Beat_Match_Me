@@ -9,6 +9,7 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
   const [touchStart, setTouchStart] = useState<TouchPoint | null>(null);
   const [currentDelta, setCurrentDelta] = useState<Delta>({ x: 0, y: 0 });
   const [isPeeking, setIsPeeking] = useState(false);
+  const [hasTriggered, setHasTriggered] = useState(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (options.disabled) return;
@@ -18,10 +19,11 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
       time: Date.now(),
     });
     setIsPeeking(true);
+    setHasTriggered(false);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (!touchStart || hasTriggered) return;
 
     const currentTouch = {
       x: e.touches[0].clientX,
@@ -30,12 +32,34 @@ export const useSwipeDetection = (callbacks: SwipeCallbacks, options: { disabled
 
     const deltaX = currentTouch.x - touchStart.x;
     const deltaY = currentTouch.y - touchStart.y;
+    const deltaTime = Date.now() - touchStart.time;
 
     setCurrentDelta({ x: deltaX, y: deltaY });
+
+    // Auto-snap: If scrolling for > 0.5s and threshold met, trigger immediately
+    const distanceThreshold = 60;
+    const autoSnapTime = 500;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (deltaTime > autoSnapTime && distance > distanceThreshold) {
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > 0) callbacks.onSwipeRight();
+        else callbacks.onSwipeLeft();
+      } else {
+        if (deltaY > 0) callbacks.onSwipeDown();
+        else callbacks.onSwipeUp();
+      }
+
+      // Reset and mark as triggered
+      setHasTriggered(true);
+      setCurrentDelta({ x: 0, y: 0 });
+      setIsPeeking(false);
+      setTouchStart(null);
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (!touchStart || hasTriggered) return;
 
     const touchEnd = {
       x: e.changedTouches[0].clientX,

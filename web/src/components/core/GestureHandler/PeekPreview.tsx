@@ -47,7 +47,9 @@ export const PeekPreview: React.FC<PeekPreviewProps> = ({ peekPreview }) => {
       <div
         className="h-full w-full relative overflow-hidden"
         style={{
-          background: '#0f172a', // Solid Dark Slate (Single Color)
+          background: 'rgba(255, 255, 255, 0.05)', // Very subtle white tint
+          backdropFilter: 'blur(12px)', // Glass blur
+          WebkitBackdropFilter: 'blur(12px)', // Safari support
           transform: direction === 'left' || direction === 'right'
             ? `translateX(${direction === 'left' ? -10 : 10}%)` // Subtle parallax shift
             : `translateY(${direction === 'up' ? -10 : 10}%)`,

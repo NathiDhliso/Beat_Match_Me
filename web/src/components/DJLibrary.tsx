@@ -49,10 +49,10 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
   const [listHeight, setListHeight] = useState(0);
 
   const genres = ['all', ...new Set(tracks.map(t => t.genre))];
-  
+
   const filteredTracks = tracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         track.artist.toLowerCase().includes(searchQuery.toLowerCase());
+      track.artist.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGenre = selectedGenre === 'all' || track.genre === selectedGenre;
     return matchesSearch && matchesGenre;
   });
@@ -139,7 +139,7 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
               className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors text-sm"
             />
           </div>
-          
+
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <select
@@ -187,21 +187,22 @@ export const DJLibrary: React.FC<DJLibraryProps> = ({
                 width="100%"
                 itemData={filteredTracks}
               >
-              {/* @ts-expect-error - react-window v2 children render function type mismatch */}
-              {({ data, index, style }: { data: Track[]; index: number; style: React.CSSProperties }) => {
-                const track = data[index];
-                return (
-                  <div style={style} className="pr-3 pb-3">
-                    <TrackCard
-                      track={track}
-                      onEdit={() => setEditingTrack(track)}
-                      onDelete={() => onDeleteTrack(track.id)}
-                      onToggle={() => onToggleTrack(track.id)}
-                      onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
-                    />
-                  </div>
-                );
-              }}
+                {/* @ts-expect-error - react-window v2 children render function type mismatch */}
+                {({ data, index, style }: { data: Track[]; index: number; style: React.CSSProperties }) => {
+                  const track = data[index];
+                  if (!track) return null;
+                  return (
+                    <div style={style} className="pr-3 pb-3">
+                      <TrackCard
+                        track={track}
+                        onEdit={() => setEditingTrack(track)}
+                        onDelete={() => onDeleteTrack(track.id)}
+                        onToggle={() => onToggleTrack(track.id)}
+                        onUpdatePrice={(price) => onUpdateTrack(track.id, { basePrice: price })}
+                      />
+                    </div>
+                  );
+                }}
               </List>
             </div>
           ) : (
@@ -423,7 +424,7 @@ const TrackCard: React.FC<TrackCardProps> = React.memo(({ track, onEdit, onDelet
               <ToggleLeft className="w-5 h-5 text-gray-400" />
             )}
           </button>
-          
+
           <button
             onClick={onEdit}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -431,7 +432,7 @@ const TrackCard: React.FC<TrackCardProps> = React.memo(({ track, onEdit, onDelet
           >
             <Edit className="w-5 h-5 text-blue-400" />
           </button>
-          
+
           <button
             onClick={onDelete}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -473,7 +474,7 @@ const AddTrackModal: React.FC<AddTrackModalProps> = ({ onClose, onAdd }) => {
     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-white/10" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-2xl font-bold text-white mb-6">Add New Track</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-2">Song Title *</label>
@@ -574,7 +575,7 @@ const EditTrackModal: React.FC<EditTrackModalProps> = ({ track, onClose, onSave 
     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-white/10" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-2xl font-bold text-white mb-6">Edit Track</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-2">Song Title</label>
